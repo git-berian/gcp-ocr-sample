@@ -2,7 +2,14 @@
   "name": "docai-expense-parser-docker",
   "private": true,
   "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "@google-cloud/documentai": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.2",
+    "typescript": "^5.9.3"
   }
 }

@@ -75,7 +75,9 @@ docker-compose -f docker/docker-compose.prod.yml up --build
 
 ## アーキテクチャ
 
-単一ファイル構成（`index.js`）、ES Modules、依存は `@google-cloud/documentai` v8 のみ。
+単一ファイル構成（`src/index.ts`）、TypeScript + ES Modules、依存は `@google-cloud/documentai` v8 のみ。
+
+ビルド: `npm run build` → `dist/index.js` に出力。
 
 フロー: 環境変数読込 → `/input/` からファイル読込 → Document AI `processDocument()` 呼出 → entities を JSON で stdout 出力。
 

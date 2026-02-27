@@ -44,15 +44,40 @@ cp .env.example .env
 
 ## 使い方
 
-### 開発環境
+### コンテナのビルド
 
 ```bash
-docker-compose -f docker/docker-compose.yml up --build
+# 開発環境
+docker-compose -f docker/docker-compose.yml build
+
+# 本番環境
+docker-compose -f docker/docker-compose.prod.yml build
 ```
 
-### 本番環境
+### コンテナに入って操作する
 
 ```bash
+docker-compose -f docker/docker-compose.yml run --rm ocr bash
+```
+
+コンテナ内で以下のコマンドが実行できます。
+
+```bash
+npm run build          # TypeScript ビルド
+npm run lint           # ESLint 実行
+npm run lint:fix       # ESLint 自動修正
+npm run format         # Prettier フォーマット
+npm run format:check   # Prettier チェック
+node dist/index.js     # OCR 実行
+```
+
+### OCR を直接実行する
+
+```bash
+# 開発環境
+docker-compose -f docker/docker-compose.yml up --build
+
+# 本番環境
 docker-compose -f docker/docker-compose.prod.yml up --build
 ```
 
@@ -93,4 +118,6 @@ docker-compose -f docker/docker-compose.prod.yml up --build
 |--|--|
 | Node.js | 20 (Docker イメージ: node:20-slim) |
 | TypeScript | ^5.9 |
+| ESLint | ^10.0 |
+| Prettier | ^3.8 |
 | @google-cloud/documentai | ^8.0.0 |

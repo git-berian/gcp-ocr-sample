@@ -47,25 +47,44 @@ FILE_NAME=receipt.jpg
 
 ## 使い方
 
+### 開発環境
+
 ```bash
 docker-compose up --build
+```
+
+### 本番環境
+
+```bash
+docker-compose -f docker-compose.prod.yml up --build
 ```
 
 実行すると、Document AI で解析された entities が JSON 形式で標準出力に表示されます。
 
 別のファイルを解析する場合は `.env` の `FILE_NAME` を変更して再実行してください。
 
+## Docker 構成
+
+| ファイル | 用途 | 説明 |
+|--|--|--|
+| `Dockerfile` | 開発環境 | `devDependencies` を含む全依存をインストール |
+| `Dockerfile.prod` | 本番環境 | `--omit=dev` で本番依存のみインストール |
+| `docker-compose.yml` | 開発環境 | `Dockerfile` を使用 |
+| `docker-compose.prod.yml` | 本番環境 | `Dockerfile.prod` を使用 |
+
 ## ディレクトリ構成
 
 ```
 .
-├── Dockerfile
-├── docker-compose.yml
-├── index.js              # メイン処理
+├── Dockerfile              # 開発環境用
+├── Dockerfile.prod         # 本番環境用
+├── docker-compose.yml      # 開発環境用
+├── docker-compose.prod.yml # 本番環境用
+├── index.js                # メイン処理
 ├── package.json
-├── input/                # 解析対象ファイルを配置
-├── logs/                 # 解析結果ログ
-└── secrets/              # サービスアカウントキー（git管理外）
+├── input/                  # 解析対象ファイルを配置
+├── logs/                   # 解析結果ログ
+└── secrets/                # サービスアカウントキー（git管理外）
 ```
 
 ## 技術スタック

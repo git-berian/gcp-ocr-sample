@@ -5,11 +5,10 @@ services:
       dockerfile: docker/Dockerfile
     env_file: ../.env
     environment:
-      GOOGLE_APPLICATION_CREDENTIALS: /secrets/sa.json
+      GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/sa.json
     volumes:
-      - ../secrets:/secrets:ro
-      - ../input:/input:ro
-      - ../src:/app/src
-      - ../eslint.config.js:/app/eslint.config.js:ro
-      - ../.prettierrc:/app/.prettierrc:ro
-      - ../tsconfig.json:/app/tsconfig.json:ro
+      - ..:/app
+      - node_modules:/app/node_modules
+
+volumes:
+  node_modules:

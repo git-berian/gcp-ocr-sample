@@ -64,8 +64,8 @@ docker-compose -f docker/docker-compose.prod.yml up --build
 
 | ファイル | 用途 | 説明 |
 |--|--|--|
-| `docker/Dockerfile` | 開発環境 | `devDependencies` を含む全依存をインストール |
-| `docker/Dockerfile.prod` | 本番環境 | `--omit=dev` で本番依存のみインストール |
+| `docker/Dockerfile` | 開発環境 | 全依存インストール + TypeScript ビルド |
+| `docker/Dockerfile.prod` | 本番環境 | マルチステージビルドで本番依存のみ含む |
 | `docker/docker-compose.yml` | 開発環境 | `Dockerfile` を使用 |
 | `docker/docker-compose.prod.yml` | 本番環境 | `Dockerfile.prod` を使用 |
 
@@ -78,7 +78,9 @@ docker-compose -f docker/docker-compose.prod.yml up --build
 │   ├── Dockerfile.prod         # 本番環境用
 │   ├── docker-compose.yml      # 開発環境用
 │   └── docker-compose.prod.yml # 本番環境用
-├── index.js                    # メイン処理
+├── src/
+│   └── index.ts                # メイン処理
+├── tsconfig.json
 ├── package.json
 ├── input/                      # 解析対象ファイルを配置
 ├── logs/                       # 解析結果ログ
@@ -90,4 +92,5 @@ docker-compose -f docker/docker-compose.prod.yml up --build
 | Tool | Version |
 |--|--|
 | Node.js | 20 (Docker イメージ: node:20-slim) |
+| TypeScript | ^5.9 |
 | @google-cloud/documentai | ^8.0.0 |

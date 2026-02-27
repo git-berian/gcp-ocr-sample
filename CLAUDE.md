@@ -71,9 +71,17 @@ docker-compose -f docker/docker-compose.yml up --build
 
 # 本番環境
 docker-compose -f docker/docker-compose.prod.yml up --build
+
+# リント
+npm run lint
+npm run lint:fix
+
+# フォーマット
+npm run format
+npm run format:check
 ```
 
-テスト・リンター・CI/CD は未構成。
+テスト・CI/CD は未構成。
 
 ## アーキテクチャ
 

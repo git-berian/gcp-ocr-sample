@@ -1,0 +1,8 @@
+{
+  "name": "docai-expense-parser-docker",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@google-cloud/documentai": "^8.0.0"
+  }
+}

@@ -65,10 +65,10 @@ Google Cloud Document AI を使ってレシート等から情報を抽出する 
 
 ```bash
 # 開発環境
-docker-compose up --build
+docker-compose -f docker/docker-compose.yml up --build
 
 # 本番環境
-docker-compose -f docker-compose.prod.yml up --build
+docker-compose -f docker/docker-compose.prod.yml up --build
 ```
 
 テスト・リンター・CI/CD は未構成。
@@ -85,8 +85,8 @@ Docker: `secrets/sa.json`（GCPサービスアカウントキー）と `input/` 
 
 ## Docker 構成
 
-- `Dockerfile` / `docker-compose.yml` — 開発環境（`devDependencies` 含む）
-- `Dockerfile.prod` / `docker-compose.prod.yml` — 本番環境（`--omit=dev` で本番依存のみ）
+- `docker/Dockerfile` / `docker/docker-compose.yml` — 開発環境（`devDependencies` 含む）
+- `docker/Dockerfile.prod` / `docker/docker-compose.prod.yml` — 本番環境（`--omit=dev` で本番依存のみ）
 
 ## 規約
 

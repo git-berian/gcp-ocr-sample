@@ -22,13 +22,10 @@ secrets/sa.json
 
 ### 2. 環境変数の設定
 
-プロジェクトルートに `.env` ファイルを作成し、以下を記載してください。
+`.env.example` をコピーして `.env` を作成し、値を設定してください。
 
-```env
-GCP_PROJECT_ID=your-gcp-project-id
-DOCAI_LOCATION=us
-DOCAI_PROCESSOR_ID=your-processor-id
-FILE_NAME=receipt.jpg
+```bash
+cp .env.example .env
 ```
 
 | 変数名 | 説明 |
@@ -50,13 +47,13 @@ FILE_NAME=receipt.jpg
 ### 開発環境
 
 ```bash
-docker-compose up --build
+docker-compose -f docker/docker-compose.yml up --build
 ```
 
 ### 本番環境
 
 ```bash
-docker-compose -f docker-compose.prod.yml up --build
+docker-compose -f docker/docker-compose.prod.yml up --build
 ```
 
 実行すると、Document AI で解析された entities が JSON 形式で標準出力に表示されます。
@@ -67,24 +64,25 @@ docker-compose -f docker-compose.prod.yml up --build
 
 | ファイル | 用途 | 説明 |
 |--|--|--|
-| `Dockerfile` | 開発環境 | `devDependencies` を含む全依存をインストール |
-| `Dockerfile.prod` | 本番環境 | `--omit=dev` で本番依存のみインストール |
-| `docker-compose.yml` | 開発環境 | `Dockerfile` を使用 |
-| `docker-compose.prod.yml` | 本番環境 | `Dockerfile.prod` を使用 |
+| `docker/Dockerfile` | 開発環境 | `devDependencies` を含む全依存をインストール |
+| `docker/Dockerfile.prod` | 本番環境 | `--omit=dev` で本番依存のみインストール |
+| `docker/docker-compose.yml` | 開発環境 | `Dockerfile` を使用 |
+| `docker/docker-compose.prod.yml` | 本番環境 | `Dockerfile.prod` を使用 |
 
 ## ディレクトリ構成
 
 ```
 .
-├── Dockerfile              # 開発環境用
-├── Dockerfile.prod         # 本番環境用
-├── docker-compose.yml      # 開発環境用
-├── docker-compose.prod.yml # 本番環境用
-├── index.js                # メイン処理
+├── docker/
+│   ├── Dockerfile              # 開発環境用
+│   ├── Dockerfile.prod         # 本番環境用
+│   ├── docker-compose.yml      # 開発環境用
+│   └── docker-compose.prod.yml # 本番環境用
+├── index.js                    # メイン処理
 ├── package.json
-├── input/                  # 解析対象ファイルを配置
-├── logs/                   # 解析結果ログ
-└── secrets/                # サービスアカウントキー（git管理外）
+├── input/                      # 解析対象ファイルを配置
+├── logs/                       # 解析結果ログ
+└── secrets/                    # サービスアカウントキー（git管理外）
 ```
 
 ## 技術スタック

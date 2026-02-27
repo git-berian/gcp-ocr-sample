@@ -103,23 +103,25 @@ Docker: `secrets/sa.json`（GCPサービスアカウントキー）と `input/` 
 
 ### テンプレート
 
+```
 <type>(<scope>): <summary>
 
-### What
-- 
+## What
+-
 
-### Why
-- 
+## Why
+-
 
-### Impact
+## Impact
 - Frontend:
 - Backend:
 - Infra:
 
-### Notes
-- 
+## Notes
+-
 
 Refs:
+```
 
 ### 追加ルール
 

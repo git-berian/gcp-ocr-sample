@@ -106,21 +106,21 @@ Docker: `secrets/sa.json`（GCPサービスアカウントキー）と `input/` 
 ```
 <type>(<scope>): <summary>
 
-## What
+## 変更内容
 -
 
-## Why
+## 変更理由
 -
 
-## Impact
-- Frontend:
-- Backend:
-- Infra:
+## 影響範囲
+- フロントエンド:
+- バックエンド:
+- インフラ:
 
-## Notes
+## 備考
 -
 
-Refs:
+関連:
 ```
 
 ### 追加ルール

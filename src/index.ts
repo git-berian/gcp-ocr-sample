@@ -2,13 +2,13 @@ import fs from "fs";
 import path from "path";
 import { DocumentProcessorServiceClient } from "@google-cloud/documentai";
 
-function mustEnv(name) {
+function mustEnv(name: string): string {
   const v = process.env[name];
   if (!v) throw new Error(`Missing env: ${name}`);
   return v;
 }
 
-function guessMimeType(filePath) {
+function guessMimeType(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === ".pdf") return "application/pdf";
   if (ext === ".png") return "image/png";
@@ -16,11 +16,11 @@ function guessMimeType(filePath) {
   return "image/jpeg";
 }
 
-async function main() {
+async function main(): Promise<void> {
   const projectId = mustEnv("GCP_PROJECT_ID");
-  const location = mustEnv("DOCAI_LOCATION"); // 例: us / eu / asia-northeast1（プロセッサと一致）
+  const location = mustEnv("DOCAI_LOCATION");
   const processorId = mustEnv("DOCAI_PROCESSOR_ID");
-  const fileName = mustEnv("FILE_NAME"); // input配下のファイル名（例 receipt.jpg）
+  const fileName = mustEnv("FILE_NAME");
 
   const filePath = `/input/${fileName}`;
   const mimeType = process.env.MIME_TYPE || guessMimeType(filePath);
@@ -44,8 +44,9 @@ async function main() {
   console.log(JSON.stringify(doc?.entities ?? [], null, 2));
 }
 
-main().catch((e) => {
-  console.error("ERROR:", e?.message || e);
-  if (e?.stack) console.error(e.stack);
+main().catch((e: unknown) => {
+  const err = e instanceof Error ? e : new Error(String(e));
+  console.error("ERROR:", err.message);
+  if (err.stack) console.error(err.stack);
   process.exit(1);
 });

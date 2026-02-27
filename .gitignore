@@ -2,6 +2,7 @@
 .env
 .idea/
 node_modules
+dist
 secrets
 input
 logs

@@ -92,3 +92,38 @@ Docker: `secrets/sa.json`（GCPサービスアカウントキー）と `input/` 
 
 - ES Modules（`import` を使用、`require` は不可）
 - Node.js 20（`node:20-slim`）
+
+---
+
+## コミットメッセージ規則
+
+ユーザーがコミットを依頼した場合（例：「コミットして」）、
+必ず以下のテンプレートを使用し、Conventional Commits に従って
+コミットメッセージを生成してください。
+
+### テンプレート
+
+<type>(<scope>): <summary>
+
+### What
+- 
+
+### Why
+- 
+
+### Impact
+- Frontend:
+- Backend:
+- Infra:
+
+### Notes
+- 
+
+Refs:
+
+### 追加ルール
+
+- Conventional Commits の形式を使用すること
+- 変更内容から type と scope を適切に推測すること
+- 日本語で記述すること
+- summary は50文字以内に収めること

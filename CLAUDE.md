@@ -66,19 +66,19 @@ Google Cloud Document AI を使ってレシート等から情報を抽出する 
 ## コマンド
 
 ```bash
-# 開発環境
-docker-compose -f docker/docker-compose.yml up --build
+# OCR 実行
+docker-compose -f docker/docker-compose.yml up --build       # 開発環境
+docker-compose -f docker/docker-compose.prod.yml up --build   # 本番環境
 
-# 本番環境
-docker-compose -f docker/docker-compose.prod.yml up --build
+# コンテナに入る
+docker-compose -f docker/docker-compose.yml run --rm ocr bash
 
-# リント
-npm run lint
-npm run lint:fix
-
-# フォーマット
-npm run format
-npm run format:check
+# コンテナ内でコマンド実行
+npm run build          # TypeScript ビルド
+npm run lint           # ESLint 実行
+npm run lint:fix       # ESLint 自動修正
+npm run format         # Prettier フォーマット
+npm run format:check   # Prettier チェック
 ```
 
 テスト・CI/CD は未構成。

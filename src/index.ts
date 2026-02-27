@@ -22,7 +22,7 @@ async function main(): Promise<void> {
   const processorId = mustEnv("DOCAI_PROCESSOR_ID");
   const fileName = mustEnv("FILE_NAME");
 
-  const filePath = `/input/${fileName}`;
+  const filePath = `/app/input/${fileName}`;
   const mimeType = process.env.MIME_TYPE || guessMimeType(filePath);
 
   const client = new DocumentProcessorServiceClient({

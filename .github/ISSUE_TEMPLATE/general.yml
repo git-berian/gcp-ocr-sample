@@ -1,0 +1,78 @@
+name: 🐛 Issue
+description: 不具合・改善・タスク用の共通テンプレート
+title: "[TYPE] "
+labels: []
+assignees: []
+
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: 種別
+      description: Issueの種類を選択してください
+      options:
+        - bug
+        - feature
+        - refactor
+        - chore
+        - docs
+        - test
+    validations:
+      required: true
+
+  - type: input
+    id: summary
+    attributes:
+      label: 概要
+      description: 何をするIssueか簡潔に書いてください
+      placeholder: 例）お気に入り一覧取得APIで500エラーが発生する
+    validations:
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景・目的
+      description: なぜ対応が必要か
+      placeholder: |
+        - 現在〇〇の問題がある
+        - ユーザー影響が出ている
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 対応内容
+      description: 実施するタスクをチェックリストで記載
+      placeholder: |
+        - [ ] APIの原因調査
+        - [ ] 修正実装
+        - [ ] テスト追加
+        - [ ] 動作確認
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 完了条件
+      description: このIssueが完了したと判断する条件
+      placeholder: |
+        - 〇〇が正常動作する
+        - テストが通る
+        - 回帰がない
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 影響範囲
+      description: Frontend / Backend / Infra など
+      placeholder: |
+        - Frontend:
+        - Backend:
+        - Infra:
+        - Database:
+        - External API:
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 備考
+      description: 参考情報・関連Issueなど

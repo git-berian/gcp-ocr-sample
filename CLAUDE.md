@@ -79,9 +79,11 @@ npm run lint           # ESLint 実行
 npm run lint:fix       # ESLint 自動修正
 npm run format         # Prettier フォーマット
 npm run format:check   # Prettier チェック
+npm run test           # テスト実行（1回）
+npm run test:watch     # テスト実行（ウォッチモード）
 ```
 
-テスト・CI/CD は未構成。
+CI: GitHub Actions（`.github/workflows/ci.yml`）で lint / format / build / test を自動実行。
 
 ## アーキテクチャ
 

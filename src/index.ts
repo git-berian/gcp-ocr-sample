@@ -1,48 +1,19 @@
-import fs from "fs";
-import path from "path";
 import { fileURLToPath } from "url";
-import { DocumentProcessorServiceClient } from "@google-cloud/documentai";
-
-export function mustEnv(name: string): string {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing env: ${name}`);
-  return v;
-}
-
-export function guessMimeType(filePath: string): string {
-  const ext = path.extname(filePath).toLowerCase();
-  if (ext === ".pdf") return "application/pdf";
-  if (ext === ".png") return "image/png";
-  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
-  return "image/jpeg";
-}
+import { loadAppConfig } from "./infrastructure/config.js";
+import { createFileReader } from "./infrastructure/file-reader.js";
+import { createDocumentProcessor } from "./infrastructure/document-ai-client.js";
+import { processDocument } from "./application/process-document.js";
+import { guessMimeType } from "./domain/mime-type.js";
 
 export async function main(): Promise<void> {
-  const projectId = mustEnv("GCP_PROJECT_ID");
-  const location = mustEnv("DOCAI_LOCATION");
-  const processorId = mustEnv("DOCAI_PROCESSOR_ID");
-  const fileName = mustEnv("FILE_NAME");
+  const config = loadAppConfig();
+  const fileReader = createFileReader();
+  const processor = createDocumentProcessor(config.location);
 
-  const filePath = `/app/input/${fileName}`;
-  const mimeType = process.env.MIME_TYPE || guessMimeType(filePath);
-
-  const client = new DocumentProcessorServiceClient({
-    apiEndpoint: `${location}-documentai.googleapis.com`,
-  });
-
-  const name = `projects/${projectId}/locations/${location}/processors/${processorId}`;
-
-  const content = fs.readFileSync(filePath).toString("base64");
-
-  const [result] = await client.processDocument({
-    name,
-    rawDocument: { content, mimeType },
-  });
-
-  const doc = result.document;
+  const entities = await processDocument(config, fileReader, processor, guessMimeType);
 
   console.log("=== entities ===");
-  console.log(JSON.stringify(doc?.entities ?? [], null, 2));
+  console.log(JSON.stringify(entities, null, 2));
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

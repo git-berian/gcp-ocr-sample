@@ -28,13 +28,13 @@ secrets/sa.json
 cp .env.example .env
 ```
 
-| 変数名 | 説明 |
-|--|--|
-| `GCP_PROJECT_ID` | GCP プロジェクト ID |
-| `DOCAI_LOCATION` | プロセッサのロケーション（`us` / `eu` 等） |
-| `DOCAI_PROCESSOR_ID` | Document AI プロセッサ ID |
-| `FILE_NAME` | `input/` 配下の解析対象ファイル名 |
-| `MIME_TYPE` | （任意）MIME タイプを明示する場合に指定。未指定時は拡張子から自動判定 |
+| 変数名               | 説明                                                                  |
+| -------------------- | --------------------------------------------------------------------- |
+| `GCP_PROJECT_ID`     | GCP プロジェクト ID                                                   |
+| `DOCAI_LOCATION`     | プロセッサのロケーション（`us` / `eu` 等）                            |
+| `DOCAI_PROCESSOR_ID` | Document AI プロセッサ ID                                             |
+| `FILE_NAME`          | `input/` 配下の解析対象ファイル名                                     |
+| `MIME_TYPE`          | （任意）MIME タイプを明示する場合に指定。未指定時は拡張子から自動判定 |
 
 ### 3. 解析対象ファイルの配置
 
@@ -63,12 +63,16 @@ docker-compose -f docker/docker-compose.yml run --rm ocr bash
 コンテナ内で以下のコマンドが実行できます。
 
 ```bash
-npm run build          # TypeScript ビルド
-npm run lint           # ESLint 実行
-npm run lint:fix       # ESLint 自動修正
-npm run format         # Prettier フォーマット
-npm run format:check   # Prettier チェック
-node dist/index.js     # OCR 実行
+npm run build            # TypeScript ビルド
+npm run lint             # ESLint 実行
+npm run lint:fix         # ESLint 自動修正
+npm run format           # Prettier フォーマット
+npm run format:check     # Prettier チェック
+npm run test             # テスト実行（全プロジェクト）
+npm run test:unit        # ユニットテストのみ
+npm run test:integration # 統合テストのみ
+npm run test:watch       # テスト実行（ウォッチモード）
+node dist/index.js       # OCR 実行
 ```
 
 ### OCR を直接実行する
@@ -85,14 +89,26 @@ docker-compose -f docker/docker-compose.prod.yml up --build
 
 別のファイルを解析する場合は `.env` の `FILE_NAME` を変更して再実行してください。
 
+## アーキテクチャ
+
+DDD（ドメイン駆動設計）に基づく 3 層構成を採用しています。
+
+| レイヤー               | ディレクトリ          | 責務                                                         |
+| ---------------------- | --------------------- | ------------------------------------------------------------ |
+| **ドメイン層**         | `src/domain/`         | 純粋なビジネスロジック（外部依存なし）                       |
+| **アプリケーション層** | `src/application/`    | ユースケースの実行。インターフェースを通じてインフラ層に依存 |
+| **インフラ層**         | `src/infrastructure/` | 外部サービス連携（GCP Document AI・ファイル I/O・環境変数）  |
+
+エントリーポイント（`src/index.ts`）は依存注入のワイヤリングのみを行い、具体的なロジックは持ちません。
+
 ## Docker 構成
 
-| ファイル | 用途 | 説明 |
-|--|--|--|
-| `docker/Dockerfile` | 開発環境 | 全依存インストール + TypeScript ビルド |
-| `docker/Dockerfile.prod` | 本番環境 | マルチステージビルドで本番依存のみ含む |
-| `docker/docker-compose.yml` | 開発環境 | `Dockerfile` を使用 |
-| `docker/docker-compose.prod.yml` | 本番環境 | `Dockerfile.prod` を使用 |
+| ファイル                         | 用途     | 説明                                   |
+| -------------------------------- | -------- | -------------------------------------- |
+| `docker/Dockerfile`              | 開発環境 | 全依存インストール + TypeScript ビルド |
+| `docker/Dockerfile.prod`         | 本番環境 | マルチステージビルドで本番依存のみ含む |
+| `docker/docker-compose.yml`      | 開発環境 | `Dockerfile` を使用                    |
+| `docker/docker-compose.prod.yml` | 本番環境 | `Dockerfile.prod` を使用               |
 
 ## ディレクトリ構成
 
@@ -104,8 +120,21 @@ docker-compose -f docker/docker-compose.prod.yml up --build
 │   ├── docker-compose.yml      # 開発環境用
 │   └── docker-compose.prod.yml # 本番環境用
 ├── src/
-│   └── index.ts                # メイン処理
-├── tsconfig.json
+│   ├── domain/                 # ドメイン層
+│   │   └── mime-type.ts
+│   ├── application/            # アプリケーション層
+│   │   └── process-document.ts
+│   ├── infrastructure/         # インフラ層
+│   │   ├── config.ts
+│   │   ├── file-reader.ts
+│   │   └── document-ai-client.ts
+│   └── index.ts                # エントリーポイント（依存注入）
+├── tests/
+│   ├── helpers/                # 共有テストユーティリティ
+│   └── integration/            # 統合テスト
+├── tsconfig.json               # ビルド用
+├── tsconfig.test.json          # テスト用（IDE型チェック）
+├── vitest.config.ts
 ├── package.json
 ├── input/                      # 解析対象ファイルを配置
 ├── logs/                       # 解析結果ログ
@@ -114,10 +143,11 @@ docker-compose -f docker/docker-compose.prod.yml up --build
 
 ## 技術スタック
 
-| Tool | Version |
-|--|--|
-| Node.js | 20 (Docker イメージ: node:20-slim) |
-| TypeScript | ^5.9 |
-| ESLint | ^10.0 |
-| Prettier | ^3.8 |
-| @google-cloud/documentai | ^8.0.0 |
+| Tool                     | Version                            |
+| ------------------------ | ---------------------------------- |
+| Node.js                  | 20 (Docker イメージ: node:20-slim) |
+| TypeScript               | ^5.9                               |
+| Vitest                   | ^4.0                               |
+| ESLint                   | ^10.0                              |
+| Prettier                 | ^3.8                               |
+| @google-cloud/documentai | ^8.0.0                             |

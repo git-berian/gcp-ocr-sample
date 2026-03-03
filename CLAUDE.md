@@ -79,85 +79,17 @@
 
 ---
 
-## 開発手法
+## 開発手法・コマンド・規約
 
-### TDD（テスト駆動開発）
-
-実装は必ず以下のサイクルで進める：
-
-1. **Red**: 先にテストを書き、失敗することを確認する
-2. **Green**: テストが通る最小限の実装を行う
-3. **Refactor**: コードを整理する（テストが通ることを維持）
-
-### DDD（ドメイン駆動設計）
-
-- ドメインロジックをインフラ層（外部API・ファイルI/O・環境変数等）から分離する
-- ドメイン層は純粋な関数・クラスで構成し、外部依存を持たない
-- インフラ層の依存はインターフェース（型）を通じて注入する
-
----
-
-## コマンド
-
-```bash
-# OCR 実行
-docker-compose -f docker/docker-compose.yml up --build       # 開発環境
-docker-compose -f docker/docker-compose.prod.yml up --build   # 本番環境
-
-# コンテナに入る
-docker-compose -f docker/docker-compose.yml run --rm ocr bash
-
-# コンテナ内でコマンド実行
-npm run build          # TypeScript ビルド
-npm run lint           # ESLint 実行
-npm run lint:fix       # ESLint 自動修正
-npm run format         # Prettier フォーマット
-npm run format:check   # Prettier チェック
-npm run test           # テスト実行（全プロジェクト）
-npm run test:unit      # ユニットテストのみ
-npm run test:integration # 統合テストのみ
-npm run test:watch     # テスト実行（ウォッチモード）
-```
-
-CI: GitHub Actions（`.github/workflows/ci.yml`）で lint / format / build / test を自動実行。
-
-## 規約
-
-- ES Modules（`import` を使用、`require` は不可）
-- Node.js 20（`node:20-slim`）
-- `.env` は git 管理外。共有設定は `.env.example` で管理する
+※ README.md「開発手法」「使い方」「規約」セクション参照
 
 ---
 
 ## コミットメッセージ規則
 
 ユーザーがコミットを依頼した場合（例：「コミットして」）、
-必ず以下のテンプレートを使用し、Conventional Commits に従って
-コミットメッセージを生成してください。
-
-### テンプレート
-
-```
-<type>(<scope>): <summary>
-
-## 変更内容
--
-
-## 変更理由
--
-
-## 影響範囲
-- フロントエンド:
-- バックエンド:
-- インフラ:
-
-## 備考
--
-
-関連:
-```
-
-### 追加ルール
+`.github/commit_template.md` のテンプレートを使用し、Conventional Commits に従って
+コミットメッセージを生成すること。
 
 - Conventional Commits の形式を使用すること
 - 変更内容から type と scope を適切に推測すること
@@ -170,18 +102,4 @@ CI: GitHub Actions（`.github/workflows/ci.yml`）で lint / format / build / te
 
 ## ブランチ命名規則
 
-`<type>/#<issue番号>-<説明>` の形式で作成する。
-
-### type 一覧
-
-- `feature` — 新機能
-- `fix` — バグ修正
-- `refactor` — リファクタリング
-- `docs` — ドキュメント
-- `chore` — 設定・依存関係など
-
-### 例
-
-- `feature/#3-typescript-migration`
-- `fix/#12-login-error`
-- `docs/#5-update-readme`
+※ README.md「ブランチ命名規則」セクション参照

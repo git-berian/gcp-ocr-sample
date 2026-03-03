@@ -1,6 +1,13 @@
-## セッション開始手順
+## セッション開始（最優先・必須）
 
-1. `tasks/lessons.md` をレビューする
+最初の返答の前に必ず `tasks/lessons.md` を開いて読み、
+以下の形式で出力してから作業を開始すること。
+
+### Lessons Summary (max 5 bullets)
+- ...
+
+### Apply to this session
+- ...
 
 ---
 

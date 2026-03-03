@@ -4,11 +4,13 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix",
-    "format": "prettier --write src/",
-    "format:check": "prettier --check src/",
+    "lint": "eslint --no-error-on-unmatched-pattern src/ tests/",
+    "lint:fix": "eslint --no-error-on-unmatched-pattern src/ tests/ --fix",
+    "format": "prettier --write src/ tests/",
+    "format:check": "prettier --check src/ tests/",
     "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
     "test:watch": "vitest"
   },
   "dependencies": {

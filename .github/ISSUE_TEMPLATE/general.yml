@@ -1,6 +1,6 @@
-name: 🐛 Issue
+name: Issue
 description: 不具合・改善・タスク用の共通テンプレート
-title: "[TYPE] "
+title: ""
 labels: []
 assignees: []
 
@@ -25,7 +25,7 @@ body:
     attributes:
       label: 概要
       description: 何をするIssueか簡潔に書いてください
-      placeholder: 例）お気に入り一覧取得APIで500エラーが発生する
+      placeholder: 例）OCR実行時にタイムアウトエラーが発生する
     validations:
       required: true
 
@@ -44,7 +44,7 @@ body:
       label: 対応内容
       description: 実施するタスクをチェックリストで記載
       placeholder: |
-        - [ ] APIの原因調査
+        - [ ] 原因調査
         - [ ] 修正実装
         - [ ] テスト追加
         - [ ] 動作確認
@@ -58,18 +58,6 @@ body:
         - 〇〇が正常動作する
         - テストが通る
         - 回帰がない
-
-  - type: textarea
-    id: impact
-    attributes:
-      label: 影響範囲
-      description: Frontend / Backend / Infra など
-      placeholder: |
-        - Frontend:
-        - Backend:
-        - Infra:
-        - Database:
-        - External API:
 
   - type: textarea
     id: notes

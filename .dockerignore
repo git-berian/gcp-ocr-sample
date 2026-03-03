@@ -1,0 +1,14 @@
+.git
+.DS_Store
+.env
+.idea/
+.claude/
+.github/
+node_modules
+dist
+tasks
+secrets
+input
+logs
+tests
+*.md

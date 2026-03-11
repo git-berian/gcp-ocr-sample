@@ -1,7 +1,9 @@
 {
   "name": "docai-expense-parser",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "npm run build --workspace=@docai/api",
     "lint": "npm run lint --workspace=@docai/api",
@@ -12,5 +14,8 @@
     "test:unit": "npm run test:unit --workspace=@docai/api",
     "test:integration": "npm run test:integration --workspace=@docai/api",
     "test:watch": "npm run test:watch --workspace=@docai/api"
+  },
+  "volta": {
+    "node": "20.20.1"
   }
 }

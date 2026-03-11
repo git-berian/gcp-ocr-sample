@@ -1,0 +1,29 @@
+language: ja
+
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false
+
+  path_instructions:
+    - path: "packages/api/src/domain/**"
+      instructions: |
+        ドメイン層です。外部依存（ファイルI/O、API呼び出し、環境変数）を持たないこと。
+        純粋な関数・クラスで構成されていることを確認してください。
+
+    - path: "packages/api/src/application/**"
+      instructions: |
+        アプリケーション層です。ドメイン層のインターフェースを通じてロジックを組み立てます。
+        インフラ層を直接importしていないことを確認してください。
+
+    - path: "packages/api/src/infrastructure/**"
+      instructions: |
+        インフラ層です。外部API・ファイルI/O等の具体的な実装を配置します。
+        ドメイン層で定義されたインターフェースを実装していることを確認してください。
+
+  tools:
+    eslint:
+      enabled: true
+
+chat:
+  auto_reply: true

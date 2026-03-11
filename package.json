@@ -1,29 +1,16 @@
 {
-  "name": "docai-expense-parser-docker",
+  "name": "docai-expense-parser",
   "private": true,
-  "type": "module",
+  "workspaces": ["packages/*"],
   "scripts": {
-    "build": "tsc",
-    "lint": "eslint --no-error-on-unmatched-pattern src/ tests/",
-    "lint:fix": "eslint --no-error-on-unmatched-pattern src/ tests/ --fix",
-    "format": "prettier --write src/ tests/",
-    "format:check": "prettier --check src/ tests/",
-    "test": "vitest run",
-    "test:unit": "vitest run --project unit",
-    "test:integration": "vitest run --project integration",
-    "test:watch": "vitest"
-  },
-  "dependencies": {
-    "@google-cloud/documentai": "^8.0.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/node": "^25.3.2",
-    "eslint": "^10.0.2",
-    "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.8.1",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.1",
-    "vitest": "^4.0.18"
+    "build": "npm run build --workspace=@docai/api",
+    "lint": "npm run lint --workspace=@docai/api",
+    "lint:fix": "npm run lint:fix --workspace=@docai/api",
+    "format": "npm run format --workspace=@docai/api",
+    "format:check": "npm run format:check --workspace=@docai/api",
+    "test": "npm run test --workspace=@docai/api",
+    "test:unit": "npm run test:unit --workspace=@docai/api",
+    "test:integration": "npm run test:integration --workspace=@docai/api",
+    "test:watch": "npm run test:watch --workspace=@docai/api"
   }
 }

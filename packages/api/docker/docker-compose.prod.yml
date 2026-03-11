@@ -3,9 +3,9 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.prod
-    env_file: ../.env
+    env_file: ../../../.env
     environment:
       GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/sa.json
     volumes:
-      - ../secrets:/app/secrets:ro
-      - ../input:/app/input:ro
+      - ../../../secrets:/app/secrets:ro
+      - ../../../input:/app/input:ro

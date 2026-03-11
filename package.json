@@ -1,7 +1,9 @@
 {
   "name": "docai-expense-parser",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "npm run build --workspace=@docai/api",
     "lint": "npm run lint --workspace=@docai/api",
@@ -11,6 +13,24 @@
     "test": "npm run test --workspace=@docai/api",
     "test:unit": "npm run test:unit --workspace=@docai/api",
     "test:integration": "npm run test:integration --workspace=@docai/api",
-    "test:watch": "npm run test:watch --workspace=@docai/api"
+    "test:watch": "npm run test:watch --workspace=@docai/api",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.3"
+  },
+  "lint-staged": {
+    "packages/api/src/**/*.ts": [
+      "eslint --no-error-on-unmatched-pattern --fix",
+      "prettier --write"
+    ],
+    "packages/api/tests/**/*.ts": [
+      "eslint --no-error-on-unmatched-pattern --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }

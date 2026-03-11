@@ -1,6 +1,7 @@
 .DS_Store
 .env
 .idea/
+.claude/
 node_modules
 dist
 tasks

@@ -14,7 +14,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@google-cloud/documentai": "^8.0.0"
+    "@google-cloud/documentai": "^9.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

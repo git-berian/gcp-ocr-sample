@@ -4,9 +4,11 @@
 以下の形式で出力してから作業を開始すること。
 
 ### Lessons Summary (max 5 bullets)
+
 - ...
 
 ### Apply to this session
+
 - ...
 
 ---
@@ -74,3 +76,4 @@
 - コミット作成 → `.claude/skills/commit.md`
 - タスク開始フロー → `.claude/skills/task-start.md`
 - PR 作成 → `.claude/skills/create-pr.md`
+- AI駆動開発ガイドライン → `docs/ai-development-guidelines.md`

@@ -15,7 +15,14 @@
     "test:integration": "npm run test:integration --workspace=@docai/api",
     "test:coverage": "npm run test:coverage --workspace=@docai/api",
     "test:watch": "npm run test:watch --workspace=@docai/api",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docker:setup": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr npm ci --ignore-scripts",
+    "docker:build": "docker-compose -f packages/api/docker/docker-compose.yml build",
+    "docker:lint": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr npm run lint",
+    "docker:format:check": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr npm run format:check",
+    "docker:test": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr npm run test",
+    "docker:test:coverage": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr npm run test:coverage",
+    "docker:sh": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr bash"
   },
   "devDependencies": {
     "husky": "^9.1.7",

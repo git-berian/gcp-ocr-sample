@@ -1,0 +1,17 @@
+.DS_Store
+.git
+.github
+.claude
+.husky
+node_modules
+dist
+docs
+tasks
+secrets
+input
+logs
+coverage
+*.md
+!package.json
+.env
+.env.*

@@ -1,8 +1,8 @@
 services:
   ocr:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile.prod
+      context: ../../..
+      dockerfile: packages/api/docker/Dockerfile.prod
     env_file: ../../../.env
     environment:
       GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/sa.json

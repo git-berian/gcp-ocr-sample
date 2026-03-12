@@ -54,6 +54,10 @@ describe("loadAppConfig", () => {
   });
 
   it("必須環境変数が欠けている場合、例外を投げる", () => {
+    vi.stubEnv("GCP_PROJECT_ID", "");
+    vi.stubEnv("DOCAI_LOCATION", "");
+    vi.stubEnv("DOCAI_PROCESSOR_ID", "");
+    vi.stubEnv("FILE_NAME", "");
     expect(() => loadAppConfig()).toThrow("Missing env:");
   });
 });

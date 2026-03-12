@@ -62,6 +62,14 @@
 
 ---
 
+## 開発コマンドの実行
+
+- lint / test / build 等の開発コマンドは **Docker 経由で実行する**（`npm run docker:*`）
+- ローカルの Node.js バージョンに依存しないようにするため
+- 主なコマンド: `docker:lint`, `docker:test`, `docker:test:coverage`, `docker:sh`
+
+---
+
 ## コア原則
 
 - **シンプル第一**：すべての変更をできる限りシンプルにする。影響するコードを最小限にする。

@@ -6,6 +6,14 @@ reviews:
     drafts: false
 
   path_instructions:
+    - path: "packages/api/src/**"
+      instructions: |
+        全レイヤー共通のレビュー観点:
+        - セキュリティ: ユーザー入力のバリデーション漏れ、シークレットや API キーのハードコードがないか
+        - エラーハンドリング: 外部 API 呼び出し・ファイル I/O に適切なエラー処理があるか
+        - デッドコード: 未使用の変数・関数・import が残っていないか
+        - テスト: 変更されたコードに対応するテストが追加・更新されているか
+
     - path: "packages/api/src/domain/**"
       instructions: |
         ドメイン層です。外部依存（ファイルI/O、API呼び出し、環境変数）を持たないこと。

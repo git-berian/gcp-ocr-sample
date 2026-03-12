@@ -25,6 +25,8 @@
     "docker:sh": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr bash"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.4.3",
+    "@commitlint/config-conventional": "^20.4.3",
     "husky": "^9.1.7",
     "lint-staged": "^16.3.3"
   },

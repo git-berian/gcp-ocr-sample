@@ -61,19 +61,31 @@ npm run docker:setup
 
 ### 開発コマンド
 
+パッケージごとに `docker:cli:*` / `docker:functions:*` で実行します。
+
 ```bash
-npm run docker:lint           # ESLint 実行
-npm run docker:format:check   # Prettier チェック
-npm run docker:test           # テスト実行
-npm run docker:test:coverage  # テスト + カバレッジ計測
-npm run docker:sh             # コンテナに入って操作
-npm run docker:build          # Docker イメージのビルド
+# CLI パッケージ
+npm run docker:cli:lint           # ESLint 実行
+npm run docker:cli:format:check   # Prettier チェック
+npm run docker:cli:test           # テスト実行
+npm run docker:cli:test:coverage  # テスト + カバレッジ計測
+npm run docker:cli:sh             # コンテナに入って操作
+npm run docker:cli:build          # Docker イメージのビルド
+
+# Functions パッケージ
+npm run docker:functions:lint           # ESLint 実行
+npm run docker:functions:format:check   # Prettier チェック
+npm run docker:functions:test           # テスト実行
+npm run docker:functions:test:coverage  # テスト + カバレッジ計測
+npm run docker:functions:sh             # コンテナに入って操作
+npm run docker:functions:build          # Docker イメージのビルド
 ```
 
 ### コンテナ内での操作
 
 ```bash
-npm run docker:sh
+npm run docker:cli:sh        # CLI コンテナ
+npm run docker:functions:sh  # Functions コンテナ
 ```
 
 コンテナ内では以下のコマンドも実行できます。

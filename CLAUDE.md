@@ -64,9 +64,10 @@
 
 ## 開発コマンドの実行
 
-- lint / test / build 等の開発コマンドは **Docker 経由で実行する**（`npm run docker:*`）
+- lint / test / build 等の開発コマンドは **Docker 経由で実行する**（`npm run docker:<pkg>:*`）
 - ローカルの Node.js バージョンに依存しないようにするため
-- 主なコマンド: `docker:lint`, `docker:test`, `docker:test:coverage`, `docker:sh`
+- CLI: `docker:cli:lint`, `docker:cli:test`, `docker:cli:test:coverage`, `docker:cli:sh`
+- Functions: `docker:functions:lint`, `docker:functions:test`, `docker:functions:test:coverage`, `docker:functions:sh`
 
 ---
 

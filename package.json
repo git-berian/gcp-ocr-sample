@@ -5,16 +5,6 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@docai/cli",
-    "lint": "npm run lint --workspace=@docai/cli",
-    "lint:fix": "npm run lint:fix --workspace=@docai/cli",
-    "format": "npm run format --workspace=@docai/cli",
-    "format:check": "npm run format:check --workspace=@docai/cli",
-    "test": "npm run test --workspace=@docai/cli",
-    "test:unit": "npm run test:unit --workspace=@docai/cli",
-    "test:integration": "npm run test:integration --workspace=@docai/cli",
-    "test:coverage": "npm run test:coverage --workspace=@docai/cli",
-    "test:watch": "npm run test:watch --workspace=@docai/cli",
     "prepare": "husky",
     "docker:cli:setup": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm ci --ignore-scripts",
     "docker:cli:build": "docker-compose -f packages/cli/docker/docker-compose.yml build",

@@ -20,6 +20,7 @@
     "docker:functions:format:check": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run format:check --workspace=@docai/functions",
     "docker:functions:test": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test --workspace=@docai/functions",
     "docker:functions:test:coverage": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test:coverage --workspace=@docai/functions",
+    "docker:functions:start": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm --service-ports functions bash -c 'npm run build --workspace=@docai/functions && npm start --workspace=@docai/functions'",
     "docker:functions:sh": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm --service-ports functions bash",
     "docker:web:setup": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm ci --ignore-scripts",
     "docker:web:build": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run build --workspace=@docai/web",

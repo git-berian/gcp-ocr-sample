@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        workspace: ["@docai/cli", "@docai/functions"]
+        workspace: ["@docai/cli", "@docai/functions", "@docai/web"]
 
     steps:
       - uses: actions/checkout@v6

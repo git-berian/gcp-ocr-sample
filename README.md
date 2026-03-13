@@ -111,6 +111,8 @@ npm run test:watch -w @docai/functions       # テスト実行（ウォッチモ
 
 ### CLI で OCR を実行する
 
+本番用の docker-compose を使用します（TypeScript ビルド → `node dist/index.js` 実行）。
+
 ```bash
 docker-compose -f packages/cli/docker/docker-compose.prod.yml up --build
 ```

@@ -5,24 +5,22 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@docai/api",
-    "lint": "npm run lint --workspace=@docai/api",
-    "lint:fix": "npm run lint:fix --workspace=@docai/api",
-    "format": "npm run format --workspace=@docai/api",
-    "format:check": "npm run format:check --workspace=@docai/api",
-    "test": "npm run test --workspace=@docai/api",
-    "test:unit": "npm run test:unit --workspace=@docai/api",
-    "test:integration": "npm run test:integration --workspace=@docai/api",
-    "test:coverage": "npm run test:coverage --workspace=@docai/api",
-    "test:watch": "npm run test:watch --workspace=@docai/api",
     "prepare": "husky",
-    "docker:setup": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr npm ci --ignore-scripts",
-    "docker:build": "docker-compose -f packages/api/docker/docker-compose.yml build",
-    "docker:lint": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr npm run lint",
-    "docker:format:check": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr npm run format:check",
-    "docker:test": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr npm run test",
-    "docker:test:coverage": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr npm run test:coverage",
-    "docker:sh": "docker-compose -f packages/api/docker/docker-compose.yml run --rm ocr bash"
+    "docker:setup": "npm run docker:cli:setup && npm run docker:functions:setup",
+    "docker:cli:setup": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm ci --ignore-scripts",
+    "docker:cli:build": "docker-compose -f packages/cli/docker/docker-compose.yml build",
+    "docker:cli:lint": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm run lint --workspace=@docai/cli",
+    "docker:cli:format:check": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm run format:check --workspace=@docai/cli",
+    "docker:cli:test": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm run test --workspace=@docai/cli",
+    "docker:cli:test:coverage": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm run test:coverage --workspace=@docai/cli",
+    "docker:cli:sh": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr bash",
+    "docker:functions:setup": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm ci --ignore-scripts",
+    "docker:functions:build": "docker-compose -f packages/functions/docker/docker-compose.yml build",
+    "docker:functions:lint": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run lint --workspace=@docai/functions",
+    "docker:functions:format:check": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run format:check --workspace=@docai/functions",
+    "docker:functions:test": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test --workspace=@docai/functions",
+    "docker:functions:test:coverage": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test:coverage --workspace=@docai/functions",
+    "docker:functions:sh": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm --service-ports functions bash"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.3",
@@ -31,11 +29,15 @@
     "lint-staged": "^16.3.3"
   },
   "lint-staged": {
-    "packages/api/src/**/*.ts": [
+    "packages/cli/src/**/*.ts": [
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"
     ],
-    "packages/api/tests/**/*.ts": [
+    "packages/cli/tests/**/*.ts": [
+      "eslint --no-error-on-unmatched-pattern --fix",
+      "prettier --write"
+    ],
+    "packages/functions/src/**/*.ts": [
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"
     ],

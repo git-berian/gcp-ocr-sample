@@ -1,0 +1,19 @@
+name: docai-functions
+
+services:
+  functions:
+    build:
+      context: ../../..
+      dockerfile: packages/functions/docker/Dockerfile
+    env_file: ../../../.env
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/sa.json
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../../..:/app
+      - node_modules:/app/node_modules
+    working_dir: /app
+
+volumes:
+  node_modules:

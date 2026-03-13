@@ -1,0 +1,26 @@
+FROM node:20-slim AS build
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY packages/cli/package.json ./packages/cli/
+RUN npm ci --workspace=@docai/cli --ignore-scripts
+
+COPY tsconfig.json ./
+COPY packages/cli/tsconfig.json ./packages/cli/
+COPY packages/cli/src/ ./packages/cli/src/
+RUN npm run build --workspace=@docai/cli
+
+FROM node:20-slim
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY packages/cli/package.json ./packages/cli/
+RUN npm ci --workspace=@docai/cli --omit=dev --ignore-scripts
+
+COPY --from=build /app/packages/cli/dist ./packages/cli/dist/
+
+WORKDIR /app/packages/cli
+
+CMD ["node", "dist/index.js"]

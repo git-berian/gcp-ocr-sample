@@ -134,8 +134,10 @@ docker-compose -f packages/cli/docker/docker-compose.prod.yml up --build
 
 ### Functions をローカルで実行する
 
+`--service-ports` でホストにポート 8080 を公開してコンテナに入ります。
+
 ```bash
-npm run docker:functions:sh
+docker-compose -f packages/functions/docker/docker-compose.yml run --rm --service-ports functions bash
 # コンテナ内で
 npm run build -w @docai/functions
 npm run start -w @docai/functions
@@ -146,7 +148,7 @@ npm run start -w @docai/functions
 ```bash
 curl -X POST http://localhost:8080 \
   -H "Content-Type: application/json" \
-  -d '{"content": "<base64エンコードされたファイル>", "mimeType": "application/pdf"}'
+  -d "{\"content\": \"$(base64 -i input/receipt.jpg | tr -d '\n')\", \"mimeType\": \"image/jpeg\"}"
 ```
 
 ## アーキテクチャ

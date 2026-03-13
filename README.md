@@ -144,9 +144,14 @@ npm run start -w @docai/functions
 ローカルサーバーが起動したら、別ターミナルから curl でリクエストできます。
 
 ```bash
-curl -X POST http://localhost:8080 \
+# リクエスト用 JSON ファイルを作成
+CONTENT=$(base64 -i input/receipt.jpg | tr -d '\n')
+printf '{"content":"%s","mimeType":"image/jpeg"}' "$CONTENT" > /tmp/request.json
+
+# curl でリクエスト（-d @ でファイルから読み込み）
+curl -s -X POST http://localhost:8080 \
   -H "Content-Type: application/json" \
-  -d "{\"content\": \"$(base64 -i input/receipt.jpg | tr -d '\n')\", \"mimeType\": \"image/jpeg\"}"
+  -d @/tmp/request.json
 ```
 
 ## アーキテクチャ

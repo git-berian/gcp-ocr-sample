@@ -52,7 +52,8 @@ cp .env.example .env
 ### 4. Docker 環境の初期セットアップ
 
 ```bash
-npm run docker:setup
+npm run docker:cli:setup
+npm run docker:functions:setup
 ```
 
 ## 使い方

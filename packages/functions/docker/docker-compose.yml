@@ -1,3 +1,5 @@
+name: docai-functions
+
 services:
   functions:
     build:

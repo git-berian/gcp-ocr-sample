@@ -80,6 +80,7 @@ npm run docker:functions:lint           # ESLint 実行
 npm run docker:functions:format:check   # Prettier チェック
 npm run docker:functions:test           # テスト実行
 npm run docker:functions:test:coverage  # テスト + カバレッジ計測
+npm run docker:functions:start          # ビルド＋ローカルサーバー起動
 npm run docker:functions:sh             # コンテナに入って操作
 npm run docker:functions:build          # Docker イメージのビルド
 
@@ -115,6 +116,7 @@ npm run test:watch -w @docai/cli       # テスト実行（ウォッチモード
 
 # Functions パッケージ
 npm run build -w @docai/functions            # TypeScript ビルド
+npm run start -w @docai/functions            # ローカルサーバー起動（要ビルド済み）
 npm run lint:fix -w @docai/functions         # ESLint 自動修正
 npm run format -w @docai/functions           # Prettier フォーマット
 npm run test:unit -w @docai/functions        # ユニットテストのみ
@@ -155,10 +157,7 @@ docker-compose -f packages/cli/docker/docker-compose.prod.yml up --build
 ### Functions をローカルで実行する
 
 ```bash
-npm run docker:functions:sh
-# コンテナ内で
-npm run build -w @docai/functions
-npm run start -w @docai/functions
+npm run docker:functions:start
 ```
 
 ローカルサーバーが起動したら、別ターミナルから curl でリクエストできます。
@@ -173,6 +172,20 @@ curl -s -X POST http://localhost:8080 \
   -H "Content-Type: application/json" \
   -d @/tmp/request.json
 ```
+
+### Web フロントエンドをローカルで実行する
+
+Functions を起動した状態で、別ターミナルから Web 開発サーバーを起動します。
+
+```bash
+# ターミナル1: Functions 起動
+npm run docker:functions:start
+
+# ターミナル2: Web 開発サーバー起動
+npm run docker:web:dev
+```
+
+ブラウザで http://localhost:5173 にアクセスし、ファイルをアップロードすると OCR 結果が表示されます。
 
 ## アーキテクチャ
 

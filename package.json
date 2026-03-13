@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "prepare": "husky",
-    "docker:setup": "npm run docker:cli:setup && npm run docker:functions:setup",
+    "docker:setup": "npm run docker:cli:setup && npm run docker:functions:setup && npm run docker:web:setup",
     "docker:cli:setup": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm ci --ignore-scripts",
     "docker:cli:build": "docker-compose -f packages/cli/docker/docker-compose.yml build",
     "docker:cli:lint": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm run lint --workspace=@docai/cli",
@@ -20,7 +20,15 @@
     "docker:functions:format:check": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run format:check --workspace=@docai/functions",
     "docker:functions:test": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test --workspace=@docai/functions",
     "docker:functions:test:coverage": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test:coverage --workspace=@docai/functions",
-    "docker:functions:sh": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm --service-ports functions bash"
+    "docker:functions:sh": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm --service-ports functions bash",
+    "docker:web:setup": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm ci --ignore-scripts",
+    "docker:web:build": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run build --workspace=@docai/web",
+    "docker:web:dev": "docker-compose -f packages/web/docker/docker-compose.yml run --rm --service-ports web npm run dev --workspace=@docai/web -- --host",
+    "docker:web:lint": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run lint --workspace=@docai/web",
+    "docker:web:format:check": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run format:check --workspace=@docai/web",
+    "docker:web:test": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run test --workspace=@docai/web",
+    "docker:web:test:coverage": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run test:coverage --workspace=@docai/web",
+    "docker:web:sh": "docker-compose -f packages/web/docker/docker-compose.yml run --rm --service-ports web bash"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.3",
@@ -38,6 +46,10 @@
       "prettier --write"
     ],
     "packages/functions/src/**/*.ts": [
+      "eslint --no-error-on-unmatched-pattern --fix",
+      "prettier --write"
+    ],
+    "packages/web/src/**/*.{ts,tsx}": [
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"
     ],

@@ -21,6 +21,7 @@ RUN npm ci --workspace=@docai/cli --omit=dev --ignore-scripts
 
 COPY --from=build /app/packages/cli/dist ./packages/cli/dist/
 
+USER node
 WORKDIR /app/packages/cli
 
 CMD ["node", "dist/index.js"]

@@ -84,6 +84,21 @@ describe("useParseDocument", () => {
     expect(parseDocumentApi.parseDocument).not.toHaveBeenCalled();
   });
 
+  it("handles non-Error thrown values", async () => {
+    vi.mocked(fileUtils.fileToBase64).mockResolvedValue("base64data");
+    vi.mocked(parseDocumentApi.parseDocument).mockRejectedValue("string error");
+
+    const { result } = renderHook(() => useParseDocument());
+    const file = new File(["content"], "test.png", { type: "image/png" });
+
+    await act(async () => {
+      await result.current.submit(file);
+    });
+
+    expect(result.current.error).toBe("An unexpected error occurred");
+    expect(result.current.isLoading).toBe(false);
+  });
+
   it("sets isLoading during submission", async () => {
     const loadingStates: boolean[] = [];
     let resolveApi: (value: unknown) => void;

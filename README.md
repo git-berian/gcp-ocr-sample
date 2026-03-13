@@ -96,6 +96,7 @@ npm run lint:fix         # ESLint 自動修正
 npm run format           # Prettier フォーマット
 npm run test:unit        # ユニットテストのみ
 npm run test:integration # 統合テストのみ
+npm run test:coverage    # テスト + カバレッジ計測
 npm run test:watch       # テスト実行（ウォッチモード）
 ```
 

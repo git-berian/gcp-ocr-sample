@@ -20,7 +20,7 @@
     "docker:functions:format:check": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run format:check --workspace=@docai/functions",
     "docker:functions:test": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test --workspace=@docai/functions",
     "docker:functions:test:coverage": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test:coverage --workspace=@docai/functions",
-    "docker:functions:sh": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions bash"
+    "docker:functions:sh": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm --service-ports functions bash"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.3",

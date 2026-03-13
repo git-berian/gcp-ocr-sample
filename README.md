@@ -134,10 +134,8 @@ docker-compose -f packages/cli/docker/docker-compose.prod.yml up --build
 
 ### Functions をローカルで実行する
 
-`--service-ports` でホストにポート 8080 を公開してコンテナに入ります。
-
 ```bash
-docker-compose -f packages/functions/docker/docker-compose.yml run --rm --service-ports functions bash
+npm run docker:functions:sh
 # コンテナ内で
 npm run build -w @docai/functions
 npm run start -w @docai/functions

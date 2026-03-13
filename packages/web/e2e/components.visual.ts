@@ -1,16 +1,16 @@
 import { test, expect } from "@playwright/test";
 
 const stories = [
-  { id: "errormessage--default", name: "ErrorMessage Default" },
-  { id: "errormessage--long-message", name: "ErrorMessage LongMessage" },
-  { id: "fileuploader--default", name: "FileUploader Default" },
-  { id: "fileuploader--disabled", name: "FileUploader Disabled" },
-  { id: "resulttable--empty", name: "ResultTable Empty" },
-  { id: "resulttable--with-entities", name: "ResultTable WithEntities" },
-  { id: "resulttable--single-entity", name: "ResultTable SingleEntity" },
-  { id: "appview--initial", name: "App Initial" },
-  { id: "appview--with-error", name: "App WithError" },
-  { id: "appview--with-results", name: "App WithResults" },
+  { id: "components-errormessage--default", name: "ErrorMessage Default" },
+  { id: "components-errormessage--long-message", name: "ErrorMessage LongMessage" },
+  { id: "components-fileuploader--default", name: "FileUploader Default" },
+  { id: "components-fileuploader--disabled", name: "FileUploader Disabled" },
+  { id: "components-resulttable--empty", name: "ResultTable Empty" },
+  { id: "components-resulttable--with-entities", name: "ResultTable WithEntities" },
+  { id: "components-resulttable--single-entity", name: "ResultTable SingleEntity" },
+  { id: "app--initial", name: "App Initial" },
+  { id: "app--with-error", name: "App WithError" },
+  { id: "app--with-results", name: "App WithResults" },
 ];
 
 for (const { id, name } of stories) {

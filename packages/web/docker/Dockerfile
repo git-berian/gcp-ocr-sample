@@ -1,3 +1,11 @@
 FROM node:20-slim
-RUN npm install -g npm@latest && echo "alias ll='ls -al'" >> /root/.bashrc
+RUN apt-get update && apt-get install -y --no-install-recommends gosu \
+  && rm -rf /var/lib/apt/lists/* \
+  && npm install -g npm@latest \
+  && mkdir -p /app/packages/web \
+  && chown -R node:node /app \
+  && echo "alias ll='ls -al'" >> /home/node/.bashrc
+COPY packages/web/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 WORKDIR /app/packages/web
+ENTRYPOINT ["entrypoint.sh"]

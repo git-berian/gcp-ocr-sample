@@ -63,6 +63,19 @@ describe("post", () => {
     await expect(post("/parse", {})).rejects.toThrow("Invalid request");
   });
 
+  it("falls back to HTTP status when error field is missing from response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: () => Promise.resolve({ message: "other format" }),
+      }),
+    );
+
+    await expect(post("/parse", {})).rejects.toThrow("HTTP 422");
+  });
+
   it("throws ApiRequestError with status code when error JSON parsing fails", async () => {
     vi.stubGlobal(
       "fetch",

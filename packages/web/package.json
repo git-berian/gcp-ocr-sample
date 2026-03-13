@@ -30,7 +30,7 @@
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^10.0.2",
     "eslint-config-prettier": "^10.1.8",
-    "jsdom": "^26.1.0",
+    "jsdom": "^28.1.0",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",

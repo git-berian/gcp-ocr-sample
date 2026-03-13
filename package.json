@@ -6,6 +6,7 @@
   ],
   "scripts": {
     "prepare": "husky",
+    "docker:setup": "npm run docker:cli:setup && npm run docker:functions:setup",
     "docker:cli:setup": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm ci --ignore-scripts",
     "docker:cli:build": "docker-compose -f packages/cli/docker/docker-compose.yml build",
     "docker:cli:lint": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm run lint --workspace=@docai/cli",

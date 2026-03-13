@@ -13,7 +13,11 @@
     "test:unit": "vitest run --project unit",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
-    "preview": "vite preview"
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build:storybook": "storybook build"
   },
   "dependencies": {
     "react": "^19.1.0",
@@ -21,6 +25,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.52.0",
+    "@storybook/react-vite": "^10.3.0-alpha.16",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -30,8 +36,10 @@
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^10.0.2",
     "eslint-config-prettier": "^10.1.8",
+    "http-server": "^14.1.1",
     "jsdom": "^28.1.0",
     "prettier": "^3.8.1",
+    "storybook": "^10.3.0-alpha.16",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.0",

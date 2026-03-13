@@ -29,6 +29,10 @@
     "docker:web:format:check": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run format:check --workspace=@docai/web",
     "docker:web:test": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run test --workspace=@docai/web",
     "docker:web:test:coverage": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run test:coverage --workspace=@docai/web",
+    "docker:web:storybook": "docker-compose -f packages/web/docker/docker-compose.yml run --rm --service-ports web npm run storybook --workspace=@docai/web -- --host 0.0.0.0",
+    "docker:web:build:storybook": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run build:storybook --workspace=@docai/web",
+    "docker:web:test:visual": "docker-compose -f packages/web/docker/docker-compose.yml run --rm playwright bash -c 'cd packages/web && npx playwright test'",
+    "docker:web:test:visual:update": "docker-compose -f packages/web/docker/docker-compose.yml run --rm playwright bash -c 'cd packages/web && npx playwright test --update-snapshots'",
     "docker:web:sh": "docker-compose -f packages/web/docker/docker-compose.yml run --rm --service-ports web bash"
   },
   "devDependencies": {

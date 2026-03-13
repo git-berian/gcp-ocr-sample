@@ -26,7 +26,7 @@ export function ResultTable({ entities }: ResultTableProps) {
               <td>{entity.type}</td>
               <td>{entity.mentionText}</td>
               <td>{(entity.confidence * 100).toFixed(1)}%</td>
-              <td>{entity.normalizedValue ?? ""}</td>
+              <td>{entity.normalizedValue?.text ?? ""}</td>
             </tr>
           ))
         )}

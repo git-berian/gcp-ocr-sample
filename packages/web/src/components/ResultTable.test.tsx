@@ -15,7 +15,12 @@ describe("ResultTable", () => {
 
   it("renders entity rows", () => {
     const entities: Entity[] = [
-      { type: "total_amount", mentionText: "1,000", confidence: 0.95, normalizedValue: "1000" },
+      {
+        type: "total_amount",
+        mentionText: "1,000",
+        confidence: 0.95,
+        normalizedValue: { text: "1000" },
+      },
       { type: "date", mentionText: "2024-01-01", confidence: 0.88 },
     ];
 

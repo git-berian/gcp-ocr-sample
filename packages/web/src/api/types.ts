@@ -7,7 +7,7 @@ export interface Entity {
   type: string;
   mentionText: string;
   confidence: number;
-  normalizedValue?: string;
+  normalizedValue?: { text?: string; [key: string]: unknown };
 }
 
 export interface ParseDocumentResponse {

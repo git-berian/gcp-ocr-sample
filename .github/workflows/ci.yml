@@ -10,6 +10,10 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        workspace: ["@docai/cli", "@docai/functions"]
+
     steps:
       - uses: actions/checkout@v6
 
@@ -21,16 +25,16 @@ jobs:
       - run: npm ci
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint --workspace=${{ matrix.workspace }}
 
       - name: Format check
-        run: npm run format:check
+        run: npm run format:check --workspace=${{ matrix.workspace }}
 
       - name: Build
-        run: npm run build
+        run: npm run build --workspace=${{ matrix.workspace }}
 
       - name: Test with coverage
-        run: npm run test:coverage
+        run: npm run test:coverage --workspace=${{ matrix.workspace }}
 
   commitlint:
     if: github.event_name == 'pull_request'

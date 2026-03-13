@@ -88,16 +88,25 @@ npm run docker:cli:sh        # CLI コンテナ
 npm run docker:functions:sh  # Functions コンテナ
 ```
 
-コンテナ内では以下のコマンドも実行できます。
+コンテナ内では以下のコマンドも実行できます（`-w` は `--workspace` の短縮形）。
 
 ```bash
-npm run build            # TypeScript ビルド
-npm run lint:fix         # ESLint 自動修正
-npm run format           # Prettier フォーマット
-npm run test:unit        # ユニットテストのみ
-npm run test:integration # 統合テストのみ
-npm run test:coverage    # テスト + カバレッジ計測
-npm run test:watch       # テスト実行（ウォッチモード）
+# CLI パッケージ
+npm run build -w @docai/cli            # TypeScript ビルド
+npm run lint:fix -w @docai/cli         # ESLint 自動修正
+npm run format -w @docai/cli           # Prettier フォーマット
+npm run test:unit -w @docai/cli        # ユニットテストのみ
+npm run test:integration -w @docai/cli # 統合テストのみ
+npm run test:coverage -w @docai/cli    # テスト + カバレッジ計測
+npm run test:watch -w @docai/cli       # テスト実行（ウォッチモード）
+
+# Functions パッケージ
+npm run build -w @docai/functions            # TypeScript ビルド
+npm run lint:fix -w @docai/functions         # ESLint 自動修正
+npm run format -w @docai/functions           # Prettier フォーマット
+npm run test:unit -w @docai/functions        # ユニットテストのみ
+npm run test:coverage -w @docai/functions    # テスト + カバレッジ計測
+npm run test:watch -w @docai/functions       # テスト実行（ウォッチモード）
 ```
 
 ### OCR を直接実行する

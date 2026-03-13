@@ -109,16 +109,32 @@ npm run test:coverage -w @docai/functions    # テスト + カバレッジ計測
 npm run test:watch -w @docai/functions       # テスト実行（ウォッチモード）
 ```
 
-### OCR を直接実行する
+### CLI で OCR を実行する
 
 ```bash
-# 本番環境
 docker-compose -f packages/cli/docker/docker-compose.prod.yml up --build
 ```
 
 実行すると、Document AI で解析された entities が JSON 形式で標準出力に表示されます。
 
 別のファイルを解析する場合は `.env` の `FILE_NAME` を変更して再実行してください。
+
+### Functions をローカルで実行する
+
+```bash
+npm run docker:functions:sh
+# コンテナ内で
+npm run build -w @docai/functions
+npm run start -w @docai/functions
+```
+
+ローカルサーバーが起動したら、別ターミナルから curl でリクエストできます。
+
+```bash
+curl -X POST http://localhost:8080 \
+  -H "Content-Type: application/json" \
+  -d '{"content": "<base64エンコードされたファイル>", "mimeType": "application/pdf"}'
+```
 
 ## アーキテクチャ
 

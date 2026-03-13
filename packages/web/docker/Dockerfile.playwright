@@ -1,0 +1,9 @@
+FROM mcr.microsoft.com/playwright:v1.58.0-noble
+
+RUN npm install -g npm@latest \
+  && mkdir -p /app/packages/web \
+  && chown -R pwuser:pwuser /app
+
+WORKDIR /app
+
+USER pwuser

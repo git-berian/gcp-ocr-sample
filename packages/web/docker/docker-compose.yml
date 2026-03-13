@@ -10,6 +10,18 @@ services:
       API_PROXY_TARGET: http://host.docker.internal:8080
     ports:
       - "5173:5173"
+      - "6006:6006"
+    volumes:
+      - ../../..:/app
+      - node_modules:/app/node_modules
+    working_dir: /app
+
+  playwright:
+    build:
+      context: ../../..
+      dockerfile: packages/web/docker/Dockerfile.playwright
+    environment:
+      CI: "true"
     volumes:
       - ../../..:/app
       - node_modules:/app/node_modules

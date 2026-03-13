@@ -17,19 +17,27 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
     }
   };
 
-  const handleDrop = useCallback((e: DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile) {
-      setFile(droppedFile);
-    }
-  }, []);
+  const handleDrop = useCallback(
+    (e: DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      if (disabled) return;
+      const droppedFile = e.dataTransfer.files[0];
+      if (droppedFile) {
+        setFile(droppedFile);
+      }
+    },
+    [disabled],
+  );
 
-  const handleDragOver = useCallback((e: DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
+  const handleDragOver = useCallback(
+    (e: DragEvent) => {
+      e.preventDefault();
+      if (disabled) return;
+      setIsDragging(true);
+    },
+    [disabled],
+  );
 
   const handleDragLeave = useCallback(() => {
     setIsDragging(false);
@@ -53,6 +61,7 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
           <input
             type="file"
             accept={SUPPORTED_MIME_TYPES.join(",")}
+            disabled={disabled}
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
         </label>

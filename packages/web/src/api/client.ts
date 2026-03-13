@@ -9,8 +9,10 @@ export class ApiRequestError extends Error {
 }
 
 export async function post<TReq, TRes>(path: string, body: TReq): Promise<TRes> {
-  const baseUrl = import.meta.env.VITE_API_URL ?? "/api";
-  const response = await fetch(`${baseUrl}${path}`, {
+  const rawBaseUrl = import.meta.env.VITE_API_URL;
+  const baseUrl = rawBaseUrl ? rawBaseUrl.replace(/\/+$/, "") : "/api";
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const response = await fetch(`${baseUrl}${normalizedPath}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

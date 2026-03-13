@@ -17,6 +17,7 @@ export function useParseDocument(): UseParseDocumentReturn {
 
   const submit = useCallback(async (file: File) => {
     if (!isValidMimeType(file.type)) {
+      setResult(null);
       setError(
         `Unsupported file type: ${file.type}. Supported: ${SUPPORTED_MIME_TYPES.join(", ")}`,
       );

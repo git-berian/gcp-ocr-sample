@@ -70,6 +70,17 @@ describe("FileUploader", () => {
     expect(screen.queryByText("Selected: test.pdf")).not.toBeInTheDocument();
   });
 
+  it("ignores drop when unsupported MIME type", () => {
+    render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
+
+    const dropZone = screen.getByTestId("drop-zone");
+    const file = new File(["content"], "test.txt", { type: "text/plain" });
+
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+
+    expect(screen.queryByText("Selected: test.txt")).not.toBeInTheDocument();
+  });
+
   it("ignores drop when no files", () => {
     render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
 

@@ -22,7 +22,7 @@ export async function post<TReq, TRes>(path: string, body: TReq): Promise<TRes> 
     let message: string;
     try {
       const errorBody = await response.json();
-      message = errorBody.error;
+      message = errorBody.error ?? `HTTP ${response.status}`;
     } catch {
       message = `HTTP ${response.status}`;
     }

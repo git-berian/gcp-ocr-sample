@@ -1,5 +1,5 @@
 import { useState, useCallback, type FormEvent, type DragEvent } from "react";
-import { SUPPORTED_MIME_TYPES } from "../utils/file";
+import { SUPPORTED_MIME_TYPES, isValidMimeType } from "../utils/file";
 
 interface FileUploaderProps {
   onSubmit: (file: File) => void;
@@ -23,7 +23,7 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
       setIsDragging(false);
       if (disabled) return;
       const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile) {
+      if (droppedFile && isValidMimeType(droppedFile.type)) {
         setFile(droppedFile);
       }
     },

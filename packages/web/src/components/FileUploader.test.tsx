@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FileUploader } from "./FileUploader";
 
@@ -34,10 +34,11 @@ describe("FileUploader", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it("disables the submit button when disabled prop is true", () => {
+  it("disables the submit button and file input when disabled prop is true", () => {
     render(<FileUploader onSubmit={vi.fn()} disabled={true} />);
 
     expect(screen.getByRole("button", { name: "Parse" })).toBeDisabled();
+    expect(screen.getByLabelText("File")).toBeDisabled();
   });
 
   it("accepts only supported file types", () => {
@@ -47,20 +48,56 @@ describe("FileUploader", () => {
     expect(input).toHaveAttribute("accept", "application/pdf,image/png,image/jpeg");
   });
 
-  it("supports drag and drop", async () => {
-    const user = userEvent.setup();
-    const onSubmit = vi.fn();
-    render(<FileUploader onSubmit={onSubmit} disabled={false} />);
+  it("sets file on drop", () => {
+    render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
 
+    const dropZone = screen.getByTestId("drop-zone");
     const file = new File(["content"], "test.pdf", { type: "application/pdf" });
+
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+
+    expect(screen.getByText("Selected: test.pdf")).toBeInTheDocument();
+  });
+
+  it("ignores drop when disabled", () => {
+    render(<FileUploader onSubmit={vi.fn()} disabled={true} />);
+
+    const dropZone = screen.getByTestId("drop-zone");
+    const file = new File(["content"], "test.pdf", { type: "application/pdf" });
+
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+
+    expect(screen.queryByText("Selected: test.pdf")).not.toBeInTheDocument();
+  });
+
+  it("ignores drop when no files", () => {
+    render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
+
     const dropZone = screen.getByTestId("drop-zone");
 
-    // Simulate file input via upload (drag-drop testing is limited in jsdom)
-    const input = screen.getByLabelText("File");
-    await user.upload(input, file);
-    await user.click(screen.getByRole("button", { name: "Parse" }));
+    fireEvent.drop(dropZone, { dataTransfer: { files: [] } });
 
-    expect(onSubmit).toHaveBeenCalledWith(file);
-    expect(dropZone).toBeInTheDocument();
+    expect(screen.queryByText(/Selected:/)).not.toBeInTheDocument();
+  });
+
+  it("handles dragOver and dragLeave", () => {
+    render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
+
+    const dropZone = screen.getByTestId("drop-zone");
+
+    fireEvent.dragOver(dropZone);
+    expect(dropZone).toHaveStyle("border: 2px dashed #0066cc");
+
+    fireEvent.dragLeave(dropZone);
+    expect(dropZone).toHaveStyle("border: 2px dashed #ccc");
+  });
+
+  it("ignores dragOver when disabled", () => {
+    render(<FileUploader onSubmit={vi.fn()} disabled={true} />);
+
+    const dropZone = screen.getByTestId("drop-zone");
+
+    fireEvent.dragOver(dropZone);
+    expect(dropZone).toHaveStyle("border: 2px dashed #ccc");
   });
 });

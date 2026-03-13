@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@google-cloud/documentai": "^9.5.0",
-    "@google-cloud/functions-framework": "^3.4.5"
+    "@google-cloud/functions-framework": "^5.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

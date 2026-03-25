@@ -79,7 +79,7 @@ describe("useParseDocument", () => {
     });
 
     expect(result.current.error).toBe(
-      "Unsupported file type: image/gif. Supported: application/pdf, image/png, image/jpeg",
+      "サポートされていないファイル形式: image/gif。対応形式: application/pdf, image/png, image/jpeg",
     );
     expect(parseDocumentApi.parseDocument).not.toHaveBeenCalled();
   });
@@ -95,7 +95,7 @@ describe("useParseDocument", () => {
       await result.current.submit(file);
     });
 
-    expect(result.current.error).toBe("An unexpected error occurred");
+    expect(result.current.error).toBe("予期しないエラーが発生しました");
     expect(result.current.isLoading).toBe(false);
   });
 

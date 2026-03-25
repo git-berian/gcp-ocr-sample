@@ -12,14 +12,14 @@ export async function main(): Promise<void> {
 
   const entities = await processDocument(config, fileReader, processor, guessMimeType);
 
-  console.log("=== entities ===");
+  console.log("=== エンティティ ===");
   console.log(JSON.stringify(entities, null, 2));
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main().catch((e: unknown) => {
     const err = e instanceof Error ? e : new Error(String(e));
-    console.error("ERROR:", err.message);
+    console.error("エラー:", err.message);
     if (err.stack) console.error(err.stack);
     process.exit(1);
   });

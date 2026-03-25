@@ -1,0 +1,51 @@
+/* === Design Tokens === */
+:root {
+  --color-bg: #f8f7f4;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f0eee9;
+  --color-primary: #3d5a80;
+  --color-primary-hover: #2c4466;
+  --color-error: #c44536;
+  --color-error-bg: #fdf0ee;
+  --color-text: #1a1a1a;
+  --color-muted: #6b6560;
+  --color-border: #d4d0ca;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+/* === Global Reset === */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === Spinner Animation === */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

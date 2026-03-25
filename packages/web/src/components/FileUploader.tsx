@@ -1,5 +1,6 @@
 import { useState, useCallback, type FormEvent, type DragEvent } from "react";
 import { SUPPORTED_MIME_TYPES, isValidMimeType } from "../utils/file";
+import styles from "./FileUploader.module.css";
 
 interface FileUploaderProps {
   onSubmit: (file: File) => void;
@@ -44,22 +45,22 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
   }, []);
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className={styles.form}>
       <div
         data-testid="drop-zone"
+        className={styles.dropZone}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         style={{
-          border: `2px dashed ${isDragging ? "#0066cc" : "#ccc"}`,
-          padding: "24px",
-          textAlign: "center",
+          border: `2px dashed ${isDragging ? "var(--color-primary)" : "var(--color-border)"}`,
         }}
       >
-        <label>
+        <label className={styles.label}>
           File
           <input
             type="file"
+            className={styles.fileInput}
             accept={SUPPORTED_MIME_TYPES.join(",")}
             disabled={disabled}
             onChange={(e) => {
@@ -68,9 +69,9 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
             }}
           />
         </label>
-        {file && <p>Selected: {file.name}</p>}
+        {file && <p className={styles.selectedFile}>Selected: {file.name}</p>}
       </div>
-      <button type="submit" disabled={disabled || !file}>
+      <button type="submit" className={styles.submitButton} disabled={disabled || !file}>
         Parse
       </button>
     </form>

@@ -193,6 +193,17 @@ curl -s -X POST "http://localhost:8080/${PROJECT_ID}/us-central1/parseDocument" 
   -d @/tmp/request.json
 ```
 
+対話型シェルで関数を呼び出すこともできます。
+
+```bash
+npm run docker:functions:sh
+# コンテナ内で
+npm run build --workspace=@docai/functions
+firebase functions:shell
+# シェル内で関数を呼び出し
+parseDocument({method: "POST", body: {content: "base64data", mimeType: "application/pdf"}})
+```
+
 ### Functions をデプロイする
 
 Firebase CLI を使用して GCP にデプロイします。

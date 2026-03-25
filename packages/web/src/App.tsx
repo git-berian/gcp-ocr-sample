@@ -4,6 +4,7 @@ import { ResultTable } from "./components/ResultTable";
 import { ErrorMessage } from "./components/ErrorMessage";
 import type { ParseDocumentResponse } from "./api/types";
 import "./App.css";
+import styles from "./App.module.css";
 
 export interface AppViewProps {
   result: ParseDocumentResponse | null;
@@ -14,10 +15,15 @@ export interface AppViewProps {
 
 export function AppView({ result, error, isLoading, onSubmit }: AppViewProps) {
   return (
-    <div>
-      <h1>DocAI Expense Parser</h1>
+    <div className={styles.container}>
+      <h1 className={styles.title}>DocAI Expense Parser</h1>
       <FileUploader onSubmit={onSubmit} disabled={isLoading} />
-      {isLoading && <p>Parsing...</p>}
+      {isLoading && (
+        <div className={styles.loading}>
+          <div className={styles.spinner} />
+          <p>Parsing...</p>
+        </div>
+      )}
       {error && <ErrorMessage message={error} />}
       {result && <ResultTable entities={result.entities} />}
     </div>

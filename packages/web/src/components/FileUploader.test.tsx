@@ -97,10 +97,10 @@ describe("FileUploader", () => {
     const dropZone = screen.getByTestId("drop-zone");
 
     fireEvent.dragOver(dropZone);
-    expect(dropZone.style.border).toBe("2px dashed rgb(0, 102, 204)");
+    expect(dropZone.style.border).toBe("2px dashed var(--color-primary)");
 
     fireEvent.dragLeave(dropZone);
-    expect(dropZone.style.border).toBe("2px dashed rgb(204, 204, 204)");
+    expect(dropZone.style.border).toBe("2px dashed var(--color-border)");
   });
 
   it("ignores dragOver when disabled", () => {
@@ -109,6 +109,6 @@ describe("FileUploader", () => {
     const dropZone = screen.getByTestId("drop-zone");
 
     fireEvent.dragOver(dropZone);
-    expect(dropZone.style.border).toBe("2px dashed rgb(204, 204, 204)");
+    expect(dropZone.style.border).toBe("2px dashed var(--color-border)");
   });
 });

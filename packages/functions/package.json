@@ -14,7 +14,7 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "start": "firebase emulators:start --only functions --config ../../firebase.json",
-    "shell": "firebase functions:shell --config ../../firebase.json"
+    "shell": "npm run build && firebase functions:shell --config ../../firebase.json"
   },
   "dependencies": {
     "@google-cloud/documentai": "^9.5.0",

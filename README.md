@@ -122,7 +122,7 @@ npm run test:watch -w @docai/cli       # テスト実行（ウォッチモード
 # Functions パッケージ
 npm run build -w @docai/functions            # TypeScript ビルド
 npm run start -w @docai/functions            # Firebase Emulator 起動（要ビルド済み）
-npm run shell -w @docai/functions            # Firebase Functions Shell（要ビルド済み）
+npm run shell -w @docai/functions            # ビルド＋Firebase Functions Shell
 npm run lint:fix -w @docai/functions         # ESLint 自動修正
 npm run format -w @docai/functions           # Prettier フォーマット
 npm run test:unit -w @docai/functions        # ユニットテストのみ
@@ -199,7 +199,6 @@ curl -s -X POST "http://localhost:8080/${PROJECT_ID}/us-central1/parseDocument" 
 ```bash
 npm run docker:functions:sh
 # コンテナ内で
-npm run build -w @docai/functions
 npm run shell -w @docai/functions
 # シェル内で関数を呼び出し
 parseDocument({method: "POST", body: {content: "base64data", mimeType: "application/pdf"}})

@@ -19,7 +19,7 @@ export function useParseDocument(): UseParseDocumentReturn {
     if (!isValidMimeType(file.type)) {
       setResult(null);
       setError(
-        `Unsupported file type: ${file.type}. Supported: ${SUPPORTED_MIME_TYPES.join(", ")}`,
+        `サポートされていないファイル形式: ${file.type}。対応形式: ${SUPPORTED_MIME_TYPES.join(", ")}`,
       );
       return;
     }
@@ -33,7 +33,7 @@ export function useParseDocument(): UseParseDocumentReturn {
       const response = await parseDocument({ content, mimeType: file.type });
       setResult(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(err instanceof Error ? err.message : "予期しないエラーが発生しました");
     } finally {
       setIsLoading(false);
     }

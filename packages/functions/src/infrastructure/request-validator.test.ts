@@ -15,19 +15,25 @@ describe("validateParseDocumentRequest", () => {
 
   it("bodyがnullの場合、エラーを返す", () => {
     const result = validateParseDocumentRequest(null);
-    expect(result).toEqual({ ok: false, message: "Request body must be a JSON object" });
+    expect(result).toEqual({
+      ok: false,
+      message: "リクエストボディは JSON オブジェクトである必要があります",
+    });
   });
 
   it("bodyがundefinedの場合、エラーを返す", () => {
     const result = validateParseDocumentRequest(undefined);
-    expect(result).toEqual({ ok: false, message: "Request body must be a JSON object" });
+    expect(result).toEqual({
+      ok: false,
+      message: "リクエストボディは JSON オブジェクトである必要があります",
+    });
   });
 
   it("contentが欠けている場合、エラーを返す", () => {
     const result = validateParseDocumentRequest({ mimeType: "application/pdf" });
     expect(result).toEqual({
       ok: false,
-      message: "content is required and must be a non-empty string (base64)",
+      message: "content は必須で、空でない文字列（base64）である必要があります",
     });
   });
 
@@ -35,7 +41,7 @@ describe("validateParseDocumentRequest", () => {
     const result = validateParseDocumentRequest({ content: "", mimeType: "application/pdf" });
     expect(result).toEqual({
       ok: false,
-      message: "content is required and must be a non-empty string (base64)",
+      message: "content は必須で、空でない文字列（base64）である必要があります",
     });
   });
 
@@ -43,7 +49,7 @@ describe("validateParseDocumentRequest", () => {
     const result = validateParseDocumentRequest({ content: "base64data" });
     expect(result).toEqual({
       ok: false,
-      message: "mimeType is required and must be a non-empty string",
+      message: "mimeType は必須で、空でない文字列である必要があります",
     });
   });
 
@@ -55,7 +61,7 @@ describe("validateParseDocumentRequest", () => {
     expect(result).toEqual({
       ok: false,
       message:
-        "Unsupported mimeType: image/tiff. Supported: application/pdf, image/png, image/jpeg",
+        "サポートされていない mimeType: image/tiff。対応形式: application/pdf, image/png, image/jpeg",
     });
   });
 });

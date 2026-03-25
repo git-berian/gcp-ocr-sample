@@ -44,7 +44,9 @@ describe("handleParseDocument", () => {
     await handleParseDocument(req, res);
 
     expect(res.status).toHaveBeenCalledWith(405);
-    expect(res.json).toHaveBeenCalledWith({ error: "Method not allowed. Use POST." });
+    expect(res.json).toHaveBeenCalledWith({
+      error: "許可されていないメソッドです。POST を使用してください。",
+    });
   });
 
   it("バリデーションエラーは400を返す", async () => {
@@ -72,6 +74,6 @@ describe("handleParseDocument", () => {
     await handleParseDocument(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
+    expect(res.json).toHaveBeenCalledWith({ error: "内部サーバーエラー" });
   });
 });

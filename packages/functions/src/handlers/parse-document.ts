@@ -8,7 +8,7 @@ export const handleParseDocument: HttpFunction = async (req, res) => {
   console.log(`[${req.method}] ${req.path}`);
 
   if (req.method !== "POST") {
-    const body = { error: "Method not allowed. Use POST." };
+    const body = { error: "許可されていないメソッドです。POST を使用してください。" };
     console.log(`[RES] 405`, JSON.stringify(body));
     res.status(405).json(body);
     return;
@@ -42,8 +42,8 @@ export const handleParseDocument: HttpFunction = async (req, res) => {
     res.status(200).json(body);
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("parseDocument failed:", message);
-    const body = { error: "Internal server error" };
+    console.error("parseDocument 失敗:", message);
+    const body = { error: "内部サーバーエラー" };
     console.log(`[RES] 500`, JSON.stringify(body));
     res.status(500).json(body);
   }

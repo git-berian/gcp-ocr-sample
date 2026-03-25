@@ -16,12 +16,12 @@ export interface AppViewProps {
 export function AppView({ result, error, isLoading, onSubmit }: AppViewProps) {
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>DocAI Expense Parser</h1>
+      <h1 className={styles.title}>DocAI 経費パーサー</h1>
       <FileUploader onSubmit={onSubmit} disabled={isLoading} />
       {isLoading && (
         <div className={styles.loading}>
           <div className={styles.spinner} />
-          <p>Parsing...</p>
+          <p>解析中...</p>
         </div>
       )}
       {error && <ErrorMessage message={error} />}

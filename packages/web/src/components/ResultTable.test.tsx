@@ -7,10 +7,10 @@ describe("ResultTable", () => {
   it("renders table headers", () => {
     render(<ResultTable entities={[]} />);
 
-    expect(screen.getByText("Type")).toBeInTheDocument();
-    expect(screen.getByText("Text")).toBeInTheDocument();
-    expect(screen.getByText("Confidence")).toBeInTheDocument();
-    expect(screen.getByText("Normalized Value")).toBeInTheDocument();
+    expect(screen.getByText("種別")).toBeInTheDocument();
+    expect(screen.getByText("テキスト")).toBeInTheDocument();
+    expect(screen.getByText("信頼度")).toBeInTheDocument();
+    expect(screen.getByText("正規化値")).toBeInTheDocument();
   });
 
   it("renders entity rows", () => {
@@ -39,6 +39,6 @@ describe("ResultTable", () => {
   it("renders empty state when no entities", () => {
     render(<ResultTable entities={[]} />);
 
-    expect(screen.getByText("No entities found")).toBeInTheDocument();
+    expect(screen.getByText("エンティティが見つかりません")).toBeInTheDocument();
   });
 });

@@ -11,17 +11,17 @@ export function ResultTable({ entities }: ResultTableProps) {
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Type</th>
-            <th>Text</th>
-            <th>Confidence</th>
-            <th>Normalized Value</th>
+            <th>種別</th>
+            <th>テキスト</th>
+            <th>信頼度</th>
+            <th>正規化値</th>
           </tr>
         </thead>
         <tbody>
           {entities.length === 0 ? (
             <tr>
               <td colSpan={4} className={styles.emptyCell}>
-                No entities found
+                エンティティが見つかりません
               </td>
             </tr>
           ) : (

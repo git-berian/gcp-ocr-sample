@@ -23,7 +23,7 @@ export const Initial: Story = {
 export const WithError: Story = {
   args: {
     result: null,
-    error: "Failed to parse document. Please check the file format and try again.",
+    error: "ドキュメントの解析に失敗しました。ファイル形式を確認してもう一度お試しください。",
     isLoading: false,
   },
 };

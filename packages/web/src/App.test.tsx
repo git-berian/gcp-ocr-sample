@@ -22,8 +22,8 @@ describe("App", () => {
   it("renders the title and file uploader", () => {
     render(<App />);
 
-    expect(screen.getByText("DocAI Expense Parser")).toBeInTheDocument();
-    expect(screen.getByLabelText("File")).toBeInTheDocument();
+    expect(screen.getByText("DocAI 経費パーサー")).toBeInTheDocument();
+    expect(screen.getByLabelText("ファイル")).toBeInTheDocument();
   });
 
   it("shows loading state", () => {
@@ -36,7 +36,7 @@ describe("App", () => {
 
     render(<App />);
 
-    expect(screen.getByText("Parsing...")).toBeInTheDocument();
+    expect(screen.getByText("解析中...")).toBeInTheDocument();
   });
 
   it("shows result table when result is available", () => {
@@ -73,9 +73,9 @@ describe("App", () => {
     render(<App />);
 
     const file = new File(["content"], "test.png", { type: "image/png" });
-    const input = screen.getByLabelText("File");
+    const input = screen.getByLabelText("ファイル");
     await user.upload(input, file);
-    await user.click(screen.getByRole("button", { name: "Parse" }));
+    await user.click(screen.getByRole("button", { name: "解析" }));
 
     expect(mockSubmit).toHaveBeenCalledWith(file);
   });

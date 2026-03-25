@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { Request, Response } from "@google-cloud/functions-framework";
 import { handleParseDocument } from "./parse-document.js";
 
 vi.mock("../infrastructure/config.js", () => ({
@@ -15,17 +14,21 @@ vi.mock("../infrastructure/document-ai-client.js", () => ({
   createDocumentProcessor: () => ({ process: mockProcess }),
 }));
 
-function createMockReqRes(overrides: Partial<Request> = {}) {
+type HandlerParams = Parameters<typeof handleParseDocument>;
+
+function createMockReqRes(
+  overrides: Partial<{ method: string; body: unknown; path: string }> = {},
+) {
   const req = {
     method: "POST",
     body: { content: "base64data", mimeType: "application/pdf" },
     ...overrides,
-  } as unknown as Request;
+  } as unknown as HandlerParams[0];
 
   const res = {
     status: vi.fn().mockReturnThis(),
     json: vi.fn().mockReturnThis(),
-  } as unknown as Response;
+  } as unknown as HandlerParams[1];
 
   return { req, res };
 }

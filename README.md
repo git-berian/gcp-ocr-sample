@@ -5,11 +5,11 @@ npm workspaces によるモノレポ構成を採用しており、デプロイ�
 
 ## モノレポ構成
 
-| パッケージ           | 説明                                               |
-| -------------------- | -------------------------------------------------- |
-| `packages/cli`       | CLI ツール（Document AI による OCR）               |
-| `packages/functions` | Cloud Functions HTTP API（Document AI による OCR） |
-| `packages/web`       | Web フロントエンド（React + Vite SPA）             |
+| パッケージ           | 説明                                                  |
+| -------------------- | ----------------------------------------------------- |
+| `packages/cli`       | CLI ツール（Document AI による OCR）                  |
+| `packages/functions` | Firebase Functions HTTP API（Document AI による OCR） |
+| `packages/web`       | Web フロントエンド（React + Vite SPA）                |
 
 ## 必要なもの
 
@@ -17,6 +17,7 @@ npm workspaces によるモノレポ構成を採用しており、デプロイ�
 - GCP プロジェクト（Document AI API が有効化済み）
 - Document AI プロセッサ（Expense Parser 等）
 - サービスアカウントキー（JSON）
+- Firebase CLI（`npm install -g firebase-tools`）— Functions のデプロイ時に必要
 
 ## セットアップ
 
@@ -162,6 +163,8 @@ docker-compose -f packages/cli/docker/docker-compose.prod.yml up --build
 
 ### Functions をローカルで実行する
 
+Docker コンテナ内で Firebase Emulator を使用してローカル実行します。
+
 ```bash
 npm run docker:functions:start
 ```
@@ -178,6 +181,27 @@ curl -s -X POST http://localhost:8080 \
   -H "Content-Type: application/json" \
   -d @/tmp/request.json
 ```
+
+### Functions をデプロイする
+
+Firebase CLI を使用して GCP にデプロイします。
+
+```bash
+# 1. Firebase にログイン（初回のみ）
+firebase login
+
+# 2. Firebase プロジェクトを設定
+firebase use <project-id>
+
+# 3. デプロイ
+firebase deploy --only functions
+```
+
+デプロイ前に、GCP 側で以下の設定が必要です：
+
+- Firebase プロジェクトの作成（GCP プロジェクトと紐づけ）
+- Document AI API の有効化、プロセッサの作成
+- 環境変数の設定（`GCP_PROJECT_ID`, `DOCAI_LOCATION`, `DOCAI_PROCESSOR_ID`）
 
 ### Web フロントエンドをローカルで実行する
 
@@ -276,7 +300,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │   │   ├── tsconfig.test.json          # テスト用
 │   │   ├── vitest.config.ts
 │   │   └── eslint.config.js
-│   ├── functions/                     # Cloud Functions パッケージ
+│   ├── functions/                     # Firebase Functions パッケージ
 │   │   ├── src/
 │   │   │   ├── domain/                 # ドメイン層
 │   │   │   ├── application/            # アプリケーション層
@@ -323,6 +347,8 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │   ├── adr/                           # ADR（アーキテクチャ決定記録）
 │   └── ai-development-guidelines.md   # AI駆動開発ガイドライン
 ├── .dockerignore                        # Docker ビルド除外設定
+├── .firebaserc                          # Firebase プロジェクト設定
+├── firebase.json                        # Firebase 設定（Functions デプロイ）
 ├── package.json                        # workspaces ルート
 ├── tsconfig.json                       # 共通 TypeScript ベース設定
 ├── CONTRIBUTING.md                     # 開発ガイド
@@ -345,6 +371,8 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 | Playwright               | ^1.52                              |
 | Vite                     | ^8.0                               |
 | @google-cloud/documentai | ^9.5.0                             |
+| firebase-functions       | ^6.3                               |
+| firebase-admin           | ^13.4                              |
 
 ## 開発に参加する
 

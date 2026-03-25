@@ -57,7 +57,7 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
         }}
       >
         <label className={styles.label}>
-          File
+          ファイル
           <input
             type="file"
             className={styles.fileInput}
@@ -69,10 +69,10 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
             }}
           />
         </label>
-        {file && <p className={styles.selectedFile}>Selected: {file.name}</p>}
+        {file && <p className={styles.selectedFile}>選択済み: {file.name}</p>}
       </div>
       <button type="submit" className={styles.submitButton} disabled={disabled || !file}>
-        Parse
+        解析
       </button>
     </form>
   );

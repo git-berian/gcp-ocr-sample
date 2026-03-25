@@ -10,14 +10,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    message: "Something went wrong. Please try again.",
+    message: "エラーが発生しました。もう一度お試しください。",
   },
 };
 
 export const LongMessage: Story = {
   args: {
     message:
-      "A very long error message that might wrap across multiple lines to test how the component handles longer text content in the error display area.",
+      "非常に長いエラーメッセージです。複数行にわたって折り返される場合のコンポーネントの表示を確認するためのテスト用テキストです。",
   },
 };
 

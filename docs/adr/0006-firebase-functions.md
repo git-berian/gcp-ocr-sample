@@ -34,5 +34,5 @@
 - デプロイは手動（`firebase deploy`）。CI/CD 自動デプロイは対象外
 - Firebase プロジェクトの事前作成と `firebase login` が前提条件
 - `firebase.json` と `.firebaserc` がプロジェクトルートに追加される
-- ハンドラー層の型が `HttpFunction` から Express の `Request`/`Response` に変更
+- ハンドラー層の型が `HttpFunction` から `firebase-functions/v2/https` の `Request` に変更
 - application / domain / infrastructure 層は変更なし

@@ -81,7 +81,7 @@ npm run docker:functions:lint           # ESLint 実行
 npm run docker:functions:format:check   # Prettier チェック
 npm run docker:functions:test           # テスト実行
 npm run docker:functions:test:coverage  # テスト + カバレッジ計測
-npm run docker:functions:start          # ビルド＋ローカルサーバー起動
+npm run docker:functions:start          # ビルド＋Firebase Emulator 起動
 npm run docker:functions:sh             # コンテナに入って操作
 npm run docker:functions:build          # Docker イメージのビルド
 
@@ -173,26 +173,31 @@ npm run docker:functions:start
 起動すると以下のようなログが表示されます：
 
 ```
-✔  functions[us-central1-parseDocument]: http function initialized
-    (http://127.0.0.1:8080/<project-id>/us-central1/parseDocument)
+✔  functions[<region>-parseDocument]: http function initialized
+    (http://127.0.0.1:8080/<project-id>/<region>/parseDocument)
 ```
 
+リージョンは `onRequest` のオプションで指定した値（デフォルト: `us-central1`）です。
+
 ローカルサーバーが起動したら、別ターミナルから curl でリクエストできます。
-URL は `http://localhost:8080/<project-id>/us-central1/parseDocument` の形式です。
+URL は `http://localhost:8080/<project-id>/<region>/parseDocument` の形式です。
 
 ```bash
-# .firebaserc のプロジェクト ID を確認（デフォルト: your-gcp-project-id）
-PROJECT_ID=$(node -e "console.log(require('./.firebaserc').projects.default)")
+# エミュレータ起動時のログに表示される URL を使用
+# 例: http://localhost:8080/your-gcp-project-id/us-central1/parseDocument
+FUNCTION_URL="http://localhost:8080/your-gcp-project-id/us-central1/parseDocument"
 
 # リクエスト用 JSON ファイルを作成
 CONTENT=$(base64 -i input/receipt.jpg | tr -d '\n')
 printf '{"content":"%s","mimeType":"image/jpeg"}' "$CONTENT" > /tmp/request.json
 
 # curl でリクエスト（-d @ でファイルから読み込み）
-curl -s -X POST "http://localhost:8080/${PROJECT_ID}/us-central1/parseDocument" \
+curl -s -X POST "${FUNCTION_URL}" \
   -H "Content-Type: application/json" \
   -d @/tmp/request.json
 ```
+
+> **Note**: Web フロントエンド（`packages/web`）から Functions に接続する場合は、Vite の proxy 設定（`vite.config.ts`）のリライト先を Firebase Emulator の URL パターンに合わせて更新する必要があります。
 
 対話型シェルで関数を呼び出すこともできます。
 

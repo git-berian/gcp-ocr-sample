@@ -121,7 +121,7 @@ npm run test:watch -w @docai/cli       # テスト実行（ウォッチモード
 
 # Functions パッケージ
 npm run build -w @docai/functions            # TypeScript ビルド
-npm run start -w @docai/functions            # Firebase Emulator 起動（要ビルド済み）
+npm run start -w @docai/functions            # ビルド＋Firebase Emulator 起動
 npm run shell -w @docai/functions            # ビルド＋Firebase Functions Shell
 npm run lint:fix -w @docai/functions         # ESLint 自動修正
 npm run format -w @docai/functions           # Prettier フォーマット

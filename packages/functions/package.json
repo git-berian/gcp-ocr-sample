@@ -13,7 +13,7 @@
     "test:unit": "vitest run --project unit",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
-    "start": "firebase emulators:start --only functions --config ../../firebase.json",
+    "start": "npm run build && firebase emulators:start --only functions --config ../../firebase.json",
     "shell": "npm run build && firebase functions:shell --config ../../firebase.json"
   },
   "dependencies": {

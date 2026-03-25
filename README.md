@@ -169,15 +169,26 @@ Docker コンテナ内で Firebase Emulator を使用してローカル実行し
 npm run docker:functions:start
 ```
 
+起動すると以下のようなログが表示されます：
+
+```
+✔  functions[us-central1-parseDocument]: http function initialized
+    (http://127.0.0.1:8080/<project-id>/us-central1/parseDocument)
+```
+
 ローカルサーバーが起動したら、別ターミナルから curl でリクエストできます。
+URL は `http://localhost:8080/<project-id>/us-central1/parseDocument` の形式です。
 
 ```bash
+# .firebaserc のプロジェクト ID を確認（デフォルト: your-gcp-project-id）
+PROJECT_ID=$(node -e "console.log(require('./.firebaserc').projects.default)")
+
 # リクエスト用 JSON ファイルを作成
 CONTENT=$(base64 -i input/receipt.jpg | tr -d '\n')
 printf '{"content":"%s","mimeType":"image/jpeg"}' "$CONTENT" > /tmp/request.json
 
 # curl でリクエスト（-d @ でファイルから読み込み）
-curl -s -X POST http://localhost:8080 \
+curl -s -X POST "http://localhost:8080/${PROJECT_ID}/us-central1/parseDocument" \
   -H "Content-Type: application/json" \
   -d @/tmp/request.json
 ```

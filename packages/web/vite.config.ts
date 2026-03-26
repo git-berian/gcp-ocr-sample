@@ -8,7 +8,13 @@ export default defineConfig({
       "/api": {
         target: process.env.API_PROXY_TARGET ?? "http://localhost:8080",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => {
+          const projectId = process.env.GCP_PROJECT_ID;
+          if (projectId) {
+            return path.replace(/^\/api/, `/${projectId}/asia-northeast1`);
+          }
+          return path.replace(/^\/api/, "");
+        },
       },
     },
   },

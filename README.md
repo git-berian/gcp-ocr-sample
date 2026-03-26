@@ -197,8 +197,6 @@ curl -s -X POST "${FUNCTION_URL}" \
   -d @/tmp/request.json
 ```
 
-> **Note**: Web フロントエンド（`packages/web`）から Functions に接続する場合は、Vite の proxy 設定（`vite.config.ts`）のリライト先を Firebase Emulator の URL パターンに合わせて更新する必要があります。
-
 対話型シェルで関数を呼び出すこともできます。
 
 ```bash
@@ -216,6 +214,7 @@ Firebase CLI を使用して GCP にデプロイします。
 ```bash
 # 1. Firebase にログイン（初回のみ）
 firebase login
+# ブラウザが開けない環境では: firebase login --no-localhost
 
 # 2. Firebase プロジェクトを設定
 firebase use <project-id>

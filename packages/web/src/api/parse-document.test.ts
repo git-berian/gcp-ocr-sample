@@ -20,7 +20,7 @@ describe("parseDocument", () => {
       mimeType: "image/png",
     });
 
-    expect(client.post).toHaveBeenCalledWith("/parse", {
+    expect(client.post).toHaveBeenCalledWith("/parseDocument", {
       content: "base64data",
       mimeType: "image/png",
     });

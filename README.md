@@ -233,6 +233,7 @@ firebase deploy --only functions --project <project-id>
 ### Web フロントエンドをデプロイする
 
 Firebase Hosting を使用して Web フロントエンドをデプロイします。
+`predeploy` で `npm run docker:web:build` を実行するため、Docker が起動している必要があります。
 
 ```bash
 # Hosting のみデプロイ（predeploy で自動ビルドされます）

@@ -131,7 +131,7 @@ npm run test:watch -w @docai/functions       # テスト実行（ウォッチモ
 
 # Web パッケージ
 npm run build -w @docai/web            # TypeScript + Vite ビルド
-npm run dev -w @docai/web              # 開発サーバー起動
+npm run dev -w @docai/web -- --host    # 開発サーバー起動（--host 必須）
 npm run lint:fix -w @docai/web         # ESLint 自動修正
 npm run format -w @docai/web           # Prettier フォーマット
 npm run test:unit -w @docai/web        # ユニットテストのみ

@@ -207,21 +207,9 @@ npm run shell -w @docai/functions
 parseDocument({method: "POST", body: {content: "base64data", mimeType: "application/pdf"}})
 ```
 
-### Functions をデプロイする
+### デプロイ
 
-Firebase CLI を使用して GCP にデプロイします。
-
-```bash
-# 1. Firebase にログイン（初回のみ）
-firebase login
-# ブラウザが開けない環境では: firebase login --no-localhost
-
-# 2. Firebase プロジェクトを設定
-firebase use <project-id>
-
-# 3. デプロイ（--project で対象プロジェクトを明示）
-firebase deploy --only functions --project <project-id>
-```
+デプロイはそれぞれのパッケージの Docker コンテナ内から実行します。
 
 デプロイ前に以下の準備が必要です：
 
@@ -229,13 +217,23 @@ firebase deploy --only functions --project <project-id>
 - **GCP 側**: Document AI API の有効化、プロセッサの作成
 - **ローカル**: `packages/functions/.env.<project-id>` に環境変数を設定（`GCP_PROJECT_ID`, `DOCAI_LOCATION`, `DOCAI_PROCESSOR_ID`）
 
-### Web フロントエンドをデプロイする
-
-Firebase Hosting を使用して Web フロントエンドをデプロイします。
-`predeploy` で `npm run docker:web:build` を実行するため、Docker が起動している必要があります。
+#### Functions
 
 ```bash
-# Hosting のみデプロイ（predeploy で自動ビルドされます）
+npm run docker:functions:sh
+
+# コンテナ内で
+firebase login --no-localhost  # 初回のみ
+firebase deploy --only functions --project <project-id>
+```
+
+#### Web（Hosting）
+
+```bash
+npm run docker:web:sh
+
+# コンテナ内で
+firebase login --no-localhost  # 初回のみ
 firebase deploy --only hosting --project <project-id>
 ```
 

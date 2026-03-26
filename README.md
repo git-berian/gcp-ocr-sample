@@ -214,6 +214,7 @@ Firebase CLI を使用して GCP にデプロイします。
 ```bash
 # 1. Firebase にログイン（初回のみ）
 firebase login
+# ブラウザが開けない環境では: firebase login --no-localhost
 
 # 2. Firebase プロジェクトを設定
 firebase use <project-id>

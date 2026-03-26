@@ -1,7 +1,7 @@
 FROM node:20-slim
 RUN apt-get update && apt-get install -y --no-install-recommends gosu \
   && rm -rf /var/lib/apt/lists/* \
-  && npm install -g npm@latest \
+  && npm install -g npm@latest firebase-tools \
   && mkdir -p /app/packages/web \
   && chown -R node:node /app \
   && echo "alias ll='ls -al'" >> /home/node/.bashrc

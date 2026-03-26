@@ -230,6 +230,18 @@ firebase deploy --only functions --project <project-id>
 - **GCP 側**: Document AI API の有効化、プロセッサの作成
 - **ローカル**: `packages/functions/.env.<project-id>` に環境変数を設定（`GCP_PROJECT_ID`, `DOCAI_LOCATION`, `DOCAI_PROCESSOR_ID`）
 
+### Web フロントエンドをデプロイする
+
+Firebase Hosting を使用して Web フロントエンドをデプロイします。
+
+```bash
+# Hosting のみデプロイ（predeploy で自動ビルドされます）
+firebase deploy --only hosting --project <project-id>
+```
+
+デプロイ後、`https://<project-id>.web.app` で Web フロントエンドにアクセスできます。
+`/api/**` へのリクエストは Firebase Hosting の rewrites により、Cloud Run（Functions Gen2）に自動転送されます。
+
 ### Web フロントエンドをローカルで実行する
 
 Functions を起動した状態で、別ターミナルから Web 開発サーバーを起動します。
@@ -375,7 +387,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │   └── ai-development-guidelines.md   # AI駆動開発ガイドライン
 ├── .dockerignore                        # Docker ビルド除外設定
 ├── .firebaserc                          # Firebase プロジェクト設定
-├── firebase.json                        # Firebase 設定（Functions デプロイ）
+├── firebase.json                        # Firebase 設定（Functions + Hosting デプロイ）
 ├── package.json                        # workspaces ルート
 ├── tsconfig.json                       # 共通 TypeScript ベース設定
 ├── CONTRIBUTING.md                     # 開発ガイド

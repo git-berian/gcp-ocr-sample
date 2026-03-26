@@ -5,22 +5,7 @@ labels: []
 assignees: []
 
 body:
-  - type: dropdown
-    id: type
-    attributes:
-      label: 種別
-      description: Issueの種類を選択してください
-      options:
-        - bug
-        - feature
-        - refactor
-        - chore
-        - docs
-        - test
-    validations:
-      required: true
-
-  - type: input
+  - type: textarea
     id: summary
     attributes:
       label: 概要
@@ -30,37 +15,20 @@ body:
       required: true
 
   - type: textarea
+    id: changes
+    attributes:
+      label: 変更内容
+      description: 実施する内容を具体的に記載
+      placeholder: |
+        - 原因調査
+        - 修正実装
+        - テスト追加
+
+  - type: textarea
     id: background
     attributes:
-      label: 背景・目的
+      label: 背景
       description: なぜ対応が必要か
       placeholder: |
         - 現在〇〇の問題がある
         - ユーザー影響が出ている
-
-  - type: textarea
-    id: tasks
-    attributes:
-      label: 対応内容
-      description: 実施するタスクをチェックリストで記載
-      placeholder: |
-        - [ ] 原因調査
-        - [ ] 修正実装
-        - [ ] テスト追加
-        - [ ] 動作確認
-
-  - type: textarea
-    id: acceptance
-    attributes:
-      label: 完了条件
-      description: このIssueが完了したと判断する条件
-      placeholder: |
-        - 〇〇が正常動作する
-        - テストが通る
-        - 回帰がない
-
-  - type: textarea
-    id: notes
-    attributes:
-      label: 備考
-      description: 参考情報・関連Issueなど

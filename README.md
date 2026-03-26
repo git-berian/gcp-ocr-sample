@@ -172,7 +172,7 @@ npm run docker:functions:start
 
 起動すると以下のようなログが表示されます：
 
-```
+```text
 ✔  functions[<region>-parseDocument]: http function initialized
     (http://127.0.0.1:8080/<project-id>/<region>/parseDocument)
 ```

@@ -152,4 +152,4 @@ Dependabot（`.github/dependabot.yml`）で依存パッケージを自動監視�
 
 ### `.gitignore`
 
-- 除外対象: `.DS_Store`, `.env`, `.idea/`, `.claude/settings.local.json`, `node_modules`, `dist`, `storybook-static`, `playwright-report`, `test-results`, `tasks`, `secrets`, `input`, `logs`, `.firebase`
+- 除外対象: `.DS_Store`, `.env`, `.env.*`, `.idea/`, `.claude/settings.local.json`, `node_modules`, `dist`, `storybook-static`, `playwright-report`, `test-results`, `tasks`, `secrets`, `input`, `logs`, `.firebase`

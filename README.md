@@ -177,15 +177,15 @@ npm run docker:functions:start
     (http://127.0.0.1:8080/<project-id>/<region>/parseDocument)
 ```
 
-リージョンは `onRequest` のオプションで指定した値（デフォルト: `us-central1`）です。
+リージョンは `onRequest` のオプションで指定した値（現在: `asia-northeast1`）です。
 
 ローカルサーバーが起動したら、別ターミナルから curl でリクエストできます。
 URL は `http://localhost:8080/<project-id>/<region>/parseDocument` の形式です。
 
 ```bash
 # エミュレータ起動時のログに表示される URL を使用
-# 例: http://localhost:8080/your-gcp-project-id/us-central1/parseDocument
-FUNCTION_URL="http://localhost:8080/your-gcp-project-id/us-central1/parseDocument"
+# 例: http://localhost:8080/your-gcp-project-id/asia-northeast1/parseDocument
+FUNCTION_URL="http://localhost:8080/your-gcp-project-id/asia-northeast1/parseDocument"
 
 # リクエスト用 JSON ファイルを作成
 CONTENT=$(base64 -i input/receipt.jpg | tr -d '\n')

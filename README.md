@@ -224,11 +224,11 @@ firebase use <project-id>
 firebase deploy --only functions --project <project-id>
 ```
 
-デプロイ前に、GCP 側で以下の設定が必要です：
+デプロイ前に以下の準備が必要です：
 
-- Firebase プロジェクトの作成（GCP プロジェクトと紐づけ）
-- Document AI API の有効化、プロセッサの作成
-- 環境変数の設定（`GCP_PROJECT_ID`, `DOCAI_LOCATION`, `DOCAI_PROCESSOR_ID`）
+- **GCP 側**: Firebase プロジェクトの作成（GCP プロジェクトと紐づけ）、Blaze プラン（従量課金）へのアップグレード
+- **GCP 側**: Document AI API の有効化、プロセッサの作成
+- **ローカル**: `packages/functions/.env.<project-id>` に環境変数を設定（`GCP_PROJECT_ID`, `DOCAI_LOCATION`, `DOCAI_PROCESSOR_ID`）
 
 ### Web フロントエンドをローカルで実行する
 

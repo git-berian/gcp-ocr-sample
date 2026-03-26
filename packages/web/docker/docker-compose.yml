@@ -8,7 +8,7 @@ services:
     env_file: ../../../.env
     environment:
       API_PROXY_TARGET: http://host.docker.internal:8080
-      FUNCTIONS_EMULATOR_PATH: /documentaisample-488504/asia-northeast1/parseDocument
+      FUNCTIONS_REGION: asia-northeast1
     ports:
       - "5173:5173"
       - "6006:6006"

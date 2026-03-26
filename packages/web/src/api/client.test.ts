@@ -21,9 +21,11 @@ describe("post", () => {
       }),
     );
 
-    const result = await post<{ name: string }, { entities: never[] }>("/parse", { name: "test" });
+    const result = await post<{ name: string }, { entities: never[] }>("/parseDocument", {
+      name: "test",
+    });
 
-    expect(fetch).toHaveBeenCalledWith("/api/parse", {
+    expect(fetch).toHaveBeenCalledWith("/api/parseDocument", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "test" }),
@@ -41,10 +43,10 @@ describe("post", () => {
       }),
     );
 
-    await post("/parse", {});
+    await post("/parseDocument", {});
 
     expect(fetch).toHaveBeenCalledWith(
-      "https://example.com/parse",
+      "https://example.com/parseDocument",
       expect.objectContaining({ method: "POST" }),
     );
   });
@@ -59,8 +61,8 @@ describe("post", () => {
       }),
     );
 
-    await expect(post("/parse", {})).rejects.toThrow(ApiRequestError);
-    await expect(post("/parse", {})).rejects.toThrow("Invalid request");
+    await expect(post("/parseDocument", {})).rejects.toThrow(ApiRequestError);
+    await expect(post("/parseDocument", {})).rejects.toThrow("Invalid request");
   });
 
   it("falls back to HTTP status when error field is missing from response", async () => {
@@ -73,7 +75,7 @@ describe("post", () => {
       }),
     );
 
-    await expect(post("/parse", {})).rejects.toThrow("HTTP 422");
+    await expect(post("/parseDocument", {})).rejects.toThrow("HTTP 422");
   });
 
   it("throws ApiRequestError with status code when error JSON parsing fails", async () => {
@@ -86,6 +88,6 @@ describe("post", () => {
       }),
     );
 
-    await expect(post("/parse", {})).rejects.toThrow("HTTP 500");
+    await expect(post("/parseDocument", {})).rejects.toThrow("HTTP 500");
   });
 });

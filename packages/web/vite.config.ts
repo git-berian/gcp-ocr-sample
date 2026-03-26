@@ -8,7 +8,14 @@ export default defineConfig({
       "/api": {
         target: process.env.API_PROXY_TARGET ?? "http://localhost:8080",
         changeOrigin: true,
-        rewrite: () => process.env.FUNCTIONS_EMULATOR_PATH ?? "",
+        rewrite: (path) => {
+          const projectId = process.env.GCP_PROJECT_ID;
+          const region = process.env.FUNCTIONS_REGION;
+          if (projectId && region) {
+            return path.replace(/^\/api/, `/${projectId}/${region}`);
+          }
+          return path.replace(/^\/api/, "");
+        },
       },
     },
   },

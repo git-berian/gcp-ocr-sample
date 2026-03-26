@@ -10,9 +10,8 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => {
           const projectId = process.env.GCP_PROJECT_ID;
-          const region = process.env.FUNCTIONS_REGION;
-          if (projectId && region) {
-            return path.replace(/^\/api/, `/${projectId}/${region}`);
+          if (projectId) {
+            return path.replace(/^\/api/, `/${projectId}/asia-northeast1`);
           }
           return path.replace(/^\/api/, "");
         },

@@ -220,8 +220,8 @@ firebase login
 # 2. Firebase プロジェクトを設定
 firebase use <project-id>
 
-# 3. デプロイ
-firebase deploy --only functions
+# 3. デプロイ（--project で対象プロジェクトを明示）
+firebase deploy --only functions --project <project-id>
 ```
 
 デプロイ前に、GCP 側で以下の設定が必要です：

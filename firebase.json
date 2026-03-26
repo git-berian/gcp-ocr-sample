@@ -20,7 +20,7 @@
         "destination": "/index.html"
       }
     ],
-    "predeploy": "npm run docker:web:build"
+    "predeploy": "npm run build -w @docai/web"
   },
   "emulators": {
     "functions": {

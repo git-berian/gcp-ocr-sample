@@ -135,7 +135,7 @@ npm run dev -w @docai/web -- --host    # 開発サーバー起動（--host 必�
 npm run lint:fix -w @docai/web         # ESLint 自動修正
 npm run format -w @docai/web           # Prettier フォーマット
 npm run test:unit -w @docai/web        # ユニットテストのみ
-npm run storybook -w @docai/web        # Storybook 開発サーバー起動
+npm run storybook -w @docai/web -- --host 0.0.0.0  # Storybook 開発サーバー起動（--host 必須）
 npm run build:storybook -w @docai/web  # Storybook 静的ビルド
 npm run test:coverage -w @docai/web    # テスト + カバレッジ計測
 npm run test:watch -w @docai/web       # テスト実行（ウォッチモード）

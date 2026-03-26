@@ -1,10 +1,15 @@
-import type { HttpFunction } from "@google-cloud/functions-framework";
+import type { Request } from "firebase-functions/v2/https";
 import { validateParseDocumentRequest } from "../infrastructure/request-validator.js";
 import { loadFunctionsConfig } from "../infrastructure/config.js";
 import { createDocumentProcessor } from "../infrastructure/document-ai-client.js";
 import { parseDocument } from "../application/parse-document.js";
 
-export const handleParseDocument: HttpFunction = async (req, res) => {
+interface JsonResponse {
+  status(code: number): JsonResponse;
+  json(body: unknown): JsonResponse;
+}
+
+export const handleParseDocument = async (req: Request, res: JsonResponse): Promise<void> => {
   console.log(`[${req.method}] ${req.path}`);
 
   if (req.method !== "POST") {

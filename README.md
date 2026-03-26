@@ -5,11 +5,11 @@ npm workspaces によるモノレポ構成を採用しており、デプロイ�
 
 ## モノレポ構成
 
-| パッケージ           | 説明                                               |
-| -------------------- | -------------------------------------------------- |
-| `packages/cli`       | CLI ツール（Document AI による OCR）               |
-| `packages/functions` | Cloud Functions HTTP API（Document AI による OCR） |
-| `packages/web`       | Web フロントエンド（React + Vite SPA）             |
+| パッケージ           | 説明                                                  |
+| -------------------- | ----------------------------------------------------- |
+| `packages/cli`       | CLI ツール（Document AI による OCR）                  |
+| `packages/functions` | Firebase Functions HTTP API（Document AI による OCR） |
+| `packages/web`       | Web フロントエンド（React + Vite SPA）                |
 
 ## 必要なもの
 
@@ -17,6 +17,7 @@ npm workspaces によるモノレポ構成を採用しており、デプロイ�
 - GCP プロジェクト（Document AI API が有効化済み）
 - Document AI プロセッサ（Expense Parser 等）
 - サービスアカウントキー（JSON）
+- Firebase CLI（`npm install -g firebase-tools`）— Functions のデプロイ時に必要
 
 ## セットアップ
 
@@ -80,7 +81,7 @@ npm run docker:functions:lint           # ESLint 実行
 npm run docker:functions:format:check   # Prettier チェック
 npm run docker:functions:test           # テスト実行
 npm run docker:functions:test:coverage  # テスト + カバレッジ計測
-npm run docker:functions:start          # ビルド＋ローカルサーバー起動
+npm run docker:functions:start          # ビルド＋Firebase Emulator 起動
 npm run docker:functions:sh             # コンテナに入って操作
 npm run docker:functions:build          # Docker イメージのビルド
 
@@ -120,7 +121,8 @@ npm run test:watch -w @docai/cli       # テスト実行（ウォッチモード
 
 # Functions パッケージ
 npm run build -w @docai/functions            # TypeScript ビルド
-npm run start -w @docai/functions            # ローカルサーバー起動（要ビルド済み）
+npm run start -w @docai/functions            # ビルド＋Firebase Emulator 起動
+npm run shell -w @docai/functions            # ビルド＋Firebase Functions Shell
 npm run lint:fix -w @docai/functions         # ESLint 自動修正
 npm run format -w @docai/functions           # Prettier フォーマット
 npm run test:unit -w @docai/functions        # ユニットテストのみ
@@ -162,22 +164,71 @@ docker-compose -f packages/cli/docker/docker-compose.prod.yml up --build
 
 ### Functions をローカルで実行する
 
+Docker コンテナ内で Firebase Emulator を使用してローカル実行します。
+
 ```bash
 npm run docker:functions:start
 ```
 
+起動すると以下のようなログが表示されます：
+
+```text
+✔  functions[<region>-parseDocument]: http function initialized
+    (http://127.0.0.1:8080/<project-id>/<region>/parseDocument)
+```
+
+リージョンは `onRequest` のオプションで指定した値（デフォルト: `us-central1`）です。
+
 ローカルサーバーが起動したら、別ターミナルから curl でリクエストできます。
+URL は `http://localhost:8080/<project-id>/<region>/parseDocument` の形式です。
 
 ```bash
+# エミュレータ起動時のログに表示される URL を使用
+# 例: http://localhost:8080/your-gcp-project-id/us-central1/parseDocument
+FUNCTION_URL="http://localhost:8080/your-gcp-project-id/us-central1/parseDocument"
+
 # リクエスト用 JSON ファイルを作成
 CONTENT=$(base64 -i input/receipt.jpg | tr -d '\n')
 printf '{"content":"%s","mimeType":"image/jpeg"}' "$CONTENT" > /tmp/request.json
 
 # curl でリクエスト（-d @ でファイルから読み込み）
-curl -s -X POST http://localhost:8080 \
+curl -s -X POST "${FUNCTION_URL}" \
   -H "Content-Type: application/json" \
   -d @/tmp/request.json
 ```
+
+> **Note**: Web フロントエンド（`packages/web`）から Functions に接続する場合は、Vite の proxy 設定（`vite.config.ts`）のリライト先を Firebase Emulator の URL パターンに合わせて更新する必要があります。
+
+対話型シェルで関数を呼び出すこともできます。
+
+```bash
+npm run docker:functions:sh
+# コンテナ内で
+npm run shell -w @docai/functions
+# シェル内で関数を呼び出し
+parseDocument({method: "POST", body: {content: "base64data", mimeType: "application/pdf"}})
+```
+
+### Functions をデプロイする
+
+Firebase CLI を使用して GCP にデプロイします。
+
+```bash
+# 1. Firebase にログイン（初回のみ）
+firebase login
+
+# 2. Firebase プロジェクトを設定
+firebase use <project-id>
+
+# 3. デプロイ（--project で対象プロジェクトを明示）
+firebase deploy --only functions --project <project-id>
+```
+
+デプロイ前に、GCP 側で以下の設定が必要です：
+
+- Firebase プロジェクトの作成（GCP プロジェクトと紐づけ）
+- Document AI API の有効化、プロセッサの作成
+- 環境変数の設定（`GCP_PROJECT_ID`, `DOCAI_LOCATION`, `DOCAI_PROCESSOR_ID`）
 
 ### Web フロントエンドをローカルで実行する
 
@@ -276,7 +327,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │   │   ├── tsconfig.test.json          # テスト用
 │   │   ├── vitest.config.ts
 │   │   └── eslint.config.js
-│   ├── functions/                     # Cloud Functions パッケージ
+│   ├── functions/                     # Firebase Functions パッケージ
 │   │   ├── src/
 │   │   │   ├── domain/                 # ドメイン層
 │   │   │   ├── application/            # アプリケーション層
@@ -323,6 +374,8 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │   ├── adr/                           # ADR（アーキテクチャ決定記録）
 │   └── ai-development-guidelines.md   # AI駆動開発ガイドライン
 ├── .dockerignore                        # Docker ビルド除外設定
+├── .firebaserc                          # Firebase プロジェクト設定
+├── firebase.json                        # Firebase 設定（Functions デプロイ）
 ├── package.json                        # workspaces ルート
 ├── tsconfig.json                       # 共通 TypeScript ベース設定
 ├── CONTRIBUTING.md                     # 開発ガイド
@@ -345,6 +398,8 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 | Playwright               | ^1.52                              |
 | Vite                     | ^8.0                               |
 | @google-cloud/documentai | ^9.5.0                             |
+| firebase-functions       | ^6.3                               |
+| firebase-admin           | ^13.4                              |
 
 ## 開発に参加する
 

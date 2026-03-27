@@ -26,6 +26,12 @@ export function AppView({ result, error, isLoading, onSubmit }: AppViewProps) {
       )}
       {error && <ErrorMessage message={error} />}
       {result && <ResultTable entities={result.entities} />}
+      {result && (
+        <details className={styles.rawResponse}>
+          <summary>Raw Response</summary>
+          <pre>{JSON.stringify(result, null, 2)}</pre>
+        </details>
+      )}
     </div>
   );
 }

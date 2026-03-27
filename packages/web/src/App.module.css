@@ -31,6 +31,20 @@
   animation: spin 0.6s linear infinite;
 }
 
+.rawResponse {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.rawResponse pre {
+  margin: 12px 0 0;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 32px 16px;

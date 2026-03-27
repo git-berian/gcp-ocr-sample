@@ -42,6 +42,19 @@ export const handleParseDocument = async (req: Request, res: JsonResponse): Prom
       processor,
     );
 
+    const loggableTypes = new Set([
+      "currency",
+      "receipt_date",
+      "supplier_name",
+      "total_amount",
+      "registration_number",
+    ]);
+    const logEntities = entities.map((e) =>
+      loggableTypes.has(e.type ?? "")
+        ? { type: e.type, mentionText: e.mentionText, confidence: e.confidence }
+        : { type: e.type, confidence: e.confidence },
+    );
+    console.log(`[AI] entities:`, JSON.stringify(logEntities));
     const body = { entities };
     console.log(`[RES] 200 entities=${entities.length}`);
     res.status(200).json(body);

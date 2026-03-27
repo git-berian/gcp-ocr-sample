@@ -5,7 +5,7 @@ services:
     build:
       context: ../../..
       dockerfile: packages/functions/docker/Dockerfile
-    env_file: ../../../.env
+    env_file: ../.env
     environment:
       GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/sa.json
     ports:

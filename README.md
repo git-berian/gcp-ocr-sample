@@ -5,11 +5,11 @@ npm workspaces によるモノレポ構成を採用しており、デプロイ�
 
 ## モノレポ構成
 
-| パッケージ           | 説明                                                  |
-| -------------------- | ----------------------------------------------------- |
-| `packages/cli`       | CLI ツール（Document AI による OCR）                  |
-| `packages/functions` | Firebase Functions HTTP API（Document AI による OCR） |
-| `packages/web`       | Web フロントエンド（React + Vite SPA）                |
+| パッケージ                                  | 説明                                                  |
+| ------------------------------------------- | ----------------------------------------------------- |
+| [`packages/cli`](packages/cli/)             | CLI ツール（Document AI による OCR）                  |
+| [`packages/functions`](packages/functions/) | Firebase Functions HTTP API（Document AI による OCR） |
+| [`packages/web`](packages/web/)             | Web フロントエンド（React + Vite SPA）                |
 
 ## 必要なもの
 
@@ -62,232 +62,11 @@ npm run docker:setup
 ## 使い方
 
 開発コマンドは Docker 経由で実行します。ローカルの Node.js バージョンに依存しません。
+各パッケージの詳細な使い方は、それぞれの README を参照してください。
 
-### 開発コマンド
-
-パッケージごとに `docker:cli:*` / `docker:functions:*` / `docker:web:*` で実行します。
-
-```bash
-# CLI パッケージ
-npm run docker:cli:lint           # ESLint 実行
-npm run docker:cli:format:check   # Prettier チェック
-npm run docker:cli:test           # テスト実行
-npm run docker:cli:test:coverage  # テスト + カバレッジ計測
-npm run docker:cli:sh             # コンテナに入って操作
-npm run docker:cli:build          # Docker イメージのビルド
-
-# Functions パッケージ
-npm run docker:functions:lint           # ESLint 実行
-npm run docker:functions:format:check   # Prettier チェック
-npm run docker:functions:test           # テスト実行
-npm run docker:functions:test:coverage  # テスト + カバレッジ計測
-npm run docker:functions:start          # ビルド＋Firebase Emulator 起動
-npm run docker:functions:sh             # コンテナに入って操作
-npm run docker:functions:build          # Docker イメージのビルド
-
-# Web パッケージ
-npm run docker:web:lint           # ESLint 実行
-npm run docker:web:format:check   # Prettier チェック
-npm run docker:web:test           # テスト実行
-npm run docker:web:test:coverage  # テスト + カバレッジ計測
-npm run docker:web:dev            # 開発サーバー起動
-npm run docker:web:sh             # コンテナに入って操作
-npm run docker:web:build          # Vite プロダクションビルド
-npm run docker:web:storybook      # Storybook 開発サーバー起動（localhost:6006）
-npm run docker:web:build:storybook # Storybook 静的ビルド
-npm run docker:web:test:visual         # Visual Regression テスト実行
-npm run docker:web:test:visual:update  # ベースラインスクリーンショット更新
-```
-
-### コンテナ内での操作
-
-```bash
-npm run docker:cli:sh        # CLI コンテナ
-npm run docker:functions:sh  # Functions コンテナ
-npm run docker:web:sh        # Web コンテナ
-```
-
-コンテナ内では以下のコマンドも実行できます（`-w` は `--workspace` の短縮形）。
-
-```bash
-# CLI パッケージ
-npm run build -w @docai/cli            # TypeScript ビルド
-npm run lint:fix -w @docai/cli         # ESLint 自動修正
-npm run format -w @docai/cli           # Prettier フォーマット
-npm run test:unit -w @docai/cli        # ユニットテストのみ
-npm run test:integration -w @docai/cli # 統合テストのみ
-npm run test:coverage -w @docai/cli    # テスト + カバレッジ計測
-npm run test:watch -w @docai/cli       # テスト実行（ウォッチモード）
-
-# Functions パッケージ
-npm run build -w @docai/functions            # TypeScript ビルド
-npm run start -w @docai/functions            # ビルド＋Firebase Emulator 起動
-npm run shell -w @docai/functions            # ビルド＋Firebase Functions Shell
-npm run lint:fix -w @docai/functions         # ESLint 自動修正
-npm run format -w @docai/functions           # Prettier フォーマット
-npm run test:unit -w @docai/functions        # ユニットテストのみ
-npm run test:coverage -w @docai/functions    # テスト + カバレッジ計測
-npm run test:watch -w @docai/functions       # テスト実行（ウォッチモード）
-
-# Web パッケージ
-npm run build -w @docai/web            # TypeScript + Vite ビルド
-npm run dev -w @docai/web -- --host    # 開発サーバー起動（--host 必須）
-npm run lint:fix -w @docai/web         # ESLint 自動修正
-npm run format -w @docai/web           # Prettier フォーマット
-npm run test:unit -w @docai/web        # ユニットテストのみ
-npm run storybook -w @docai/web -- --host 0.0.0.0  # Storybook 開発サーバー起動（--host 必須）
-npm run build:storybook -w @docai/web  # Storybook 静的ビルド
-npm run test:coverage -w @docai/web    # テスト + カバレッジ計測
-npm run test:watch -w @docai/web       # テスト実行（ウォッチモード）
-```
-
-### CLI で OCR を実行する
-
-開発コンテナ内で実行する場合:
-
-```bash
-npm run docker:cli:sh
-# コンテナ内で
-npm run build -w @docai/cli
-npm run start -w @docai/cli
-```
-
-本番用の docker-compose で一括実行する場合:
-
-```bash
-docker-compose -f packages/cli/docker/docker-compose.prod.yml up --build
-```
-
-実行すると、Document AI で解析された entities が JSON 形式で標準出力に表示されます。
-
-別のファイルを解析する場合は `.env` の `FILE_NAME` を変更して再実行してください。
-
-### Functions をローカルで実行する
-
-Docker コンテナ内で Firebase Emulator を使用してローカル実行します。
-
-```bash
-npm run docker:functions:start
-```
-
-起動すると以下のようなログが表示されます：
-
-```text
-✔  functions[<region>-parseDocument]: http function initialized
-    (http://127.0.0.1:8080/<project-id>/<region>/parseDocument)
-```
-
-リージョンは `onRequest` のオプションで指定した値（現在: `asia-northeast1`）です。
-
-ローカルサーバーが起動したら、別ターミナルから curl でリクエストできます。
-URL は `http://localhost:8080/<project-id>/<region>/parseDocument` の形式です。
-
-```bash
-# エミュレータ起動時のログに表示される URL を使用
-# 例: http://localhost:8080/your-gcp-project-id/asia-northeast1/parseDocument
-FUNCTION_URL="http://localhost:8080/your-gcp-project-id/asia-northeast1/parseDocument"
-
-# リクエスト用 JSON ファイルを作成
-CONTENT=$(base64 -i input/receipt.jpg | tr -d '\n')
-printf '{"content":"%s","mimeType":"image/jpeg"}' "$CONTENT" > /tmp/request.json
-
-# curl でリクエスト（-d @ でファイルから読み込み）
-curl -s -X POST "${FUNCTION_URL}" \
-  -H "Content-Type: application/json" \
-  -d @/tmp/request.json
-```
-
-対話型シェルで関数を呼び出すこともできます。
-
-```bash
-npm run docker:functions:sh
-# コンテナ内で
-npm run shell -w @docai/functions
-# シェル内で関数を呼び出し
-parseDocument({method: "POST", body: {content: "base64data", mimeType: "application/pdf"}})
-```
-
-### デプロイ
-
-デプロイはそれぞれのパッケージの Docker コンテナ内から実行します。
-
-デプロイ前に以下の準備が必要です：
-
-- **GCP 側**: Firebase プロジェクトの作成（GCP プロジェクトと紐づけ）、Blaze プラン（従量課金）へのアップグレード
-- **GCP 側**: Document AI API の有効化、プロセッサの作成
-- **ローカル**: `packages/functions/.env.<project-id>` に環境変数を設定（`GCP_PROJECT_ID`, `DOCAI_LOCATION`, `DOCAI_PROCESSOR_ID`）
-
-#### Functions
-
-```bash
-npm run docker:functions:sh
-
-# コンテナ内で
-firebase login --no-localhost  # 初回のみ
-firebase deploy --only functions --project <project-id>
-```
-
-#### Web（Hosting）
-
-```bash
-npm run docker:web:sh
-
-# コンテナ内で
-firebase login --no-localhost  # 初回のみ
-firebase deploy --only hosting --project <project-id>
-```
-
-デプロイ後、`https://<project-id>.web.app` で Web フロントエンドにアクセスできます。
-`/api/**` へのリクエストは Firebase Hosting の rewrites により、Cloud Run（Functions Gen2）に自動転送されます。
-
-### Web フロントエンドをローカルで実行する
-
-Functions を起動した状態で、別ターミナルから Web 開発サーバーを起動します。
-
-```bash
-# ターミナル1: Functions 起動
-npm run docker:functions:start
-
-# ターミナル2: Web 開発サーバー起動
-npm run docker:web:dev
-```
-
-ブラウザで http://localhost:5173 にアクセスし、ファイルをアップロードすると OCR 結果が表示されます。
-
-### Storybook でコンポーネントを確認する
-
-```bash
-npm run docker:web:storybook
-```
-
-ブラウザで http://localhost:6006 にアクセスすると、各コンポーネントの状態バリエーションを一覧できます。
-
-### Visual Regression テストを実行する
-
-コンポーネントの見た目が意図せず変わっていないかをスクリーンショット比較で検証します。
-
-```bash
-# 1. Storybook を静的ビルド
-npm run docker:web:build:storybook
-
-# 2. ベースラインとの差分チェック
-npm run docker:web:test:visual
-```
-
-コンポーネントの見た目を意図的に変更した場合は、ベースラインスクリーンショットを更新します。
-
-```bash
-# 1. Storybook を静的ビルド
-npm run docker:web:build:storybook
-
-# 2. ベースラインを撮り直す
-npm run docker:web:test:visual:update
-
-# 3. 更新された PNG を git にコミット
-git add packages/web/e2e/components.visual.ts-snapshots/
-```
-
-CI では Storybook ビルド → Playwright テストが自動実行され、ベースラインとの差分があれば失敗します。
+- [CLI パッケージ](packages/cli/)
+- [Functions パッケージ](packages/functions/)
+- [Web パッケージ](packages/web/)
 
 ## アーキテクチャ
 
@@ -307,7 +86,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 
 | ファイル                                      | 用途     | 説明                                                    |
 | --------------------------------------------- | -------- | ------------------------------------------------------- |
-| `packages/cli/docker/Dockerfile`              | 開発環境 | Node.js 20 ベースイメージ（ソースはボリュームマウント） |
+| `packages/cli/docker/Dockerfile`              | 開発環境 | Node.js 22 ベースイメージ（ソースはボリュームマウント） |
 | `packages/cli/docker/Dockerfile.prod`         | 本番環境 | マルチステージビルドで本番依存のみ含む                  |
 | `packages/cli/docker/docker-compose.yml`      | 開発環境 | `Dockerfile` を使用                                     |
 | `packages/cli/docker/docker-compose.prod.yml` | 本番環境 | `Dockerfile.prod` を使用                                |
@@ -398,7 +177,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 
 | Tool                     | Version                            |
 | ------------------------ | ---------------------------------- |
-| Node.js                  | 20 (Docker イメージ: node:20-slim) |
+| Node.js                  | 22 (Docker イメージ: node:22-slim) |
 | TypeScript               | ^5.9                               |
 | Vitest                   | ^4.0                               |
 | ESLint                   | ^10.0                              |

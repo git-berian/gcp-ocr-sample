@@ -115,6 +115,7 @@ Dependabot（`.github/dependabot.yml`）で依存パッケージを自動監視�
 | -------------- | --------------------- | ------ |
 | npm            | `packages/cli/`       | weekly |
 | npm            | `packages/functions/` | weekly |
+| npm            | `packages/web/`       | weekly |
 | GitHub Actions | `/`                   | weekly |
 
 ## ADR（Architecture Decision Records）
@@ -136,11 +137,11 @@ Dependabot（`.github/dependabot.yml`）で依存パッケージを自動監視�
 - 各パッケージの `tsconfig.json` で extends して outDir / rootDir を指定
 - テスト用は `tsconfig.test.json`（noEmit: true、`src` + `tests` を含む）
 
-### Vitest (`packages/cli/vitest.config.ts`, `packages/functions/vitest.config.ts`)
+### Vitest (`packages/cli/vitest.config.ts`, `packages/functions/vitest.config.ts`, `packages/web/vitest.config.ts`)
 
 - projects で unit（`src/**/*.test.ts`）と integration（`tests/integration/**/*.test.ts`）を分離
 
-### ESLint (`packages/cli/eslint.config.js`, `packages/functions/eslint.config.js`)
+### ESLint (`packages/cli/eslint.config.js`, `packages/functions/eslint.config.js`, `packages/web/eslint.config.js`)
 
 - Flat Config 形式
 - `@eslint/js` recommended + `typescript-eslint` recommended + `eslint-config-prettier`

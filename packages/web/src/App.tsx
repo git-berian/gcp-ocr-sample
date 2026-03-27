@@ -2,9 +2,12 @@ import { useParseDocument } from "./hooks/useParseDocument";
 import { FileUploader } from "./components/FileUploader";
 import { ResultTable } from "./components/ResultTable";
 import { ErrorMessage } from "./components/ErrorMessage";
+import { PasswordGate } from "./components/PasswordGate";
 import type { ParseDocumentResponse } from "./api/types";
 import "./App.css";
 import styles from "./App.module.css";
+
+const APP_PASSWORD = import.meta.env.VITE_APP_PASSWORD ?? "";
 
 export interface AppViewProps {
   result: ParseDocumentResponse | null;
@@ -39,5 +42,11 @@ export function AppView({ result, error, isLoading, onSubmit }: AppViewProps) {
 export function App() {
   const { result, error, isLoading, submit } = useParseDocument();
 
-  return <AppView result={result} error={error} isLoading={isLoading} onSubmit={submit} />;
+  const appView = <AppView result={result} error={error} isLoading={isLoading} onSubmit={submit} />;
+
+  if (!APP_PASSWORD) {
+    return appView;
+  }
+
+  return <PasswordGate password={APP_PASSWORD}>{appView}</PasswordGate>;
 }

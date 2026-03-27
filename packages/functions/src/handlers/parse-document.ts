@@ -42,6 +42,7 @@ export const handleParseDocument = async (req: Request, res: JsonResponse): Prom
       processor,
     );
 
+    console.log(`[AI] entities:`, JSON.stringify(entities));
     const body = { entities };
     console.log(`[RES] 200 entities=${entities.length}`);
     res.status(200).json(body);

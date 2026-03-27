@@ -82,7 +82,7 @@ parseDocument({method: "POST", body: {content: "base64data", mimeType: "applicat
 
 - **GCP 側**: Firebase プロジェクトの作成（GCP プロジェクトと紐づけ）、Blaze プラン（従量課金）へのアップグレード
 - **GCP 側**: Document AI API の有効化、プロセッサの作成
-- **ローカル**: `packages/functions/.env.<project-id>` に環境変数を設定（`GCP_PROJECT_ID`, `DOCAI_LOCATION`, `DOCAI_PROCESSOR_ID`）
+- **ローカル**: プロジェクトルートの `.env` に環境変数を設定（`.env.example` を参照: `GCP_PROJECT_ID`, `DOCAI_LOCATION`, `DOCAI_PROCESSOR_ID`）
 
 ```bash
 npm run docker:functions:sh

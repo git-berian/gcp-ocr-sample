@@ -1,10 +1,14 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AppView } from "./App";
 
 describe("AppView", () => {
   const mockSubmit = vi.fn();
+
+  beforeEach(() => {
+    mockSubmit.mockClear();
+  });
 
   const defaultProps = {
     result: null,

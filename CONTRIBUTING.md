@@ -21,7 +21,7 @@
 ## 規約
 
 - ES Modules（`import` を使用、`require` は不可）
-- Node.js 20（Docker イメージ: `node:20-slim`）
+- Node.js 22（Docker イメージ: `node:22-slim`）
 - `.env` は git 管理外。共有設定は `.env.example` で管理する
 
 ## コミットメッセージ規約

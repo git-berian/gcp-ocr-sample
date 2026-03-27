@@ -28,7 +28,7 @@ export function AppView({ result, error, isLoading, onSubmit }: AppViewProps) {
       {result && <ResultTable entities={result.entities} />}
       {result && (
         <details className={styles.rawResponse}>
-          <summary>Raw Response</summary>
+          <summary>生データ</summary>
           <pre>{JSON.stringify(result, null, 2)}</pre>
         </details>
       )}

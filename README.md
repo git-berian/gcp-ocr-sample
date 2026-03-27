@@ -31,19 +31,15 @@ secrets/sa.json
 
 ### 2. 環境変数の設定
 
-`.env.example` をコピーして `.env` を作成し、値を設定してください。
+各パッケージの `.env.example` をコピーして `.env` を作成し、値を設定してください。
 
 ```bash
-cp .env.example .env
+cp packages/cli/.env.example packages/cli/.env
+cp packages/functions/.env.example packages/functions/.env
+cp packages/web/.env.example packages/web/.env
 ```
 
-| 変数名               | 説明                                                                  |
-| -------------------- | --------------------------------------------------------------------- |
-| `GCP_PROJECT_ID`     | GCP プロジェクト ID                                                   |
-| `DOCAI_LOCATION`     | プロセッサのロケーション（`us` / `eu` 等）                            |
-| `DOCAI_PROCESSOR_ID` | Document AI プロセッサ ID                                             |
-| `FILE_NAME`          | `input/` 配下の解析対象ファイル名                                     |
-| `MIME_TYPE`          | （任意）MIME タイプを明示する場合に指定。未指定時は拡張子から自動判定 |
+各パッケージで必要な環境変数の詳細は、それぞれの `.env.example` を参照してください。
 
 ### 3. 解析対象ファイルの配置
 

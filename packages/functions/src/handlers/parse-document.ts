@@ -1,4 +1,5 @@
 import type { Request } from "firebase-functions/v2/https";
+import { validateApiKey } from "../infrastructure/auth-validator.js";
 import { validateParseDocumentRequest } from "../infrastructure/request-validator.js";
 import { loadFunctionsConfig } from "../infrastructure/config.js";
 import { createDocumentProcessor } from "../infrastructure/document-ai-client.js";
@@ -16,6 +17,14 @@ export const handleParseDocument = async (req: Request, res: JsonResponse): Prom
     const body = { error: "許可されていないメソッドです。POST を使用してください。" };
     console.log(`[RES] 405`, JSON.stringify(body));
     res.status(405).json(body);
+    return;
+  }
+
+  const authResult = validateApiKey(req.headers.authorization, process.env.API_KEY ?? "");
+  if (!authResult.ok) {
+    const body = { error: authResult.message };
+    console.log(`[RES] 401`, JSON.stringify(body));
+    res.status(401).json(body);
     return;
   }
 

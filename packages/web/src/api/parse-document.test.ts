@@ -1,29 +1,46 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { parseDocument } from "./parse-document";
-import * as client from "./client";
 
-vi.mock("./client");
+const { mockCallable } = vi.hoisted(() => ({
+  mockCallable: vi.fn(),
+}));
+
+vi.mock("firebase/functions", () => ({
+  httpsCallable: () => mockCallable,
+}));
+
+vi.mock("./firebase", () => ({
+  functions: {},
+}));
 
 describe("parseDocument", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
+    mockCallable.mockReset();
   });
 
-  it("calls post with /parse and the request body", async () => {
+  it("httpsCallable で parseDocumentCall を呼び出し、結果を返す", async () => {
     const mockResponse = {
       entities: [{ type: "total", mentionText: "1000", confidence: 0.95 }],
     };
-    vi.mocked(client.post).mockResolvedValue(mockResponse);
+    mockCallable.mockResolvedValue({ data: mockResponse });
 
     const result = await parseDocument({
       content: "base64data",
       mimeType: "image/png",
     });
 
-    expect(client.post).toHaveBeenCalledWith("/parseDocument", {
+    expect(mockCallable).toHaveBeenCalledWith({
       content: "base64data",
       mimeType: "image/png",
     });
     expect(result).toEqual(mockResponse);
+  });
+
+  it("エラー時に例外を投げる", async () => {
+    mockCallable.mockRejectedValue(new Error("functions/internal"));
+
+    await expect(parseDocument({ content: "base64data", mimeType: "image/png" })).rejects.toThrow(
+      "functions/internal",
+    );
   });
 });

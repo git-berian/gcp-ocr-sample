@@ -30,4 +30,21 @@ describe("fileToBase64", () => {
     expect(result).not.toContain("data:");
     expect(result).not.toContain("base64,");
   });
+
+  it("rejects when FileReader fails", async () => {
+    const file = new File(["content"], "test.txt", { type: "text/plain" });
+
+    const originalFileReader = globalThis.FileReader;
+    const mockError = new DOMException("Read failed");
+    globalThis.FileReader = class extends originalFileReader {
+      readAsDataURL() {
+        Object.defineProperty(this, "error", { value: mockError });
+        this.onerror?.(new ProgressEvent("error"));
+      }
+    } as typeof FileReader;
+
+    await expect(fileToBase64(file)).rejects.toBe(mockError);
+
+    globalThis.FileReader = originalFileReader;
+  });
 });

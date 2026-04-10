@@ -99,6 +99,51 @@ describe("useParseDocument", () => {
     expect(result.current.isLoading).toBe(false);
   });
 
+  it("再実行時に前回のエラーがクリアされる", async () => {
+    vi.mocked(fileUtils.fileToBase64).mockResolvedValue("base64data");
+    vi.mocked(parseDocumentApi.parseDocument)
+      .mockRejectedValueOnce(new Error("Server error"))
+      .mockResolvedValueOnce({ entities: [] });
+
+    const { result } = renderHook(() => useParseDocument());
+    const file = new File(["content"], "test.png", { type: "image/png" });
+
+    await act(async () => {
+      await result.current.submit(file);
+    });
+    expect(result.current.error).toBe("Server error");
+
+    await act(async () => {
+      await result.current.submit(file);
+    });
+    expect(result.current.error).toBe("");
+    expect(result.current.result).toEqual({ entities: [] });
+  });
+
+  it("再実行時に前回の結果がクリアされる", async () => {
+    const firstResponse = {
+      entities: [{ type: "total", mentionText: "1000", confidence: 0.95 }],
+    };
+    vi.mocked(fileUtils.fileToBase64).mockResolvedValue("base64data");
+    vi.mocked(parseDocumentApi.parseDocument)
+      .mockResolvedValueOnce(firstResponse)
+      .mockRejectedValueOnce(new Error("Server error"));
+
+    const { result } = renderHook(() => useParseDocument());
+    const file = new File(["content"], "test.png", { type: "image/png" });
+
+    await act(async () => {
+      await result.current.submit(file);
+    });
+    expect(result.current.result).toEqual(firstResponse);
+
+    await act(async () => {
+      await result.current.submit(file);
+    });
+    expect(result.current.result).toBeNull();
+    expect(result.current.error).toBe("Server error");
+  });
+
   it("sets isLoading during submission", async () => {
     const loadingStates: boolean[] = [];
     let resolveApi: (value: unknown) => void;

@@ -30,18 +30,18 @@ describe("AppView", () => {
     expect(screen.getByText("解析中...")).toBeInTheDocument();
   });
 
-  it("shows result table when result is available", () => {
-    render(
-      <AppView
-        {...defaultProps}
-        result={{
-          entities: [{ type: "total", mentionText: "1000", confidence: 0.95 }],
-        }}
-      />,
-    );
+  it("shows result table and raw data when result is available", () => {
+    const result = {
+      entities: [{ type: "total", mentionText: "1000", confidence: 0.95 }],
+    };
+    render(<AppView {...defaultProps} result={result} />);
 
     expect(screen.getByText("total")).toBeInTheDocument();
     expect(screen.getByText("1000")).toBeInTheDocument();
+    const details = screen.getByText("生データ");
+    expect(details).toBeInTheDocument();
+    const pre = details.closest("details")?.querySelector("pre");
+    expect(pre?.textContent).toBe(JSON.stringify(result, null, 2));
   });
 
   it("shows error message when error exists", () => {

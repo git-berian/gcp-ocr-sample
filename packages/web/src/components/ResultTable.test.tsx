@@ -34,6 +34,11 @@ describe("ResultTable", () => {
     expect(screen.getByText("date")).toBeInTheDocument();
     expect(screen.getByText("2024-01-01")).toBeInTheDocument();
     expect(screen.getByText("88.0%")).toBeInTheDocument();
+
+    const rows = screen.getAllByRole("row");
+    const dateRow = rows[2];
+    const cells = dateRow.querySelectorAll("td");
+    expect(cells[3]).toHaveTextContent("");
   });
 
   it("renders empty state when no entities", () => {

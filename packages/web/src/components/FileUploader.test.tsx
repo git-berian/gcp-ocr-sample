@@ -81,6 +81,21 @@ describe("FileUploader", () => {
     expect(screen.queryByText("選択済み: test.txt")).not.toBeInTheDocument();
   });
 
+  it("resets file when unsupported MIME type is selected via input", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<FileUploader onSubmit={onSubmit} disabled={false} />);
+
+    const input = screen.getByLabelText("ファイル");
+    const validFile = new File(["content"], "test.png", { type: "image/png" });
+    await user.upload(input, validFile);
+    expect(screen.getByText("選択済み: test.png")).toBeInTheDocument();
+
+    const invalidFile = new File(["content"], "test.gif", { type: "image/gif" });
+    await user.upload(input, invalidFile);
+    expect(screen.queryByText(/選択済み:/)).not.toBeInTheDocument();
+  });
+
   it("ignores drop when no files", () => {
     render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
 

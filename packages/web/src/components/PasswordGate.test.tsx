@@ -44,4 +44,24 @@ describe("PasswordGate", () => {
     expect(screen.getByText("パスワードが正しくありません")).toBeInTheDocument();
     expect(screen.queryByText("protected content")).not.toBeInTheDocument();
   });
+
+  it("エラー後に正しいパスワードで認証成功する", async () => {
+    const user = userEvent.setup();
+    render(
+      <PasswordGate password="secret">
+        <p>protected content</p>
+      </PasswordGate>,
+    );
+
+    await user.type(screen.getByPlaceholderText("パスワード"), "wrong");
+    await user.click(screen.getByRole("button", { name: "ログイン" }));
+    expect(screen.getByText("パスワードが正しくありません")).toBeInTheDocument();
+
+    await user.clear(screen.getByPlaceholderText("パスワード"));
+    await user.type(screen.getByPlaceholderText("パスワード"), "secret");
+    await user.click(screen.getByRole("button", { name: "ログイン" }));
+
+    expect(screen.getByText("protected content")).toBeInTheDocument();
+    expect(screen.queryByText("パスワードが正しくありません")).not.toBeInTheDocument();
+  });
 });

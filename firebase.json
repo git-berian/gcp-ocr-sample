@@ -13,7 +13,7 @@
         "destination": "/index.html"
       }
     ],
-    "predeploy": "npm run build -w @docai/web"
+    "predeploy": "npm run build -w @docai/web -- --mode ${VITE_MODE:-production}"
   },
   "emulators": {
     "functions": {

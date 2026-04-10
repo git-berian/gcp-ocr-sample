@@ -85,7 +85,7 @@ CI では Storybook ビルド → Playwright テストが自動実行され、�
 
 ## デプロイ
 
-`firebase deploy` の `predeploy` フックで `npm run build` が自動実行されます。デフォルトでは mode=production でビルドされるため、開発・ステージング環境にデプロイする場合は事前に対象モードでビルドしてください。
+`firebase deploy` の `predeploy` フックで自動ビルドされます。環境変数 `VITE_MODE` でビルドモードを指定できます（デフォルト: production）。
 
 ```bash
 npm run docker:web:sh
@@ -96,9 +96,11 @@ firebase login --no-localhost  # 初回のみ
 # 本番環境（デフォルト: mode=production）
 firebase deploy --only hosting --project <project-id>
 
-# 開発・ステージング環境の場合は、先にモードを指定してビルド
-npm run build -w @docai/web -- --mode development  # or staging
-firebase deploy --only hosting --project <project-id>
+# 開発環境
+VITE_MODE=development firebase deploy --only hosting --project <project-id>
+
+# ステージング環境
+VITE_MODE=staging firebase deploy --only hosting --project <project-id>
 ```
 
 デプロイ後、`https://<project-id>.web.app` で Web フロントエンドにアクセスできます。

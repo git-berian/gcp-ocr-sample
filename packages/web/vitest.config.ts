@@ -4,6 +4,9 @@ export default defineConfig({
   test: {
     projects: [
       {
+        define: {
+          __USE_EMULATOR__: false,
+        },
         test: {
           name: "unit",
           include: ["src/**/*.test.{ts,tsx}"],

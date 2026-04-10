@@ -134,11 +134,9 @@ Vite の [env ファイル読み込み規約](https://vite.dev/guide/env-and-mod
 
 ### Functions エミュレータ接続
 
-エミュレータ接続は環境変数 `VITE_USE_EMULATOR` で制御します。この変数は `.env` ファイルには設定せず、`docker-compose.yml` の `environment` でローカル開発時のみ注入されます。
+エミュレータ接続は Vite の `command` パラメータで自動判定されます（`vite.config.ts` の `define` で `__USE_EMULATOR__` を設定）。開発サーバー（`vite`）実行時のみエミュレータに接続し、ビルド（`vite build`）では mode に関係なく接続しません。
 
-| シナリオ                                 | `VITE_USE_EMULATOR`        | エミュレータ |
-| ---------------------------------------- | -------------------------- | ------------ |
-| ローカル開発（`docker:web:dev`）         | `"true"`（docker-compose） | 接続する     |
-| 開発環境デプロイ（`--mode development`） | 未設定                     | 接続しない   |
-| STG 環境デプロイ（`--mode staging`）     | 未設定                     | 接続しない   |
-| 本番デプロイ（`--mode production`）      | 未設定                     | 接続しない   |
+| シナリオ                         | Vite command | エミュレータ |
+| -------------------------------- | ------------ | ------------ |
+| ローカル開発（`docker:web:dev`） | serve        | 接続する     |
+| ビルド（全 mode 共通）           | build        | 接続しない   |

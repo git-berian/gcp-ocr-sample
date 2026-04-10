@@ -31,4 +31,9 @@ describe("validateApiKey", () => {
     const result = validateApiKey("Bearer ", validKey);
     expect(result).toEqual({ ok: false, message: "無効な API キーです。" });
   });
+
+  it("validApiKey が空文字の場合、認証失敗", () => {
+    const result = validateApiKey("Bearer any-key", "");
+    expect(result).toEqual({ ok: false, message: "API キーが設定されていません。" });
+  });
 });

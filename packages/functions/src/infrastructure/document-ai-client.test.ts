@@ -4,6 +4,19 @@ import { createDocumentProcessor } from "./document-ai-client.js";
 
 vi.mock("@google-cloud/documentai");
 
+function setupMockClient(mockProcessDocument: ReturnType<typeof vi.fn>) {
+  vi.mocked(DocumentProcessorServiceClient).mockImplementation(function () {
+    return { processDocument: mockProcessDocument } as unknown as DocumentProcessorServiceClient;
+  } as unknown as ConstructorParameters<typeof DocumentProcessorServiceClient>[0] &
+    (() => DocumentProcessorServiceClient));
+}
+
+const defaultProcessParams = {
+  name: "projects/p/locations/us/processors/x",
+  content: "base64content",
+  mimeType: "application/pdf",
+};
+
 describe("createDocumentProcessor", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -14,18 +27,10 @@ describe("createDocumentProcessor", () => {
     const mockProcessDocument = vi
       .fn()
       .mockResolvedValue([{ document: { entities: mockEntities } }]);
-
-    vi.mocked(DocumentProcessorServiceClient).mockImplementation(function () {
-      return { processDocument: mockProcessDocument } as unknown as DocumentProcessorServiceClient;
-    } as unknown as ConstructorParameters<typeof DocumentProcessorServiceClient>[0] &
-      (() => DocumentProcessorServiceClient));
+    setupMockClient(mockProcessDocument);
 
     const processor = createDocumentProcessor("us");
-    const result = await processor.process({
-      name: "projects/p/locations/us/processors/x",
-      content: "base64content",
-      mimeType: "application/pdf",
-    });
+    const result = await processor.process(defaultProcessParams);
 
     expect(mockProcessDocument).toHaveBeenCalledWith({
       name: "projects/p/locations/us/processors/x",
@@ -36,37 +41,30 @@ describe("createDocumentProcessor", () => {
 
   it("documentがnullの場合、空配列を返す", async () => {
     const mockProcessDocument = vi.fn().mockResolvedValue([{ document: null }]);
-
-    vi.mocked(DocumentProcessorServiceClient).mockImplementation(function () {
-      return { processDocument: mockProcessDocument } as unknown as DocumentProcessorServiceClient;
-    } as unknown as ConstructorParameters<typeof DocumentProcessorServiceClient>[0] &
-      (() => DocumentProcessorServiceClient));
+    setupMockClient(mockProcessDocument);
 
     const processor = createDocumentProcessor("us");
-    const result = await processor.process({
-      name: "projects/p/locations/us/processors/x",
-      content: "base64content",
-      mimeType: "application/pdf",
-    });
+    const result = await processor.process(defaultProcessParams);
 
     expect(result).toEqual([]);
   });
 
   it("entitiesがundefinedの場合、空配列を返す", async () => {
     const mockProcessDocument = vi.fn().mockResolvedValue([{ document: { entities: undefined } }]);
-
-    vi.mocked(DocumentProcessorServiceClient).mockImplementation(function () {
-      return { processDocument: mockProcessDocument } as unknown as DocumentProcessorServiceClient;
-    } as unknown as ConstructorParameters<typeof DocumentProcessorServiceClient>[0] &
-      (() => DocumentProcessorServiceClient));
+    setupMockClient(mockProcessDocument);
 
     const processor = createDocumentProcessor("us");
-    const result = await processor.process({
-      name: "projects/p/locations/us/processors/x",
-      content: "base64content",
-      mimeType: "application/pdf",
-    });
+    const result = await processor.process(defaultProcessParams);
 
     expect(result).toEqual([]);
+  });
+
+  it("processDocumentが失敗した場合、エラーが呼び出し元に伝播する", async () => {
+    const mockProcessDocument = vi.fn().mockRejectedValue(new Error("Document AI API error"));
+    setupMockClient(mockProcessDocument);
+
+    const processor = createDocumentProcessor("us");
+
+    await expect(processor.process(defaultProcessParams)).rejects.toThrow("Document AI API error");
   });
 });

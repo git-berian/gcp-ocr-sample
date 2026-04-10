@@ -9,9 +9,9 @@ describe("parseDocument", () => {
     return { process: vi.fn().mockResolvedValue(mockEntities) };
   }
 
-  it("正しいprocessor名を構築してprocessを呼ぶ", async () => {
+  it("正しいprocessor名を構築してprocessを呼び、entitiesを返す", async () => {
     const processor = createMockProcessor();
-    await parseDocument(
+    const result = await parseDocument(
       {
         projectId: "my-project",
         location: "us",
@@ -27,21 +27,6 @@ describe("parseDocument", () => {
       content: "base64content",
       mimeType: "application/pdf",
     });
-  });
-
-  it("entitiesを返す", async () => {
-    const processor = createMockProcessor();
-    const result = await parseDocument(
-      {
-        projectId: "my-project",
-        location: "us",
-        processorId: "proc-123",
-        content: "base64content",
-        mimeType: "application/pdf",
-      },
-      processor,
-    );
-
     expect(result).toEqual(mockEntities);
   });
 });

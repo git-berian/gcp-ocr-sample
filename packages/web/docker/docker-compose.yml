@@ -8,6 +8,7 @@ services:
     env_file: ../.env
     environment:
       API_PROXY_TARGET: http://host.docker.internal:8080
+      VITE_USE_EMULATOR: "true"
     ports:
       - "5173:5173"
       - "6006:6006"

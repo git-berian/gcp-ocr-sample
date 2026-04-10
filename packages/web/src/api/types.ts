@@ -13,7 +13,3 @@ export interface Entity {
 export interface ParseDocumentResponse {
   entities: Entity[];
 }
-
-export interface ApiError {
-  error: string;
-}

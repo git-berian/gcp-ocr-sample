@@ -92,4 +92,5 @@
 - タスク開始フロー → `.claude/skills/task-start.md`
 - PR 作成 → `.claude/skills/create-pr.md`
 - テスト作成 → `.claude/skills/write-tests.md`
+- コードレビュー → `.claude/skills/code-review.md`
 - AI駆動開発ガイドライン → `docs/ai-development-guidelines.md`

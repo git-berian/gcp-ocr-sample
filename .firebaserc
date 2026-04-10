@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "documentaisample-488504"
+    "default": "documentaisample-488504",
+    "dev": "documentaisample-488504"
   }
 }

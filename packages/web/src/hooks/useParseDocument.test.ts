@@ -84,6 +84,21 @@ describe("useParseDocument", () => {
     expect(parseDocumentApi.parseDocument).not.toHaveBeenCalled();
   });
 
+  it("ファイル読み込み失敗時にユーザー向けメッセージを表示する", async () => {
+    vi.mocked(fileUtils.fileToBase64).mockRejectedValue(new DOMException("Read failed"));
+
+    const { result } = renderHook(() => useParseDocument());
+    const file = new File(["content"], "test.png", { type: "image/png" });
+
+    await act(async () => {
+      await result.current.submit(file);
+    });
+
+    expect(result.current.error).toBe("ファイルの読み込みに失敗しました");
+    expect(result.current.isLoading).toBe(false);
+    expect(parseDocumentApi.parseDocument).not.toHaveBeenCalled();
+  });
+
   it("handles non-Error thrown values", async () => {
     vi.mocked(fileUtils.fileToBase64).mockResolvedValue("base64data");
     vi.mocked(parseDocumentApi.parseDocument).mockRejectedValue("string error");

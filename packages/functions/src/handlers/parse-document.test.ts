@@ -27,6 +27,7 @@ function createMockReqRes(
   const { headers = {}, ...rest } = overrides;
   const req = {
     method: "POST",
+    path: "/parseDocument",
     body: { content: "base64data", mimeType: "application/pdf" },
     headers,
     ...rest,
@@ -106,6 +107,18 @@ describe("handleParseDocument", () => {
 
   it("Document AI処理エラー時は500を返す", async () => {
     mockProcess.mockRejectedValue(new Error("API error"));
+
+    const { req, res } = createMockReqRes({
+      headers: { authorization: `Bearer ${TEST_API_KEY}` },
+    });
+    await handleParseDocument(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "内部サーバーエラー" });
+  });
+
+  it("Error以外の例外でも500を返す", async () => {
+    mockProcess.mockRejectedValue("string error");
 
     const { req, res } = createMockReqRes({
       headers: { authorization: `Bearer ${TEST_API_KEY}` },

@@ -19,10 +19,24 @@ describe("loadFunctionsConfig", () => {
     });
   });
 
-  it("必須環境変数が欠けている場合、例外を投げる", () => {
+  it("GCP_PROJECT_IDが欠けている場合、例外を投げる", () => {
     vi.stubEnv("GCP_PROJECT_ID", "");
+    vi.stubEnv("DOCAI_LOCATION", "us");
+    vi.stubEnv("DOCAI_PROCESSOR_ID", "abc123");
+    expect(() => loadFunctionsConfig()).toThrow("Missing env: GCP_PROJECT_ID");
+  });
+
+  it("DOCAI_LOCATIONが欠けている場合、例外を投げる", () => {
+    vi.stubEnv("GCP_PROJECT_ID", "my-project");
     vi.stubEnv("DOCAI_LOCATION", "");
+    vi.stubEnv("DOCAI_PROCESSOR_ID", "abc123");
+    expect(() => loadFunctionsConfig()).toThrow("Missing env: DOCAI_LOCATION");
+  });
+
+  it("DOCAI_PROCESSOR_IDが欠けている場合、例外を投げる", () => {
+    vi.stubEnv("GCP_PROJECT_ID", "my-project");
+    vi.stubEnv("DOCAI_LOCATION", "us");
     vi.stubEnv("DOCAI_PROCESSOR_ID", "");
-    expect(() => loadFunctionsConfig()).toThrow("Missing env:");
+    expect(() => loadFunctionsConfig()).toThrow("Missing env: DOCAI_PROCESSOR_ID");
   });
 });

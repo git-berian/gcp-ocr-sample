@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { HttpsError } from "firebase-functions/v2/https";
 import { handleParseDocumentCall } from "./parse-document-call.js";
 
 vi.mock("../infrastructure/config.js", () => ({
@@ -39,19 +40,40 @@ describe("handleParseDocumentCall", () => {
     expect(result).toEqual({ entities: mockEntities });
   });
 
-  it("バリデーションエラーで HttpsError を投げる", async () => {
+  it("バリデーションエラーで invalid-argument の HttpsError を投げる", async () => {
     const request = createMockRequest({ data: {} });
 
-    await expect(handleParseDocumentCall(request)).rejects.toThrow(
-      "content は必須で、空でない文字列（base64）である必要があります",
+    await expect(handleParseDocumentCall(request)).rejects.toSatisfy((error: HttpsError) => {
+      expect(error).toBeInstanceOf(HttpsError);
+      expect(error.code).toBe("invalid-argument");
+      expect(error.message).toBe("content は必須で、空でない文字列（base64）である必要があります");
+      return true;
+    });
+  });
+
+  it("Document AI処理エラーで internal の HttpsError を投げる", async () => {
+    mockProcess.mockRejectedValue(new Error("API error"));
+
+    await expect(handleParseDocumentCall(createMockRequest())).rejects.toSatisfy(
+      (error: HttpsError) => {
+        expect(error).toBeInstanceOf(HttpsError);
+        expect(error.code).toBe("internal");
+        expect(error.message).toBe("内部サーバーエラー");
+        return true;
+      },
     );
   });
 
-  it("Document AI処理エラーで HttpsError を投げる", async () => {
-    mockProcess.mockRejectedValue(new Error("API error"));
+  it("Error以外の例外でも internal の HttpsError を投げる", async () => {
+    mockProcess.mockRejectedValue("string error");
 
-    await expect(handleParseDocumentCall(createMockRequest())).rejects.toThrow(
-      "内部サーバーエラー",
+    await expect(handleParseDocumentCall(createMockRequest())).rejects.toSatisfy(
+      (error: HttpsError) => {
+        expect(error).toBeInstanceOf(HttpsError);
+        expect(error.code).toBe("internal");
+        expect(error.message).toBe("内部サーバーエラー");
+        return true;
+      },
     );
   });
 });

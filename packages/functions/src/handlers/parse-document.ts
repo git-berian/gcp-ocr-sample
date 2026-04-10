@@ -68,8 +68,7 @@ export const handleParseDocument = async (req: Request, res: JsonResponse): Prom
     console.log(`[RES] 200 entities=${entities.length}`);
     res.status(200).json(body);
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : String(e);
-    console.error("parseDocument 失敗:", message);
+    console.error("parseDocument 失敗:", e);
     const body = { error: "内部サーバーエラー" };
     console.log(`[RES] 500`, JSON.stringify(body));
     res.status(500).json(body);

@@ -11,7 +11,7 @@
 要件:
 
 - 画像ファイルをアップロードして OCR 結果をテーブル表示する SPA
-- 将来エンドポイントが増える想定で API クライアントは拡張可能に設計
+- Firebase SDK の `httpsCallable` で Functions（onCall）を呼び出す
 - デザインは後から変更予定のためスタイリングは最小限
 
 ## 決定
@@ -24,14 +24,15 @@
 ### パッケージ構成
 
 - `@docai/web` として `packages/web/` に配置
-- `@docai/functions` への npm 依存は持たない（HTTP 通信のみ）
+- `@docai/functions` のコードには依存しない（Firebase SDK の `httpsCallable` 経由で onCall プロトコルを境界とする）
 - 型定義は web 側で独自に持つ
 
 ### API クライアント設計
 
-- `src/api/client.ts`: 汎用 `post<TReq, TRes>(path, body)` 関数（ベース URL は `VITE_API_URL` 環境変数）
-- エンドポイントごとに `src/api/` にファイルを追加する拡張パターン
-- Vite 開発サーバーのプロキシで `/api` → ローカル Functions に転送（CORS 回避）
+- `src/api/firebase.ts`: Firebase App + Functions の初期化（環境変数 `VITE_FIREBASE_*` を使用）
+- `src/api/parse-document.ts`: `httpsCallable` で Functions（onCall）を呼び出し
+- 開発時は `connectFunctionsEmulator` でローカルエミュレータに自動接続（Vite の `DEV` モードで判定）
+- 環境変数は Vite の `.env.{mode}` ファイルで環境ごとに管理（`.env.development` / `.env.staging` / `.env.production`）
 
 ## 理由
 
@@ -40,10 +41,10 @@
 - SSR やファイルベースルーティングは現時点で不要
 - Vite の方が軽量で高速。ルーティングが必要になれば `react-router` で対応可能
 
-### API クライアントを独立させる理由
+### Functions パッケージに依存しない理由
 
 - `@docai/functions` のコードに依存すると、デプロイサイクルが結合する
-- HTTP API コントラクトを境界とすることで、フロントエンドとバックエンドを独立して開発・デプロイできる
+- onCall プロトコル（リクエスト/レスポンスの型）を境界とすることで、フロントエンドとバックエンドを独立して開発・デプロイできる
 
 ## 影響
 

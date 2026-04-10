@@ -94,4 +94,34 @@ firebase deploy --only hosting --project <project-id>
 ```
 
 デプロイ後、`https://<project-id>.web.app` で Web フロントエンドにアクセスできます。
-`/api/**` へのリクエストは Firebase Hosting の rewrites により、Cloud Run（Functions Gen2）に自動転送されます。
+Functions の呼び出しは Firebase SDK の `httpsCallable` で直接行うため、Hosting 側の API プロキシ設定は不要です。
+
+## 環境変数
+
+Vite の [env ファイル読み込み規約](https://vite.dev/guide/env-and-mode) に従い、モードに応じたファイルが自動ロードされます。
+
+| ファイル           | 用途                                     | 読み込みタイミング                 |
+| ------------------ | ---------------------------------------- | ---------------------------------- |
+| `.env`             | 全モード共通（`VITE_APP_PASSWORD` など） | 常時                               |
+| `.env.development` | 開発環境の Firebase 設定                 | `npm run dev`（mode=development）  |
+| `.env.staging`     | ステージング環境の Firebase 設定         | `npm run build -- --mode staging`  |
+| `.env.production`  | 本番環境の Firebase 設定                 | `npm run build`（mode=production） |
+| `.env.example`     | 設定項目のリファレンス（git 管理）       | —                                  |
+
+### 必要な環境変数
+
+環境固有のファイル（`.env.development` 等）に設定します。
+
+| 変数名                              | 必須 | 説明                                            |
+| ----------------------------------- | ---- | ----------------------------------------------- |
+| `VITE_FIREBASE_API_KEY`             | Yes  | Firebase API キー                               |
+| `VITE_FIREBASE_AUTH_DOMAIN`         | Yes  | Firebase Auth ドメイン                          |
+| `VITE_FIREBASE_PROJECT_ID`          | Yes  | Firebase プロジェクト ID                        |
+| `VITE_FIREBASE_STORAGE_BUCKET`      | Yes  | Firebase Storage バケット                       |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Yes  | Firebase Messaging Sender ID                    |
+| `VITE_FIREBASE_APP_ID`              | Yes  | Firebase App ID                                 |
+| `VITE_APP_PASSWORD`                 | No   | UI アクセス制限用パスワード（未設定でスキップ） |
+
+### 開発時の Functions 接続
+
+`import.meta.env.DEV`（Vite の development モード）が `true` の場合、`connectFunctionsEmulator` により `localhost:8080` の Functions エミュレータに自動接続します。本番ビルドではエミュレータ接続は無効になり、Firebase プロジェクトの Functions に直接リクエストします。

@@ -76,13 +76,64 @@ npm run shell -w @docai/functions
 parseDocument({method: "POST", body: {content: "base64data", mimeType: "application/pdf"}})
 ```
 
+## 環境変数
+
+Firebase Functions は[環境構成ファイル](https://firebase.google.com/docs/functions/config-env?gen=2nd)を使って環境変数を管理します。
+
+| ファイル            | 用途                                 | 読み込みタイミング                                                        |
+| ------------------- | ------------------------------------ | ------------------------------------------------------------------------- |
+| `.env`              | デフォルト設定（全プロジェクト共通） | デプロイ時・エミュレータ起動時                                            |
+| `.env.<project-id>` | プロジェクト固有の設定               | `.env` より優先。`--project` で指定したプロジェクト ID に一致するファイル |
+| `.env.local`        | ローカル開発用オーバーライド         | エミュレータ起動時のみ（デプロイには含まれない）                          |
+| `.env.example`      | 設定項目のリファレンス（git 管理）   | —                                                                         |
+
+### 必要な環境変数
+
+`.env` または `.env.<project-id>` に設定します。
+
+| 変数名               | 必須 | 説明                                                |
+| -------------------- | ---- | --------------------------------------------------- |
+| `GCP_PROJECT_ID`     | Yes  | GCP プロジェクト ID                                 |
+| `DOCAI_LOCATION`     | Yes  | Document AI のロケーション（例: `asia-southeast1`） |
+| `DOCAI_PROCESSOR_ID` | Yes  | Document AI プロセッサ ID                           |
+
+### API_KEY の管理
+
+`parseDocumentHttp`（onRequest）は Bearer トークンによる API キー認証を行います。
+
+- **ローカル開発**: `.env.local` に `API_KEY=<値>` を設定（エミュレータが読み込む）
+- **デプロイ環境**: Google Cloud Secret Manager で管理（後述）
+
+コード上は `defineSecret("API_KEY")` で宣言し、`secrets: [apiKey]` で関数に注入しています。
+
 ## デプロイ
 
 デプロイ前に以下の準備が必要です：
 
 - **GCP 側**: Firebase プロジェクトの作成（GCP プロジェクトと紐づけ）、Blaze プラン（従量課金）へのアップグレード
 - **GCP 側**: Document AI API の有効化、プロセッサの作成
-- **ローカル**: プロジェクトルートの `.env` に環境変数を設定（`.env.example` を参照: `GCP_PROJECT_ID`, `DOCAI_LOCATION`, `DOCAI_PROCESSOR_ID`）
+- **GCP 側**: Secret Manager API の有効化（GCP コンソール → 「APIとサービス」→「Secret Manager API」を有効化）
+- **ローカル**: `.env` に環境変数を設定（`.env.example` を参照）
+
+### Secret Manager のセットアップ
+
+`parseDocumentHttp` は API キーを Secret Manager から取得します。初回デプロイ前にシークレットを設定してください。
+
+```bash
+npm run docker:functions:sh
+
+# コンテナ内で
+firebase functions:secrets:set API_KEY --project <project-id>
+# プロンプトに従って値を入力
+```
+
+設定済みのシークレットは以下で確認できます。
+
+```bash
+firebase functions:secrets:get API_KEY --project <project-id>
+```
+
+### デプロイの実行
 
 ```bash
 npm run docker:functions:sh

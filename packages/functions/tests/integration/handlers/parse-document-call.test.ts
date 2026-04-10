@@ -27,9 +27,7 @@ describe("handleParseDocumentCall（結合テスト）", () => {
     mockProcessDocument.mockResolvedValue(MOCK_SDK_RESPONSE);
 
     const request = createMockCallableRequest();
-    const result = await handleParseDocumentCall(
-      request as Parameters<typeof handleParseDocumentCall>[0],
-    );
+    const result = await handleParseDocumentCall(request);
 
     expect(result).toEqual({ entities: MOCK_ENTITIES });
 
@@ -47,9 +45,7 @@ describe("handleParseDocumentCall（結合テスト）", () => {
       data: { content: "base64data", mimeType: "text/plain" },
     });
 
-    await expect(
-      handleParseDocumentCall(request as Parameters<typeof handleParseDocumentCall>[0]),
-    ).rejects.toSatisfy((error: HttpsError) => {
+    await expect(handleParseDocumentCall(request)).rejects.toSatisfy((error: HttpsError) => {
       expect(error).toBeInstanceOf(HttpsError);
       expect(error.code).toBe("invalid-argument");
       return true;
@@ -63,9 +59,7 @@ describe("handleParseDocumentCall（結合テスト）", () => {
 
     const request = createMockCallableRequest();
 
-    await expect(
-      handleParseDocumentCall(request as Parameters<typeof handleParseDocumentCall>[0]),
-    ).rejects.toSatisfy((error: HttpsError) => {
+    await expect(handleParseDocumentCall(request)).rejects.toSatisfy((error: HttpsError) => {
       expect(error).toBeInstanceOf(HttpsError);
       expect(error.code).toBe("internal");
       expect(error.message).toBe("内部サーバーエラー");
@@ -80,9 +74,7 @@ describe("handleParseDocumentCall（結合テスト）", () => {
 
     const request = createMockCallableRequest();
 
-    await expect(
-      handleParseDocumentCall(request as Parameters<typeof handleParseDocumentCall>[0]),
-    ).rejects.toSatisfy((error: HttpsError) => {
+    await expect(handleParseDocumentCall(request)).rejects.toSatisfy((error: HttpsError) => {
       expect(error).toBeInstanceOf(HttpsError);
       expect(error.code).toBe("internal");
       return true;

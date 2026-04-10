@@ -11,6 +11,10 @@ export function validateApiKey(
   authorizationHeader: string | undefined,
   validApiKey: string,
 ): AuthSuccess | AuthError {
+  if (!validApiKey) {
+    return { ok: false, message: "API キーが設定されていません。" };
+  }
+
   if (!authorizationHeader) {
     return { ok: false, message: "認証が必要です。" };
   }

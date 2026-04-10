@@ -29,8 +29,7 @@ export const handleParseDocumentCall = async (
 
     return { entities };
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : String(e);
-    console.error("parseDocument 失敗:", message);
+    console.error("parseDocument 失敗:", e);
     throw new HttpsError("internal", "内部サーバーエラー");
   }
 };

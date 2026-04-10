@@ -29,7 +29,14 @@ export function useParseDocument(): UseParseDocumentReturn {
     setResult(null);
 
     try {
-      const content = await fileToBase64(file);
+      let content: string;
+      try {
+        content = await fileToBase64(file);
+      } catch {
+        setError("ファイルの読み込みに失敗しました");
+        return;
+      }
+
       const response = await parseDocument({ content, mimeType: file.type });
       setResult(response);
     } catch (err) {

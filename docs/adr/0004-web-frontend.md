@@ -31,7 +31,7 @@
 
 - `src/api/firebase.ts`: Firebase App + Functions の初期化（環境変数 `VITE_FIREBASE_*` を使用）
 - `src/api/parse-document.ts`: `httpsCallable` で Functions（onCall）を呼び出し
-- 開発時は `connectFunctionsEmulator` でローカルエミュレータに自動接続（Vite の `DEV` モードで判定）
+- ローカル開発時は `connectFunctionsEmulator` でエミュレータに接続（`VITE_USE_EMULATOR` 環境変数で制御、docker-compose でのみ設定）
 - 環境変数は Vite の `.env.{mode}` ファイルで環境ごとに管理（`.env.development` / `.env.staging` / `.env.production`）
 
 ## 理由

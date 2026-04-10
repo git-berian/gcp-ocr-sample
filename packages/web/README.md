@@ -85,12 +85,22 @@ CI では Storybook ビルド → Playwright テストが自動実行され、�
 
 ## デプロイ
 
+`firebase deploy` の `predeploy` フックで自動ビルドされます。環境変数 `VITE_MODE` でビルドモードを指定できます（デフォルト: production）。
+
 ```bash
 npm run docker:web:sh
 
 # コンテナ内で
 firebase login --no-localhost  # 初回のみ
+
+# 本番環境（デフォルト: mode=production）
 firebase deploy --only hosting --project <project-id>
+
+# 開発環境
+VITE_MODE=development firebase deploy --only hosting --project <project-id>
+
+# ステージング環境
+VITE_MODE=staging firebase deploy --only hosting --project <project-id>
 ```
 
 デプロイ後、`https://<project-id>.web.app` で Web フロントエンドにアクセスできます。
@@ -100,13 +110,13 @@ Functions の呼び出しは Firebase SDK の `httpsCallable` で直接行うた
 
 Vite の [env ファイル読み込み規約](https://vite.dev/guide/env-and-mode) に従い、モードに応じたファイルが自動ロードされます。
 
-| ファイル           | 用途                                     | 読み込みタイミング                 |
-| ------------------ | ---------------------------------------- | ---------------------------------- |
-| `.env`             | 全モード共通（`VITE_APP_PASSWORD` など） | 常時                               |
-| `.env.development` | 開発環境の Firebase 設定                 | `npm run dev`（mode=development）  |
-| `.env.staging`     | ステージング環境の Firebase 設定         | `npm run build -- --mode staging`  |
-| `.env.production`  | 本番環境の Firebase 設定                 | `npm run build`（mode=production） |
-| `.env.example`     | 設定項目のリファレンス（git 管理）       | —                                  |
+| ファイル           | 用途                                            | 読み込みタイミング                                    |
+| ------------------ | ----------------------------------------------- | ----------------------------------------------------- |
+| `.env`             | 全モード共通の設定                              | 常時                                                  |
+| `.env.development` | 開発環境（Firebase 設定・パスワード等）         | `npm run dev` / `npm run build -- --mode development` |
+| `.env.staging`     | ステージング環境（Firebase 設定・パスワード等） | `npm run build -- --mode staging`                     |
+| `.env.production`  | 本番環境（Firebase 設定・パスワード等）         | `npm run build`（mode=production）                    |
+| `.env.example`     | 設定項目のリファレンス（git 管理）              | —                                                     |
 
 ### 必要な環境変数
 
@@ -122,6 +132,13 @@ Vite の [env ファイル読み込み規約](https://vite.dev/guide/env-and-mod
 | `VITE_FIREBASE_APP_ID`              | Yes  | Firebase App ID                                 |
 | `VITE_APP_PASSWORD`                 | No   | UI アクセス制限用パスワード（未設定でスキップ） |
 
-### 開発時の Functions 接続
+### Functions エミュレータ接続
 
-`import.meta.env.DEV`（Vite の development モード）が `true` の場合、`connectFunctionsEmulator` により `localhost:8080` の Functions エミュレータに自動接続します。本番ビルドではエミュレータ接続は無効になり、Firebase プロジェクトの Functions に直接リクエストします。
+エミュレータ接続は環境変数 `VITE_USE_EMULATOR` で制御します。この変数は `.env` ファイルには設定せず、`docker-compose.yml` の `environment` でローカル開発時のみ注入されます。
+
+| シナリオ                                 | `VITE_USE_EMULATOR`        | エミュレータ |
+| ---------------------------------------- | -------------------------- | ------------ |
+| ローカル開発（`docker:web:dev`）         | `"true"`（docker-compose） | 接続する     |
+| 開発環境デプロイ（`--mode development`） | 未設定                     | 接続しない   |
+| STG 環境デプロイ（`--mode staging`）     | 未設定                     | 接続しない   |
+| 本番デプロイ（`--mode production`）      | 未設定                     | 接続しない   |

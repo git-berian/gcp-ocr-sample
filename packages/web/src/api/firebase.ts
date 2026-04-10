@@ -12,7 +12,7 @@ const app = initializeApp({
 
 const functions = getFunctions(app, "asia-northeast1");
 
-if (import.meta.env.VITE_USE_EMULATOR === "true") {
+if (__USE_EMULATOR__) {
   connectFunctionsEmulator(functions, "localhost", 8080);
 }
 

@@ -19,6 +19,7 @@
     "docker:functions:lint": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run lint --workspace=@docai/functions",
     "docker:functions:format:check": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run format:check --workspace=@docai/functions",
     "docker:functions:test": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test --workspace=@docai/functions",
+    "docker:functions:test:integration": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test:integration --workspace=@docai/functions",
     "docker:functions:test:coverage": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run test:coverage --workspace=@docai/functions",
     "docker:functions:start": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm --service-ports functions npm start --workspace=@docai/functions",
     "docker:functions:sh": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm --service-ports functions bash",
@@ -51,6 +52,10 @@
       "prettier --write"
     ],
     "packages/functions/src/**/*.ts": [
+      "eslint --no-error-on-unmatched-pattern --fix",
+      "prettier --write"
+    ],
+    "packages/functions/tests/**/*.ts": [
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"
     ],

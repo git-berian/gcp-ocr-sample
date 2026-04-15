@@ -14,6 +14,17 @@ export default defineConfig({
           setupFiles: ["src/test-setup.ts"],
         },
       },
+      {
+        define: {
+          __USE_EMULATOR__: false,
+        },
+        test: {
+          name: "integration",
+          include: ["tests/integration/**/*.test.{ts,tsx}"],
+          environment: "jsdom",
+          setupFiles: ["src/test-setup.ts"],
+        },
+      },
     ],
     coverage: {
       provider: "v8",

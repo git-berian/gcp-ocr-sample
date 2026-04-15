@@ -3,14 +3,7 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
-    "docker:setup": "npm run docker:cli:setup && npm run docker:functions:setup && npm run docker:web:setup",
-    "docker:cli:setup": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm ci --ignore-scripts",
-    "docker:cli:build": "docker-compose -f packages/cli/docker/docker-compose.yml build",
-    "docker:cli:lint": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm run lint --workspace=@docai/cli",
-    "docker:cli:format:check": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm run format:check --workspace=@docai/cli",
-    "docker:cli:test": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm run test --workspace=@docai/cli",
-    "docker:cli:test:coverage": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr npm run test:coverage --workspace=@docai/cli",
-    "docker:cli:sh": "docker-compose -f packages/cli/docker/docker-compose.yml run --rm ocr bash",
+    "docker:setup": "npm run docker:functions:setup && npm run docker:web:setup",
     "docker:functions:setup": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm ci --ignore-scripts",
     "docker:functions:build": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run build",
     "docker:functions:lint": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run lint",
@@ -47,14 +40,6 @@
     "typescript-eslint": "^8.56.1"
   },
   "lint-staged": {
-    "packages/cli/src/**/*.ts": [
-      "eslint --no-error-on-unmatched-pattern --fix",
-      "prettier --write"
-    ],
-    "packages/cli/tests/**/*.ts": [
-      "eslint --no-error-on-unmatched-pattern --fix",
-      "prettier --write"
-    ],
     "packages/functions/src/**/*.ts": [
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"

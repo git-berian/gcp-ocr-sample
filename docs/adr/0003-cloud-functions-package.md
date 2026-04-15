@@ -27,5 +27,5 @@
 
 - CI はパッケージ matrix で各パッケージを並列にチェックする構成に変更
 - Dependabot も両パッケージを監視対象に追加
-- コードの重複（`document-ai-client.ts` 等）が発生するが、CLI 削除時にクリーンに解消される
-- `packages/cli` は将来削除予定であることを明示（README に記載）
+- ~~コードの重複（`document-ai-client.ts` 等）が発生するが、CLI 削除時にクリーンに解消される~~ → CLI は削除済み
+- ~~`packages/cli` は将来削除予定であることを明示（README に記載）~~ → CLI は削除済み

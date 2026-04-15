@@ -23,15 +23,15 @@ npm run docker:web:test:visual:update  # ベースラインスクリーンショ
 ```bash
 npm run docker:web:sh
 # コンテナ内で
-npm run build -w @docai/web            # TypeScript + Vite ビルド
-npm run dev -w @docai/web -- --host    # 開発サーバー起動（--host 必須）
-npm run lint:fix -w @docai/web         # ESLint 自動修正
-npm run format -w @docai/web           # Prettier フォーマット
-npm run test:unit -w @docai/web        # ユニットテストのみ
-npm run storybook -w @docai/web -- --host 0.0.0.0  # Storybook 開発サーバー起動（--host 必須）
-npm run build:storybook -w @docai/web  # Storybook 静的ビルド
-npm run test:coverage -w @docai/web    # テスト + カバレッジ計測
-npm run test:watch -w @docai/web       # テスト実行（ウォッチモード）
+npm run build            # TypeScript + Vite ビルド
+npm run dev -- --host    # 開発サーバー起動（--host 必須）
+npm run lint:fix         # ESLint 自動修正
+npm run format           # Prettier フォーマット
+npm run test:unit        # ユニットテストのみ
+npm run storybook -- --host 0.0.0.0  # Storybook 開発サーバー起動（--host 必須）
+npm run build:storybook  # Storybook 静的ビルド
+npm run test:coverage    # テスト + カバレッジ計測
+npm run test:watch       # テスト実行（ウォッチモード）
 ```
 
 ## ローカル実行

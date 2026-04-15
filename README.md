@@ -1,7 +1,7 @@
 # OCR Sample
 
 Google Cloud Document AI を使用してレシート等の画像・PDF から情報を抽出する OCR ツールです。
-npm workspaces によるモノレポ構成を採用しており、デプロイ単位ごとにパッケージを分離しています。
+モノレポ構成を採用しており、デプロイ単位ごとにパッケージを分離しています。各パッケージは独立した `node_modules` と `package-lock.json` を持ちます。
 
 ## モノレポ構成
 
@@ -161,7 +161,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 ├── .dockerignore                        # Docker ビルド除外設定
 ├── .firebaserc                          # Firebase プロジェクト設定
 ├── firebase.json                        # Firebase 設定（Functions + Hosting デプロイ）
-├── package.json                        # workspaces ルート
+├── package.json                        # ルート設定（Git フック・lint-staged）
 ├── tsconfig.json                       # 共通 TypeScript ベース設定
 ├── CONTRIBUTING.md                     # 開発ガイド
 ├── input/                              # 解析対象ファイルを配置

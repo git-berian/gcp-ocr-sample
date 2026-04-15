@@ -1,8 +1,8 @@
-FROM mcr.microsoft.com/playwright:v1.58.0-noble
+FROM mcr.microsoft.com/playwright:v1.59.1-noble
 
 RUN mkdir -p /app/packages/web \
   && chown -R pwuser:pwuser /app
 
-WORKDIR /app
+WORKDIR /app/packages/web
 
 USER pwuser

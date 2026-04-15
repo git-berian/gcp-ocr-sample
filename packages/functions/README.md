@@ -8,11 +8,12 @@ Document AI を使用した OCR 機能を Firebase Functions HTTP API として�
 npm run docker:functions:lint           # ESLint 実行
 npm run docker:functions:format:check   # Prettier チェック
 npm run docker:functions:test           # テスト実行（全テスト）
+npm run docker:functions:test:unit     # ユニットテストのみ実行
 npm run docker:functions:test:integration  # 結合テストのみ実行
 npm run docker:functions:test:coverage  # テスト + カバレッジ計測
 npm run docker:functions:start          # ビルド＋Firebase Emulator 起動
 npm run docker:functions:sh             # コンテナに入って操作
-npm run docker:functions:build          # Docker イメージのビルド
+npm run docker:functions:build          # TypeScript ビルド
 ```
 
 ### コンテナ内での操作
@@ -20,15 +21,16 @@ npm run docker:functions:build          # Docker イメージのビルド
 ```bash
 npm run docker:functions:sh
 # コンテナ内で
-npm run build -w @docai/functions            # TypeScript ビルド
-npm run start -w @docai/functions            # ビルド＋Firebase Emulator 起動
-npm run shell -w @docai/functions            # ビルド＋Firebase Functions Shell
-npm run lint:fix -w @docai/functions         # ESLint 自動修正
-npm run format -w @docai/functions           # Prettier フォーマット
-npm run test:unit -w @docai/functions        # ユニットテストのみ
-npm run test:integration -w @docai/functions # 結合テストのみ
-npm run test:coverage -w @docai/functions    # テスト + カバレッジ計測
-npm run test:watch -w @docai/functions       # テスト実行（ウォッチモード）
+npm run build            # TypeScript ビルド
+npm run start            # ビルド＋Firebase Emulator 起動
+npm run shell            # ビルド＋Firebase Functions Shell
+npm run lint:fix         # ESLint 自動修正
+npm run format           # Prettier フォーマット
+npm run test             # テスト実行（全テスト）
+npm run test:unit        # ユニットテストのみ
+npm run test:integration # 結合テストのみ
+npm run test:coverage    # テスト + カバレッジ計測
+npm run test:watch       # テスト実行（ウォッチモード）
 ```
 
 ## テスト構成
@@ -84,7 +86,7 @@ curl -s -X POST "${FUNCTION_URL}" \
 ```bash
 npm run docker:functions:sh
 # コンテナ内で
-npm run shell -w @docai/functions
+npm run shell
 # シェル内で関数を呼び出し
 parseDocument({method: "POST", body: {content: "base64data", mimeType: "application/pdf"}})
 ```

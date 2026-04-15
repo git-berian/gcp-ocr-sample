@@ -31,4 +31,4 @@ Functions の呼び出しは Firebase SDK の `httpsCallable`（onCall）で行�
 
 - `firebase.json` に `hosting` セクションが追加される
 - デプロイコマンド: `firebase deploy --only hosting`
-- `predeploy` で `npm run build -w @docai/web` が実行される
+- `predeploy` で `npm run build` が実行される

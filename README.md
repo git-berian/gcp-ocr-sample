@@ -7,7 +7,6 @@ Google Cloud Document AI を使用してレシート等の画像・PDF から情
 
 | パッケージ                                  | 説明                                                  |
 | ------------------------------------------- | ----------------------------------------------------- |
-| [`packages/cli`](packages/cli/)             | CLI ツール（Document AI による OCR）                  |
 | [`packages/functions`](packages/functions/) | Firebase Functions HTTP API（Document AI による OCR） |
 | [`packages/web`](packages/web/)             | Web フロントエンド（React + Vite SPA）                |
 
@@ -34,7 +33,6 @@ secrets/sa.json
 各パッケージの `.env.example` をコピーして `.env` を作成し、値を設定してください。
 
 ```bash
-cp packages/cli/.env.example packages/cli/.env
 cp packages/functions/.env.example packages/functions/.env
 cp packages/web/.env.example packages/web/.env
 ```
@@ -53,14 +51,13 @@ cp packages/web/.env.example packages/web/.env
 npm run docker:setup
 ```
 
-個別に実行する場合は `npm run docker:cli:setup` / `npm run docker:functions:setup` / `npm run docker:web:setup` も使えます。
+個別に実行する場合は `npm run docker:functions:setup` / `npm run docker:web:setup` も使えます。
 
 ## 使い方
 
 開発コマンドは Docker 経由で実行します。ローカルの Node.js バージョンに依存しません。
 各パッケージの詳細な使い方は、それぞれの README を参照してください。
 
-- [CLI パッケージ](packages/cli/)
 - [Functions パッケージ](packages/functions/)
 - [Web パッケージ](packages/web/)
 
@@ -68,50 +65,26 @@ npm run docker:setup
 
 DDD（ドメイン駆動設計）に基づく 3 層構成を採用しています。
 
-| レイヤー               | ディレクトリ                       | 責務                                                         |
-| ---------------------- | ---------------------------------- | ------------------------------------------------------------ |
-| **ドメイン層**         | `packages/cli/src/domain/`         | 純粋なビジネスロジック（外部依存なし）                       |
-| **アプリケーション層** | `packages/cli/src/application/`    | ユースケースの実行。インターフェースを通じてインフラ層に依存 |
-| **インフラ層**         | `packages/cli/src/infrastructure/` | 外部サービス連携（GCP Document AI・ファイル I/O・環境変数）  |
+| レイヤー               | ディレクトリ                             | 責務                                                         |
+| ---------------------- | ---------------------------------------- | ------------------------------------------------------------ |
+| **ハンドラ層**         | `packages/functions/src/handlers/`       | HTTP リクエスト処理                                          |
+| **ドメイン層**         | `packages/functions/src/domain/`         | 純粋なビジネスロジック（外部依存なし）                       |
+| **アプリケーション層** | `packages/functions/src/application/`    | ユースケースの実行。インターフェースを通じてインフラ層に依存 |
+| **インフラ層**         | `packages/functions/src/infrastructure/` | 外部サービス連携（GCP Document AI・環境変数）                |
 
-エントリーポイント（`packages/cli/src/index.ts`）は依存注入のワイヤリングのみを行い、具体的なロジックは持ちません。
-
-`packages/functions` も同様の層構成に加え、`handlers/` 層（HTTP リクエスト処理）を持ちます。
+エントリーポイント（`packages/functions/src/index.ts`）は Cloud Functions の関数登録のみを行い、具体的なロジックは持ちません。
 
 ## Docker 構成
 
-| ファイル                                      | 用途     | 説明                                                    |
-| --------------------------------------------- | -------- | ------------------------------------------------------- |
-| `packages/cli/docker/Dockerfile`              | 開発環境 | Node.js 22 ベースイメージ（ソースはボリュームマウント） |
-| `packages/cli/docker/Dockerfile.prod`         | 本番環境 | マルチステージビルドで本番依存のみ含む                  |
-| `packages/cli/docker/docker-compose.yml`      | 開発環境 | `Dockerfile` を使用                                     |
-| `packages/cli/docker/docker-compose.prod.yml` | 本番環境 | `Dockerfile.prod` を使用                                |
-| `packages/web/docker/Dockerfile.playwright`   | テスト   | Playwright ブラウザ同梱イメージ（VRT 用）               |
+| ファイル                                    | 用途   | 説明                                      |
+| ------------------------------------------- | ------ | ----------------------------------------- |
+| `packages/web/docker/Dockerfile.playwright` | テスト | Playwright ブラウザ同梱イメージ（VRT 用） |
 
 ## ディレクトリ構成
 
 ```
 .
 ├── packages/
-│   ├── cli/                           # CLI パッケージ（将来削除予定）
-│   │   ├── docker/
-│   │   │   ├── Dockerfile              # 開発環境用
-│   │   │   ├── Dockerfile.prod         # 本番環境用
-│   │   │   ├── docker-compose.yml      # 開発環境用
-│   │   │   └── docker-compose.prod.yml # 本番環境用
-│   │   ├── src/
-│   │   │   ├── domain/                 # ドメイン層
-│   │   │   ├── application/            # アプリケーション層
-│   │   │   ├── infrastructure/         # インフラ層
-│   │   │   └── index.ts                # エントリーポイント（依存注入）
-│   │   ├── tests/
-│   │   │   ├── helpers/                # 共有テストユーティリティ
-│   │   │   └── integration/            # 統合テスト
-│   │   ├── package.json
-│   │   ├── tsconfig.json               # ビルド用（ルートを extends）
-│   │   ├── tsconfig.test.json          # テスト用
-│   │   ├── vitest.config.ts
-│   │   └── eslint.config.js
 │   ├── functions/                     # Firebase Functions パッケージ
 │   │   ├── src/
 │   │   │   ├── domain/                 # ドメイン層

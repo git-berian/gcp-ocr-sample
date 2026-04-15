@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        workspace: ["@docai/cli", "@docai/functions", "@docai/web"]
+        package: ["cli", "functions", "web"]
 
     steps:
       - uses: actions/checkout@v6
@@ -21,20 +21,26 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
+          cache-dependency-path: packages/${{ matrix.package }}/package-lock.json
 
       - run: npm ci
+        working-directory: packages/${{ matrix.package }}
 
       - name: Lint
-        run: npm run lint --workspace=${{ matrix.workspace }}
+        run: npm run lint
+        working-directory: packages/${{ matrix.package }}
 
       - name: Format check
-        run: npm run format:check --workspace=${{ matrix.workspace }}
+        run: npm run format:check
+        working-directory: packages/${{ matrix.package }}
 
       - name: Build
-        run: npm run build --workspace=${{ matrix.workspace }}
+        run: npm run build
+        working-directory: packages/${{ matrix.package }}
 
       - name: Test with coverage
-        run: npm run test:coverage --workspace=${{ matrix.workspace }}
+        run: npm run test:coverage
+        working-directory: packages/${{ matrix.package }}
 
   commitlint:
     if: github.event_name == 'pull_request'
@@ -58,7 +64,7 @@ jobs:
   visual-regression:
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.58.0-noble
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
 
     steps:
       - uses: actions/checkout@v6
@@ -67,14 +73,18 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
+          cache-dependency-path: packages/web/package-lock.json
 
       - run: npm ci
+        working-directory: packages/web
 
       - name: Build Storybook
-        run: npm run build:storybook --workspace=@docai/web
+        run: npm run build:storybook
+        working-directory: packages/web
 
       - name: Run visual regression tests
-        run: npm run test:visual --workspace=@docai/web
+        run: npm run test:visual
+        working-directory: packages/web
         env:
           HOME: /root
 

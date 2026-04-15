@@ -92,7 +92,7 @@
 
 GitHub Actions（`.github/workflows/ci.yml`）で以下を自動実行します。
 
-各 workspace（`@docai/cli`, `@docai/functions`, `@docai/web`）に対して matrix で並列実行:
+各パッケージ（`cli`, `functions`, `web`）に対して matrix で並列実行:
 
 - `npm run lint` — ESLint
 - `npm run format:check` — Prettier

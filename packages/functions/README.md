@@ -7,7 +7,8 @@ Document AI を使用した OCR 機能を Firebase Functions HTTP API として�
 ```bash
 npm run docker:functions:lint           # ESLint 実行
 npm run docker:functions:format:check   # Prettier チェック
-npm run docker:functions:test           # テスト実行
+npm run docker:functions:test           # テスト実行（全テスト）
+npm run docker:functions:test:integration  # 結合テストのみ実行
 npm run docker:functions:test:coverage  # テスト + カバレッジ計測
 npm run docker:functions:start          # ビルド＋Firebase Emulator 起動
 npm run docker:functions:sh             # コンテナに入って操作
@@ -25,9 +26,21 @@ npm run shell -w @docai/functions            # ビルド＋Firebase Functions Sh
 npm run lint:fix -w @docai/functions         # ESLint 自動修正
 npm run format -w @docai/functions           # Prettier フォーマット
 npm run test:unit -w @docai/functions        # ユニットテストのみ
+npm run test:integration -w @docai/functions # 結合テストのみ
 npm run test:coverage -w @docai/functions    # テスト + カバレッジ計測
 npm run test:watch -w @docai/functions       # テスト実行（ウォッチモード）
 ```
+
+## テスト構成
+
+テストは Vitest のプロジェクト機能で **unit**（単体テスト）と **integration**（結合テスト）に分離しています。
+
+| 種別        | 配置場所                         | 説明                                                          |
+| ----------- | -------------------------------- | ------------------------------------------------------------- |
+| unit        | `src/**/*.test.ts`               | ソースコードと同じディレクトリに配置。依存は個別にモック      |
+| integration | `tests/integration/**/*.test.ts` | ハンドラを実際の依存グラフで結合して検証。外部 API のみモック |
+
+結合テストのヘルパー（フィクスチャ・モック）は `tests/integration/helpers/` にまとめています。
 
 ## ローカル実行
 

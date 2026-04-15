@@ -7,7 +7,8 @@ React + Vite による Web フロントエンドです。ファイルをアッ�
 ```bash
 npm run docker:web:lint                # ESLint 実行
 npm run docker:web:format:check        # Prettier チェック
-npm run docker:web:test                # テスト実行
+npm run docker:web:test                # テスト実行（全テスト）
+npm run docker:web:test:integration    # 結合テストのみ実行
 npm run docker:web:test:coverage       # テスト + カバレッジ計測
 npm run docker:web:dev                 # 開発サーバー起動
 npm run docker:web:sh                  # コンテナに入って操作
@@ -27,12 +28,25 @@ npm run build            # TypeScript + Vite ビルド
 npm run dev -- --host    # 開発サーバー起動（--host 必須）
 npm run lint:fix         # ESLint 自動修正
 npm run format           # Prettier フォーマット
+npm run test             # テスト実行（全テスト）
 npm run test:unit        # ユニットテストのみ
+npm run test:integration # 結合テストのみ
 npm run storybook -- --host 0.0.0.0  # Storybook 開発サーバー起動（--host 必須）
 npm run build:storybook  # Storybook 静的ビルド
 npm run test:coverage    # テスト + カバレッジ計測
 npm run test:watch       # テスト実行（ウォッチモード）
 ```
+
+## テスト構成
+
+テストは Vitest のプロジェクト機能で **unit**（単体テスト）と **integration**（結合テスト）に分離しています。
+
+| 種別        | 配置場所                          | 説明                                                          |
+| ----------- | --------------------------------- | ------------------------------------------------------------- |
+| unit        | `src/**/*.test.{ts,tsx}`          | ソースコードと同じディレクトリに配置。依存は個別にモック      |
+| integration | `tests/integration/**/*.test.tsx` | App を実際の依存グラフで結合して検証。Firebase SDK のみモック |
+
+結合テストのヘルパー（フィクスチャ・モック）は `tests/integration/helpers/` にまとめています。
 
 ## ローカル実行
 

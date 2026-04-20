@@ -13,3 +13,14 @@ export interface Entity {
 export interface ParseDocumentResponse {
   entities: Entity[];
 }
+
+export type FileJobStatus = "pending" | "processing" | "success" | "error";
+
+export interface FileJob {
+  id: string;
+  file: File;
+  fileName: string;
+  status: FileJobStatus;
+  result: ParseDocumentResponse | null;
+  error: string;
+}

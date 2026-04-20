@@ -1,48 +1,36 @@
-import { useParseDocument } from "./hooks/useParseDocument";
+import { useParseDocuments } from "./hooks/useParseDocuments";
 import { FileUploader } from "./components/FileUploader";
-import { ResultTable } from "./components/ResultTable";
-import { ErrorMessage } from "./components/ErrorMessage";
+import { ResultTabs } from "./components/ResultTabs";
 import { PasswordGate } from "./components/PasswordGate";
-import type { ParseDocumentResponse } from "./api/types";
+import type { FileJob } from "./api/types";
 import "./App.css";
 import styles from "./App.module.css";
 
 const APP_PASSWORD = import.meta.env.VITE_APP_PASSWORD ?? "";
 
 export interface AppViewProps {
-  result: ParseDocumentResponse | null;
-  error: string;
-  isLoading: boolean;
-  onSubmit: (file: File) => void;
+  jobs: FileJob[];
+  isProcessing: boolean;
+  onSubmit: (files: File[]) => void;
+  onRetry: (jobId: string) => void;
 }
 
-export function AppView({ result, error, isLoading, onSubmit }: AppViewProps) {
+export function AppView({ jobs, isProcessing, onSubmit, onRetry }: AppViewProps) {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>DocAI 経費パーサー</h1>
-      <FileUploader onSubmit={onSubmit} disabled={isLoading} />
-      {isLoading && (
-        <div className={styles.loading}>
-          <div className={styles.spinner} />
-          <p>解析中...</p>
-        </div>
-      )}
-      {error && <ErrorMessage message={error} />}
-      {result && <ResultTable entities={result.entities} />}
-      {result && (
-        <details className={styles.rawResponse}>
-          <summary>生データ</summary>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
-        </details>
-      )}
+      <FileUploader onSubmit={onSubmit} disabled={isProcessing} />
+      {jobs.length > 0 && <ResultTabs jobs={jobs} onRetry={onRetry} />}
     </div>
   );
 }
 
 export function App() {
-  const { result, error, isLoading, submit } = useParseDocument();
+  const { jobs, isProcessing, submitAll, retry } = useParseDocuments();
 
-  const appView = <AppView result={result} error={error} isLoading={isLoading} onSubmit={submit} />;
+  const appView = (
+    <AppView jobs={jobs} isProcessing={isProcessing} onSubmit={submitAll} onRetry={retry} />
+  );
 
   if (!APP_PASSWORD) {
     return appView;

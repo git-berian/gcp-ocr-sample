@@ -11,17 +11,20 @@ describe("FileUploader", () => {
     expect(screen.getByRole("button", { name: "解析" })).toBeInTheDocument();
   });
 
-  it("calls onSubmit with selected file when form is submitted", async () => {
+  it("calls onSubmit with selected files when form is submitted", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<FileUploader onSubmit={onSubmit} disabled={false} />);
 
-    const file = new File(["content"], "test.png", { type: "image/png" });
+    const files = [
+      new File(["a"], "a.png", { type: "image/png" }),
+      new File(["b"], "b.png", { type: "image/png" }),
+    ];
     const input = screen.getByLabelText("ファイル");
-    await user.upload(input, file);
+    await user.upload(input, files);
     await user.click(screen.getByRole("button", { name: "解析" }));
 
-    expect(onSubmit).toHaveBeenCalledWith(file);
+    expect(onSubmit).toHaveBeenCalledWith(files);
   });
 
   it("does not call onSubmit when no file is selected", async () => {
@@ -48,7 +51,14 @@ describe("FileUploader", () => {
     expect(input).toHaveAttribute("accept", "application/pdf,image/png,image/jpeg");
   });
 
-  it("sets file on drop", () => {
+  it("has multiple attribute on file input", () => {
+    render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
+
+    const input = screen.getByLabelText("ファイル");
+    expect(input).toHaveAttribute("multiple");
+  });
+
+  it("sets files on drop", () => {
     render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
 
     const dropZone = screen.getByTestId("drop-zone");
@@ -56,7 +66,22 @@ describe("FileUploader", () => {
 
     fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
 
-    expect(screen.getByText("選択済み: test.pdf")).toBeInTheDocument();
+    expect(screen.getByText("選択済み: 1件")).toBeInTheDocument();
+    expect(screen.getByText("test.pdf")).toBeInTheDocument();
+  });
+
+  it("accepts multiple files on drop", () => {
+    render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
+
+    const dropZone = screen.getByTestId("drop-zone");
+    const files = [
+      new File(["a"], "a.png", { type: "image/png" }),
+      new File(["b"], "b.jpeg", { type: "image/jpeg" }),
+    ];
+
+    fireEvent.drop(dropZone, { dataTransfer: { files } });
+
+    expect(screen.getByText("選択済み: 2件")).toBeInTheDocument();
   });
 
   it("ignores drop when disabled", () => {
@@ -67,33 +92,23 @@ describe("FileUploader", () => {
 
     fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
 
-    expect(screen.queryByText("選択済み: test.pdf")).not.toBeInTheDocument();
+    expect(screen.queryByText(/選択済み:/)).not.toBeInTheDocument();
   });
 
-  it("ignores drop when unsupported MIME type", () => {
+  it("filters out unsupported MIME types on drop", () => {
     render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
 
     const dropZone = screen.getByTestId("drop-zone");
-    const file = new File(["content"], "test.txt", { type: "text/plain" });
+    const files = [
+      new File(["a"], "valid.png", { type: "image/png" }),
+      new File(["b"], "invalid.txt", { type: "text/plain" }),
+    ];
 
-    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    fireEvent.drop(dropZone, { dataTransfer: { files } });
 
-    expect(screen.queryByText("選択済み: test.txt")).not.toBeInTheDocument();
-  });
-
-  it("resets file when unsupported MIME type is selected via input", async () => {
-    const user = userEvent.setup();
-    const onSubmit = vi.fn();
-    render(<FileUploader onSubmit={onSubmit} disabled={false} />);
-
-    const input = screen.getByLabelText("ファイル");
-    const validFile = new File(["content"], "test.png", { type: "image/png" });
-    await user.upload(input, validFile);
-    expect(screen.getByText("選択済み: test.png")).toBeInTheDocument();
-
-    const invalidFile = new File(["content"], "test.gif", { type: "image/gif" });
-    await user.upload(input, invalidFile);
-    expect(screen.queryByText(/選択済み:/)).not.toBeInTheDocument();
+    expect(screen.getByText("選択済み: 1件")).toBeInTheDocument();
+    expect(screen.getByText("valid.png")).toBeInTheDocument();
+    expect(screen.queryByText("invalid.txt")).not.toBeInTheDocument();
   });
 
   it("ignores drop when no files", () => {
@@ -102,6 +117,21 @@ describe("FileUploader", () => {
     const dropZone = screen.getByTestId("drop-zone");
 
     fireEvent.drop(dropZone, { dataTransfer: { files: [] } });
+
+    expect(screen.queryByText(/選択済み:/)).not.toBeInTheDocument();
+  });
+
+  it("clears files when clear button is clicked", async () => {
+    const user = userEvent.setup();
+    render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
+
+    const input = screen.getByLabelText("ファイル");
+    const file = new File(["a"], "test.png", { type: "image/png" });
+    await user.upload(input, file);
+
+    expect(screen.getByText("選択済み: 1件")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "クリア" }));
 
     expect(screen.queryByText(/選択済み:/)).not.toBeInTheDocument();
   });

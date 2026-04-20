@@ -2,19 +2,27 @@ import { useState, useCallback, type FormEvent, type DragEvent } from "react";
 import { SUPPORTED_MIME_TYPES, isValidMimeType } from "../utils/file";
 import styles from "./FileUploader.module.css";
 
+const MAX_FILES = 20;
+
 interface FileUploaderProps {
-  onSubmit: (file: File) => void;
+  onSubmit: (files: File[]) => void;
   disabled: boolean;
 }
 
 export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+
+  const addFiles = useCallback((newFiles: FileList | null) => {
+    if (!newFiles) return;
+    const valid = Array.from(newFiles).filter((f) => isValidMimeType(f.type));
+    setFiles((prev) => [...prev, ...valid].slice(0, MAX_FILES));
+  }, []);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (file) {
-      onSubmit(file);
+    if (files.length > 0) {
+      onSubmit(files);
     }
   };
 
@@ -23,12 +31,9 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
       e.preventDefault();
       setIsDragging(false);
       if (disabled) return;
-      const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile && isValidMimeType(droppedFile.type)) {
-        setFile(droppedFile);
-      }
+      addFiles(e.dataTransfer.files);
     },
-    [disabled],
+    [disabled, addFiles],
   );
 
   const handleDragOver = useCallback(
@@ -43,6 +48,10 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
   const handleDragLeave = useCallback(() => {
     setIsDragging(false);
   }, []);
+
+  const handleClear = () => {
+    setFiles([]);
+  };
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
@@ -63,15 +72,34 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
             className={styles.fileInput}
             accept={SUPPORTED_MIME_TYPES.join(",")}
             disabled={disabled}
-            onChange={(e) => {
-              const selected = e.target.files?.[0] ?? null;
-              setFile(selected && isValidMimeType(selected.type) ? selected : null);
-            }}
+            multiple
+            onChange={(e) => addFiles(e.target.files)}
           />
         </label>
-        {file && <p className={styles.selectedFile}>選択済み: {file.name}</p>}
+        {files.length > 0 && (
+          <div className={styles.fileList}>
+            <p className={styles.fileCount}>選択済み: {files.length}件</p>
+            <ul className={styles.fileNames}>
+              {files.map((f, i) => (
+                <li key={i}>{f.name}</li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className={styles.clearButton}
+              onClick={handleClear}
+              disabled={disabled}
+            >
+              クリア
+            </button>
+          </div>
+        )}
       </div>
-      <button type="submit" className={styles.submitButton} disabled={disabled || !file}>
+      <button
+        type="submit"
+        className={styles.submitButton}
+        disabled={disabled || files.length === 0}
+      >
         解析
       </button>
     </form>

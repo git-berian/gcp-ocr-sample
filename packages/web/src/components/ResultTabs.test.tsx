@@ -125,5 +125,7 @@ describe("ResultTabs", () => {
     const tabs = screen.getAllByRole("tab");
     expect(tabs[0]).toHaveAttribute("aria-selected", "true");
     expect(tabs[1]).toHaveAttribute("aria-selected", "false");
+    expect(tabs[0]).toHaveAttribute("aria-label", "a.png (解析成功)");
+    expect(tabs[1]).toHaveAttribute("aria-label", "b.png (解析成功)");
   });
 });

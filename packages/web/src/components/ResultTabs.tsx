@@ -9,11 +9,18 @@ interface ResultTabsProps {
   onRetry: (jobId: string) => void;
 }
 
+const STATUS_LABELS: Record<FileJob["status"], string> = {
+  pending: "待機中",
+  processing: "処理中",
+  success: "解析成功",
+  error: "エラー",
+};
+
 function StatusIndicator({ status }: { status: FileJob["status"] }) {
   if (status === "processing") {
-    return <span className={styles.spinnerDot} aria-label="処理中" />;
+    return <span className={styles.spinnerDot} aria-hidden="true" />;
   }
-  return <span className={`${styles.statusDot} ${styles[status]}`} />;
+  return <span className={`${styles.statusDot} ${styles[status]}`} aria-hidden="true" />;
 }
 
 function TabPanel({ job, onRetry }: { job: FileJob; onRetry: (jobId: string) => void }) {
@@ -67,6 +74,7 @@ export function ResultTabs({ jobs, onRetry }: ResultTabsProps) {
             type="button"
             role="tab"
             aria-selected={job.id === activeJob.id}
+            aria-label={`${job.fileName} (${STATUS_LABELS[job.status]})`}
             className={`${styles.tab} ${job.id === activeJob.id ? styles.activeTab : ""}`}
             onClick={() => setActiveId(job.id)}
           >

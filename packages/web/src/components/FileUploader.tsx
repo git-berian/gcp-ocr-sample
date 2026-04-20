@@ -12,11 +12,21 @@ interface FileUploaderProps {
 export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [warning, setWarning] = useState("");
 
   const addFiles = useCallback((newFiles: FileList | null) => {
     if (!newFiles) return;
     const valid = Array.from(newFiles).filter((f) => isValidMimeType(f.type));
-    setFiles((prev) => [...prev, ...valid].slice(0, MAX_FILES));
+    setFiles((prev) => {
+      const merged = [...prev, ...valid];
+      if (merged.length > MAX_FILES) {
+        const dropped = merged.length - MAX_FILES;
+        setWarning(`上限${MAX_FILES}件を超えたため、${dropped}件が追加されませんでした`);
+        return merged.slice(0, MAX_FILES);
+      }
+      setWarning("");
+      return merged;
+    });
   }, []);
 
   const handleSubmit = (e: FormEvent) => {
@@ -51,6 +61,7 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
 
   const handleClear = () => {
     setFiles([]);
+    setWarning("");
   };
 
   return (
@@ -95,6 +106,7 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
           </div>
         )}
       </div>
+      {warning && <p className={styles.warning}>{warning}</p>}
       <button
         type="submit"
         className={styles.submitButton}

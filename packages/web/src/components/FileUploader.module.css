@@ -75,7 +75,9 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .clearButton:hover:not(:disabled) {
@@ -86,6 +88,11 @@
 .clearButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.warning {
+  font-size: 0.8rem;
+  color: var(--color-error);
 }
 
 .submitButton {

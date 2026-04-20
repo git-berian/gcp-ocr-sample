@@ -64,13 +64,20 @@ export function useParseDocuments(): UseParseDocumentsReturn {
     [updateJob],
   );
 
+  const isProcessingRef = useRef(false);
+
   const submitAll = useCallback(
     (files: File[]) => {
+      if (isProcessingRef.current) return;
+      isProcessingRef.current = true;
+
       const newJobs = files.map(createJob);
       setJobs(newJobs);
 
       const tasks = newJobs.map((job) => () => executeJob(job));
-      runWithConcurrency(tasks, CONCURRENCY_LIMIT);
+      runWithConcurrency(tasks, CONCURRENCY_LIMIT).then(() => {
+        isProcessingRef.current = false;
+      });
     },
     [executeJob],
   );

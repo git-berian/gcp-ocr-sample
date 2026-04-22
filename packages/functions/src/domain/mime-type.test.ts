@@ -1,24 +1,37 @@
 import { describe, it, expect } from "vitest";
-import { isSupportedMimeType } from "./mime-type.js";
+import { MimeType, UnsupportedMimeTypeError } from "./mime-type.js";
 
-describe("isSupportedMimeType", () => {
-  it("application/pdf はサポート対象", () => {
-    expect(isSupportedMimeType("application/pdf")).toBe(true);
+describe("MimeType", () => {
+  describe("from", () => {
+    it.each(["application/pdf", "image/png", "image/jpeg"])(
+      "サポート対象 %s から MimeType を生成できる",
+      (value) => {
+        const mimeType = MimeType.from(value);
+        expect(mimeType).toBeInstanceOf(MimeType);
+        expect(mimeType.value).toBe(value);
+      },
+    );
+
+    it("サポート外の mimeType で UnsupportedMimeTypeError を投げる", () => {
+      expect(() => MimeType.from("image/tiff")).toThrow(UnsupportedMimeTypeError);
+    });
+
+    it("空文字でも UnsupportedMimeTypeError を投げる", () => {
+      expect(() => MimeType.from("")).toThrow(UnsupportedMimeTypeError);
+    });
+
+    it("例外メッセージに対応形式の一覧が含まれる", () => {
+      expect(() => MimeType.from("image/tiff")).toThrow(
+        "サポートされていない mimeType: image/tiff。対応形式: application/pdf, image/png, image/jpeg",
+      );
+    });
   });
+});
 
-  it("image/png はサポート対象", () => {
-    expect(isSupportedMimeType("image/png")).toBe(true);
-  });
-
-  it("image/jpeg はサポート対象", () => {
-    expect(isSupportedMimeType("image/jpeg")).toBe(true);
-  });
-
-  it("image/tiff はサポート対象外", () => {
-    expect(isSupportedMimeType("image/tiff")).toBe(false);
-  });
-
-  it("空文字はサポート対象外", () => {
-    expect(isSupportedMimeType("")).toBe(false);
+describe("UnsupportedMimeTypeError", () => {
+  it("不正値を value プロパティに保持する", () => {
+    const error = new UnsupportedMimeTypeError("image/tiff");
+    expect(error.value).toBe("image/tiff");
+    expect(error.name).toBe("UnsupportedMimeTypeError");
   });
 });

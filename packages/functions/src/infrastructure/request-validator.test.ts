@@ -1,16 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { validateParseDocumentRequest } from "./request-validator.js";
+import { MimeType } from "../domain/mime-type.js";
 
 describe("validateParseDocumentRequest", () => {
-  it("有効なリクエストを受け付ける", () => {
+  it("有効なリクエストを受け付け、mimeType は MimeType インスタンスになる", () => {
     const result = validateParseDocumentRequest({
       content: "base64data",
       mimeType: "application/pdf",
     });
-    expect(result).toEqual({
-      ok: true,
-      data: { content: "base64data", mimeType: "application/pdf" },
-    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.content).toBe("base64data");
+    expect(result.data.mimeType).toBeInstanceOf(MimeType);
+    expect(result.data.mimeType.value).toBe("application/pdf");
   });
 
   it("bodyがnullの場合、エラーを返す", () => {

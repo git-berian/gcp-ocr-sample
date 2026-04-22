@@ -1,8 +1,10 @@
+import type { MimeType } from "../domain/mime-type.js";
+
 export interface DocumentProcessor {
-  process(params: { name: string; content: string; mimeType: string }): Promise<DocumentEntity[]>;
+  process(params: { name: string; content: string; mimeType: string }): Promise<ExtractedField[]>;
 }
 
-export interface DocumentEntity {
+export interface ExtractedField {
   type?: string | null;
   mentionText?: string | null;
   confidence?: number | null;
@@ -14,18 +16,18 @@ export interface ParseDocumentParams {
   location: string;
   processorId: string;
   content: string;
-  mimeType: string;
+  mimeType: MimeType;
 }
 
 export async function parseDocument(
   params: ParseDocumentParams,
   processor: DocumentProcessor,
-): Promise<DocumentEntity[]> {
+): Promise<ExtractedField[]> {
   const name = `projects/${params.projectId}/locations/${params.location}/processors/${params.processorId}`;
 
   return processor.process({
     name,
     content: params.content,
-    mimeType: params.mimeType,
+    mimeType: params.mimeType.value,
   });
 }

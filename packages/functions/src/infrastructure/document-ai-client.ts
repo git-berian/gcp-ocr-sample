@@ -1,5 +1,5 @@
 import { DocumentProcessorServiceClient } from "@google-cloud/documentai";
-import type { DocumentProcessor, DocumentEntity } from "../application/parse-document.js";
+import type { DocumentProcessor, ExtractedField } from "../application/parse-document.js";
 
 export function createDocumentProcessor(location: string): DocumentProcessor {
   const client = new DocumentProcessorServiceClient({
@@ -11,14 +11,14 @@ export function createDocumentProcessor(location: string): DocumentProcessor {
       name: string;
       content: string;
       mimeType: string;
-    }): Promise<DocumentEntity[]> {
+    }): Promise<ExtractedField[]> {
       const [result] = await client.processDocument({
         name: params.name,
         rawDocument: { content: params.content, mimeType: params.mimeType },
       });
 
       const entities = result.document?.entities ?? [];
-      return entities as DocumentEntity[];
+      return entities as ExtractedField[];
     },
   };
 }

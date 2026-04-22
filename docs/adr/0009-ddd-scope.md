@@ -54,6 +54,10 @@ DDD の戦術的設計は、現段階では以下の範囲で採用する。
 ## 影響
 
 - `domain/` 配下の値オブジェクトは「不正な値を持つインスタンスを構築不可能にする」設計を取る（private constructor + `static from()` ファクトリで不正値は例外を投げる）
+- 値オブジェクトの `static from()` が投げる例外（ドメイン例外）は、**境界層（handlers / 入力 adapter）で必ず捕捉し、HTTP では 4xx（入力不正）に正規化する**
+  - Firebase Functions Callable では `HttpsError("invalid-argument", ...)` に変換する
+  - 既存の `infrastructure/request-validator.ts` のように **エラーを値（`ValidationError`）で返すスタイルとも互換性がある**（境界で `try/catch` してエラー値に変換する）
+  - ドメイン例外が境界を越えて 5xx として漏れるのは禁止する
 - 入力検証のうち**ドメインルールに該当するもの**（許可リストなど）は、`infrastructure/` の validator ではなく `domain/` の値オブジェクトに寄せる
 - 将来エンティティを導入する場合、Document AI 由来のレスポンス型（現 `DocumentEntity` 型）と命名衝突しないよう、別 PR で `ExtractedField` 等にリネームする
 - 戦術的設計の導入は段階的に行い、各導入時に別 ADR を立てて意思決定を残す

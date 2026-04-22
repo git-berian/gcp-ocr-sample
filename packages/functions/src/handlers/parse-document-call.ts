@@ -2,11 +2,11 @@ import { HttpsError, type CallableRequest } from "firebase-functions/v2/https";
 import { validateParseDocumentRequest } from "../infrastructure/request-validator.js";
 import { loadFunctionsConfig } from "../infrastructure/config.js";
 import { createDocumentProcessor } from "../infrastructure/document-ai-client.js";
-import { parseDocument, type DocumentEntity } from "../application/parse-document.js";
+import { parseDocument, type ExtractedField } from "../application/parse-document.js";
 
 export const handleParseDocumentCall = async (
   request: CallableRequest,
-): Promise<{ entities: DocumentEntity[] }> => {
+): Promise<{ entities: ExtractedField[] }> => {
   const validation = validateParseDocumentRequest(request.data);
   if (!validation.ok) {
     throw new HttpsError("invalid-argument", validation.message);

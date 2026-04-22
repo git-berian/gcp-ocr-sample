@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { parseDocument } from "./parse-document.js";
 import type { DocumentProcessor } from "./parse-document.js";
+import { MimeType } from "../domain/mime-type.js";
 
 describe("parseDocument", () => {
   const mockEntities = [{ type: "total_amount", mentionText: "1,234", confidence: 0.95 }];
@@ -17,7 +18,7 @@ describe("parseDocument", () => {
         location: "us",
         processorId: "proc-123",
         content: "base64content",
-        mimeType: "application/pdf",
+        mimeType: MimeType.from("application/pdf"),
       },
       processor,
     );

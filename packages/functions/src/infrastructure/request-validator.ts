@@ -1,8 +1,8 @@
-import { isSupportedMimeType } from "../domain/mime-type.js";
+import { MimeType, UnsupportedMimeTypeError } from "../domain/mime-type.js";
 
 export interface ParseDocumentRequest {
   content: string;
-  mimeType: string;
+  mimeType: MimeType;
 }
 
 export interface ValidationResult {
@@ -30,15 +30,18 @@ export function validateParseDocumentRequest(body: unknown): ValidationResult | 
     return { ok: false, message: "mimeType は必須で、空でない文字列である必要があります" };
   }
 
-  if (!isSupportedMimeType(obj.mimeType)) {
-    return {
-      ok: false,
-      message: `サポートされていない mimeType: ${obj.mimeType}。対応形式: application/pdf, image/png, image/jpeg`,
-    };
+  let mimeType: MimeType;
+  try {
+    mimeType = MimeType.from(obj.mimeType);
+  } catch (e) {
+    if (e instanceof UnsupportedMimeTypeError) {
+      return { ok: false, message: e.message };
+    }
+    throw e;
   }
 
   return {
     ok: true,
-    data: { content: obj.content, mimeType: obj.mimeType },
+    data: { content: obj.content, mimeType },
   };
 }

@@ -3,6 +3,7 @@ import type { ReceiptExtraction, ReceiptExtractor } from "../application/extract
 import {
   toIsoDateOrNull,
   toNumberOrNull,
+  toRegistrationNumberOrNull,
   toStringOrNull,
 } from "../application/receipt-normalize.js";
 
@@ -91,7 +92,7 @@ function normalizeReceiptExtraction(parsed: unknown): ReceiptExtraction {
     receiptDate: toIsoDateOrNull(obj.receiptDate),
     totalAmount: toNumberOrNull(obj.totalAmount),
     taxAmount: toNumberOrNull(obj.taxAmount),
-    registrationNumber: toStringOrNull(obj.registrationNumber),
+    registrationNumber: toRegistrationNumberOrNull(obj.registrationNumber),
     transcription: typeof obj.transcription === "string" ? obj.transcription : "",
     meta: { source: "gemini" },
   };

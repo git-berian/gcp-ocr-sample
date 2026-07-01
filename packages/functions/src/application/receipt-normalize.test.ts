@@ -3,6 +3,7 @@ import {
   toStringOrNull,
   toNumberOrNull,
   toIsoDateOrNull,
+  toRegistrationNumberOrNull,
   dateFromParts,
   moneyToNumber,
 } from "./receipt-normalize.js";
@@ -52,6 +53,26 @@ describe("toIsoDateOrNull", () => {
     expect(toIsoDateOrNull("")).toBeNull();
     expect(toIsoDateOrNull(null)).toBeNull();
   });
+
+  it("書式は合っていても実在しない日付は null", () => {
+    expect(toIsoDateOrNull("2026-02-31")).toBeNull();
+    expect(toIsoDateOrNull("2026-13-01")).toBeNull();
+  });
+});
+
+describe("toRegistrationNumberOrNull", () => {
+  it("T+数字13桁のみ受け入れ、空白は除去する", () => {
+    expect(toRegistrationNumberOrNull("T1234567890123")).toBe("T1234567890123");
+    expect(toRegistrationNumberOrNull("T 1234567890123")).toBe("T1234567890123");
+  });
+
+  it("桁不足・別形式・非文字列は null", () => {
+    expect(toRegistrationNumberOrNull("T123")).toBeNull();
+    expect(toRegistrationNumberOrNull("1234567890123")).toBeNull();
+    expect(toRegistrationNumberOrNull("登録番号")).toBeNull();
+    expect(toRegistrationNumberOrNull("")).toBeNull();
+    expect(toRegistrationNumberOrNull(null)).toBeNull();
+  });
 });
 
 describe("dateFromParts", () => {
@@ -60,10 +81,12 @@ describe("dateFromParts", () => {
     expect(dateFromParts({ year: 2026, month: 12, day: 3 })).toBe("2026-12-03");
   });
 
-  it("欠損・null は null", () => {
+  it("欠損・null・実在しない日付は null", () => {
     expect(dateFromParts({ year: 2026, month: 5 })).toBeNull();
     expect(dateFromParts(null)).toBeNull();
     expect(dateFromParts(undefined)).toBeNull();
+    expect(dateFromParts({ year: 2026, month: 13, day: 40 })).toBeNull();
+    expect(dateFromParts({ year: 2026, month: 2, day: 31 })).toBeNull();
   });
 });
 

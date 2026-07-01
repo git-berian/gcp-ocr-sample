@@ -5,6 +5,7 @@ import {
   moneyToNumber,
   toIsoDateOrNull,
   toNumberOrNull,
+  toRegistrationNumberOrNull,
   toStringOrNull,
 } from "../application/receipt-normalize.js";
 
@@ -81,7 +82,7 @@ export function mapEntitiesToReceipt(entities: DocumentEntity[], text: string): 
     taxAmount: tax
       ? (moneyToNumber(tax.normalizedValue?.moneyValue) ?? toNumberOrNull(tax.mentionText))
       : null,
-    registrationNumber: registration ? toStringOrNull(registration.mentionText) : null,
+    registrationNumber: registration ? toRegistrationNumberOrNull(registration.mentionText) : null,
     transcription: text,
     meta: { source: "document-ai", confidence },
   };

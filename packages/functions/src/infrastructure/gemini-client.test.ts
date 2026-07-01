@@ -9,7 +9,12 @@ vi.mock("@google/genai", () => ({
   Type: { OBJECT: "OBJECT", STRING: "STRING", NUMBER: "NUMBER", ARRAY: "ARRAY" },
 }));
 
-const config = { projectId: "test-project", location: "global", model: "gemini-2.5-flash" };
+const config = {
+  projectId: "test-project",
+  location: "global",
+  model: "gemini-2.5-flash",
+  timeoutMs: 30000,
+};
 const params = { content: "base64data", mimeType: "image/jpeg" };
 
 const fullReceipt = {
@@ -46,6 +51,7 @@ describe("createReceiptExtractor", () => {
     expect(arg.config.responseMimeType).toBe("application/json");
     expect(arg.config.responseSchema).toBeDefined();
     expect(arg.config.thinkingConfig).toEqual({ thinkingBudget: 0 });
+    expect(arg.config.httpOptions).toEqual({ timeout: 30000 });
   });
 
   it("空文字レスポンスでエラーを投げる", async () => {

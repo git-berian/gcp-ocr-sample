@@ -45,6 +45,7 @@ export function createReceiptExtractor(config: {
   projectId: string;
   location: string;
   model: string;
+  timeoutMs: number;
 }): ReceiptExtractor {
   const ai = new GoogleGenAI({
     vertexai: true,
@@ -70,6 +71,7 @@ export function createReceiptExtractor(config: {
           responseMimeType: "application/json",
           responseSchema: RECEIPT_RESPONSE_SCHEMA,
           thinkingConfig: { thinkingBudget: 0 },
+          httpOptions: { timeout: config.timeoutMs },
         },
       });
 

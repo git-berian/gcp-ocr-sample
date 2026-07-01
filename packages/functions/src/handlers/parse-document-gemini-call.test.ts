@@ -7,6 +7,7 @@ vi.mock("../infrastructure/config.js", () => ({
     projectId: "test-project",
     location: "global",
     model: "gemini-2.5-flash",
+    timeoutMs: 30000,
   }),
 }));
 

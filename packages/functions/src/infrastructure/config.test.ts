@@ -50,26 +50,37 @@ describe("loadGeminiConfig", () => {
     vi.stubEnv("GCP_PROJECT_ID", "my-project");
     vi.stubEnv("GEMINI_LOCATION", "asia-northeast1");
     vi.stubEnv("GEMINI_MODEL", "gemini-2.5-pro");
+    vi.stubEnv("GEMINI_TIMEOUT_MS", "15000");
 
     const config = loadGeminiConfig();
     expect(config).toEqual({
       projectId: "my-project",
       location: "asia-northeast1",
       model: "gemini-2.5-pro",
+      timeoutMs: 15000,
     });
   });
 
-  it("GEMINI_LOCATION / GEMINI_MODEL 未設定時は既定値を使う", () => {
+  it("GEMINI_LOCATION / GEMINI_MODEL / GEMINI_TIMEOUT_MS 未設定時は既定値を使う", () => {
     vi.stubEnv("GCP_PROJECT_ID", "my-project");
     vi.stubEnv("GEMINI_LOCATION", "");
     vi.stubEnv("GEMINI_MODEL", "");
+    vi.stubEnv("GEMINI_TIMEOUT_MS", "");
 
     const config = loadGeminiConfig();
     expect(config).toEqual({
       projectId: "my-project",
       location: "global",
       model: "gemini-2.5-flash",
+      timeoutMs: 30000,
     });
+  });
+
+  it("GEMINI_TIMEOUT_MS が不正値なら既定値 30000 を使う", () => {
+    vi.stubEnv("GCP_PROJECT_ID", "my-project");
+    vi.stubEnv("GEMINI_TIMEOUT_MS", "abc");
+
+    expect(loadGeminiConfig().timeoutMs).toBe(30000);
   });
 
   it("GCP_PROJECT_IDが欠けている場合、例外を投げる", () => {

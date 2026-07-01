@@ -17,3 +17,17 @@ export function loadFunctionsConfig(): FunctionsConfig {
     processorId: mustEnv("DOCAI_PROCESSOR_ID"),
   };
 }
+
+export interface GeminiConfig {
+  projectId: string;
+  location: string;
+  model: string;
+}
+
+export function loadGeminiConfig(): GeminiConfig {
+  return {
+    projectId: mustEnv("GCP_PROJECT_ID"),
+    location: process.env.GEMINI_LOCATION || "global",
+    model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+  };
+}

@@ -9,9 +9,9 @@ vi.mock("../infrastructure/config.js", () => ({
   }),
 }));
 
-const mockProcess = vi.fn();
+const mockExtract = vi.fn();
 vi.mock("../infrastructure/document-ai-client.js", () => ({
-  createDocumentProcessor: () => ({ process: mockProcess }),
+  createDocumentAiReceiptExtractor: () => ({ extract: mockExtract }),
 }));
 
 type HandlerParams = Parameters<typeof handleParseDocument>;
@@ -43,9 +43,19 @@ function createMockReqRes(
 
 const TEST_API_KEY = "test-api-key-12345";
 
+const mockReceipt = {
+  supplierName: "テスト商店",
+  receiptDate: "2026-05-16",
+  totalAmount: 4800,
+  taxAmount: 436,
+  registrationNumber: "T1234567890123",
+  transcription: "領収書",
+  meta: { source: "document-ai" as const },
+};
+
 describe("handleParseDocument", () => {
   beforeEach(() => {
-    mockProcess.mockReset();
+    mockExtract.mockReset();
     vi.stubEnv("API_KEY", TEST_API_KEY);
   });
 
@@ -92,9 +102,8 @@ describe("handleParseDocument", () => {
     expect(res.status).toHaveBeenCalledWith(400);
   });
 
-  it("正常なリクエストでentitiesを返す", async () => {
-    const mockEntities = [{ type: "total_amount", mentionText: "1,234", confidence: 0.95 }];
-    mockProcess.mockResolvedValue(mockEntities);
+  it("正常なリクエストで receipt を返す", async () => {
+    mockExtract.mockResolvedValue(mockReceipt);
 
     const { req, res } = createMockReqRes({
       headers: { authorization: `Bearer ${TEST_API_KEY}` },
@@ -102,11 +111,11 @@ describe("handleParseDocument", () => {
     await handleParseDocument(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ entities: mockEntities });
+    expect(res.json).toHaveBeenCalledWith({ receipt: mockReceipt });
   });
 
-  it("Document AI処理エラー時は500を返す", async () => {
-    mockProcess.mockRejectedValue(new Error("API error"));
+  it("抽出エラー時は500を返す", async () => {
+    mockExtract.mockRejectedValue(new Error("API error"));
 
     const { req, res } = createMockReqRes({
       headers: { authorization: `Bearer ${TEST_API_KEY}` },
@@ -118,7 +127,7 @@ describe("handleParseDocument", () => {
   });
 
   it("Error以外の例外でも500を返す", async () => {
-    mockProcess.mockRejectedValue("string error");
+    mockExtract.mockRejectedValue("string error");
 
     const { req, res } = createMockReqRes({
       headers: { authorization: `Bearer ${TEST_API_KEY}` },

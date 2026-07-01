@@ -1,49 +1,73 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ResultTable } from "./ResultTable";
-import type { Entity } from "../api/types";
+import type { ReceiptExtraction } from "../api/types";
+
+const receipt: ReceiptExtraction = {
+  supplierName: "テスト商店",
+  receiptDate: "2026-05-16",
+  totalAmount: 4800,
+  taxAmount: 436,
+  registrationNumber: "T1234567890123",
+  transcription: "領収書 テスト商店",
+  meta: { source: "gemini" },
+};
 
 describe("ResultTable", () => {
-  it("renders table headers", () => {
-    render(<ResultTable entities={[]} />);
+  it("項目ヘッダーを表示する", () => {
+    render(<ResultTable receipt={receipt} />);
 
-    expect(screen.getByText("種別")).toBeInTheDocument();
-    expect(screen.getByText("テキスト")).toBeInTheDocument();
-    expect(screen.getByText("信頼度")).toBeInTheDocument();
-    expect(screen.getByText("正規化値")).toBeInTheDocument();
+    expect(screen.getByText("項目")).toBeInTheDocument();
+    expect(screen.getByText("値")).toBeInTheDocument();
   });
 
-  it("renders entity rows", () => {
-    const entities: Entity[] = [
-      {
-        type: "total_amount",
-        mentionText: "1,000",
-        confidence: 0.95,
-        normalizedValue: { text: "1000" },
-      },
-      { type: "date", mentionText: "2024-01-01", confidence: 0.88 },
-    ];
+  it("領収書フィールドを表示する", () => {
+    render(<ResultTable receipt={receipt} />);
 
-    render(<ResultTable entities={entities} />);
-
-    expect(screen.getByText("total_amount")).toBeInTheDocument();
-    expect(screen.getByText("1,000")).toBeInTheDocument();
-    expect(screen.getByText("95.0%")).toBeInTheDocument();
-    expect(screen.getByText("1000")).toBeInTheDocument();
-
-    expect(screen.getByText("date")).toBeInTheDocument();
-    expect(screen.getByText("2024-01-01")).toBeInTheDocument();
-    expect(screen.getByText("88.0%")).toBeInTheDocument();
-
-    const rows = screen.getAllByRole("row");
-    const dateRow = rows[2];
-    const cells = dateRow.querySelectorAll("td");
-    expect(cells[3]).toHaveTextContent("");
+    expect(screen.getByText("店名")).toBeInTheDocument();
+    expect(screen.getByText("テスト商店")).toBeInTheDocument();
+    expect(screen.getByText("支払日")).toBeInTheDocument();
+    expect(screen.getByText("2026-05-16")).toBeInTheDocument();
+    expect(screen.getByText("¥4,800")).toBeInTheDocument();
+    expect(screen.getByText("¥436")).toBeInTheDocument();
+    expect(screen.getByText("登録番号")).toBeInTheDocument();
+    expect(screen.getByText("T1234567890123")).toBeInTheDocument();
   });
 
-  it("renders empty state when no entities", () => {
-    render(<ResultTable entities={[]} />);
+  it("登録番号が無い場合は「なし」を表示する", () => {
+    render(<ResultTable receipt={{ ...receipt, registrationNumber: null }} />);
 
-    expect(screen.getByText("エンティティが見つかりません")).toBeInTheDocument();
+    expect(screen.getByText("なし")).toBeInTheDocument();
+  });
+
+  it("null フィールドは — を表示する", () => {
+    render(
+      <ResultTable
+        receipt={{
+          supplierName: null,
+          receiptDate: null,
+          totalAmount: null,
+          taxAmount: null,
+          registrationNumber: null,
+          transcription: "",
+        }}
+      />,
+    );
+
+    // 店名・支払日・金額・税額 の 4 つが — （登録番号は「なし」）
+    expect(screen.getAllByText("—")).toHaveLength(4);
+  });
+
+  it("receipt が null のとき空状態を表示する", () => {
+    render(<ResultTable receipt={null} />);
+
+    expect(screen.getByText("結果がありません")).toBeInTheDocument();
+  });
+
+  it("書き起こしを表示する", () => {
+    render(<ResultTable receipt={receipt} />);
+
+    expect(screen.getByText("書き起こし")).toBeInTheDocument();
+    expect(screen.getByText("領収書 テスト商店")).toBeInTheDocument();
   });
 });

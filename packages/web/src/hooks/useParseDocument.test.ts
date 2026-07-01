@@ -3,6 +3,17 @@ import { renderHook, act } from "@testing-library/react";
 import { useParseDocument } from "./useParseDocument";
 import * as parseDocumentApi from "../api/parse-document";
 import * as fileUtils from "../utils/file";
+import type { ReceiptExtraction } from "../api/types";
+
+const RECEIPT: ReceiptExtraction = {
+  supplierName: "テスト商店",
+  receiptDate: "2026-05-16",
+  totalAmount: 4800,
+  taxAmount: 436,
+  registrationNumber: "T1234567890123",
+  transcription: "書き起こし",
+  meta: { source: "gemini" },
+};
 
 vi.mock("../api/parse-document");
 vi.mock("../utils/file", async (importOriginal) => {
@@ -29,9 +40,7 @@ describe("useParseDocument", () => {
   });
 
   it("submits file and returns result", async () => {
-    const mockResponse = {
-      entities: [{ type: "total", mentionText: "1000", confidence: 0.95 }],
-    };
+    const mockResponse = { receipt: RECEIPT };
     vi.mocked(fileUtils.fileToBase64).mockResolvedValue("base64data");
     vi.mocked(parseDocumentApi.parseDocument).mockResolvedValue(mockResponse);
 
@@ -118,7 +127,7 @@ describe("useParseDocument", () => {
     vi.mocked(fileUtils.fileToBase64).mockResolvedValue("base64data");
     vi.mocked(parseDocumentApi.parseDocument)
       .mockRejectedValueOnce(new Error("Server error"))
-      .mockResolvedValueOnce({ entities: [] });
+      .mockResolvedValueOnce({ receipt: RECEIPT });
 
     const { result } = renderHook(() => useParseDocument());
     const file = new File(["content"], "test.png", { type: "image/png" });
@@ -132,13 +141,11 @@ describe("useParseDocument", () => {
       await result.current.submit(file);
     });
     expect(result.current.error).toBe("");
-    expect(result.current.result).toEqual({ entities: [] });
+    expect(result.current.result).toEqual({ receipt: RECEIPT });
   });
 
   it("再実行時に前回の結果がクリアされる", async () => {
-    const firstResponse = {
-      entities: [{ type: "total", mentionText: "1000", confidence: 0.95 }],
-    };
+    const firstResponse = { receipt: RECEIPT };
     vi.mocked(fileUtils.fileToBase64).mockResolvedValue("base64data");
     vi.mocked(parseDocumentApi.parseDocument)
       .mockResolvedValueOnce(firstResponse)
@@ -181,7 +188,7 @@ describe("useParseDocument", () => {
     loadingStates.push(result.current.isLoading);
 
     await act(async () => {
-      resolveApi!({ entities: [] });
+      resolveApi!({ receipt: RECEIPT });
       await submitPromise!;
     });
 

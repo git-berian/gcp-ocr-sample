@@ -3,7 +3,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { mockGenerateContent } from "../helpers/mock-gemini.js";
 import {
   TEST_ENV,
-  MOCK_RECEIPT,
+  EXPECTED_GEMINI_RECEIPT,
   MOCK_GEMINI_RESPONSE,
   VALID_REQUEST_BODY,
   createMockCallableRequest,
@@ -27,7 +27,7 @@ describe("handleParseDocumentGeminiCall（結合テスト）", () => {
 
     const result = await handleParseDocumentGeminiCall(createMockCallableRequest());
 
-    expect(result).toEqual({ receipt: MOCK_RECEIPT });
+    expect(result).toEqual({ receipt: EXPECTED_GEMINI_RECEIPT });
 
     const arg = mockGenerateContent.mock.calls[0][0];
     expect(arg.model).toBe(TEST_ENV.GEMINI_MODEL);

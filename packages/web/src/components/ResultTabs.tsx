@@ -46,7 +46,7 @@ function TabPanel({ job, onRetry }: { job: FileJob; onRetry: (jobId: string) => 
     case "success":
       return (
         <>
-          <ResultTable entities={job.result?.entities ?? []} />
+          <ResultTable receipt={job.result?.receipt ?? null} />
           {job.result && (
             <details className={styles.rawResponse}>
               <summary>生データ</summary>

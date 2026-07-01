@@ -2,7 +2,20 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ResultTabs } from "./ResultTabs";
-import type { FileJob } from "../api/types";
+import type { FileJob, ReceiptExtraction } from "../api/types";
+
+function makeReceipt(overrides: Partial<ReceiptExtraction> = {}): ReceiptExtraction {
+  return {
+    supplierName: "テスト商店",
+    receiptDate: "2026-05-16",
+    totalAmount: 4800,
+    taxAmount: 436,
+    registrationNumber: "T1234567890123",
+    transcription: "書き起こし",
+    meta: { source: "gemini" },
+    ...overrides,
+  };
+}
 
 function createJob(overrides: Partial<FileJob> = {}): FileJob {
   return {
@@ -10,7 +23,7 @@ function createJob(overrides: Partial<FileJob> = {}): FileJob {
     file: new File([""], "test.png", { type: "image/png" }),
     fileName: "test.png",
     status: "success",
-    result: { entities: [] },
+    result: { receipt: makeReceipt() },
     error: "",
     ...overrides,
   };
@@ -37,22 +50,22 @@ describe("ResultTabs", () => {
       createJob({
         id: "1",
         fileName: "first.png",
-        result: { entities: [{ type: "total", mentionText: "1000", confidence: 0.9 }] },
+        result: { receipt: makeReceipt({ supplierName: "店A" }) },
       }),
       createJob({
         id: "2",
         fileName: "second.png",
-        result: { entities: [{ type: "date", mentionText: "2024-01-01", confidence: 0.8 }] },
+        result: { receipt: makeReceipt({ supplierName: "店B" }) },
       }),
     ];
 
     render(<ResultTabs jobs={jobs} onRetry={mockRetry} />);
 
-    expect(screen.getByText("1000")).toBeInTheDocument();
+    expect(screen.getByText("店A")).toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /second\.png/ }));
 
-    expect(screen.getByText("2024-01-01")).toBeInTheDocument();
+    expect(screen.getByText("店B")).toBeInTheDocument();
   });
 
   it("処理中のジョブはスピナーを表示する", () => {
@@ -92,16 +105,11 @@ describe("ResultTabs", () => {
   });
 
   it("成功したジョブは ResultTable と生データを表示する", () => {
-    const jobs = [
-      createJob({
-        id: "1",
-        result: { entities: [{ type: "total", mentionText: "500", confidence: 0.95 }] },
-      }),
-    ];
+    const jobs = [createJob({ id: "1", result: { receipt: makeReceipt() } })];
 
     render(<ResultTabs jobs={jobs} onRetry={mockRetry} />);
 
-    expect(screen.getByText("500")).toBeInTheDocument();
+    expect(screen.getByText("テスト商店")).toBeInTheDocument();
     expect(screen.getByText("生データ")).toBeInTheDocument();
   });
 

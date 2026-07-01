@@ -1,17 +1,18 @@
 import type { MimeType } from "../domain/mime-type.js";
 
-export interface ReceiptLineItem {
-  description: string;
-  amount: number | null;
-}
-
 export interface ReceiptExtraction {
   supplierName: string | null;
-  receiptDate: string | null; // YYYY-MM-DD
+  receiptDate: string | null; // YYYY-MM-DD（支払日）
   totalAmount: number | null;
   taxAmount: number | null;
-  lineItems: ReceiptLineItem[];
+  registrationNumber: string | null; // インボイス登録番号（T+13桁）。無ければ null
   transcription: string;
+  meta?: ReceiptMeta;
+}
+
+export interface ReceiptMeta {
+  source: "document-ai" | "gemini";
+  confidence?: Record<string, number>;
 }
 
 export interface ReceiptExtractor {

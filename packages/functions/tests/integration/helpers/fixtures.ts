@@ -13,25 +13,76 @@ export const TEST_ENV = {
 
 export const EXPECTED_PROCESSOR_NAME = `projects/${TEST_ENV.GCP_PROJECT_ID}/locations/${TEST_ENV.DOCAI_LOCATION}/processors/${TEST_ENV.DOCAI_PROCESSOR_ID}`;
 
-export const MOCK_ENTITIES = [{ type: "total_amount", mentionText: "1,234", confidence: 0.95 }];
-
-export const MOCK_SDK_RESPONSE = [{ document: { entities: MOCK_ENTITIES } }];
-
 export const VALID_REQUEST_BODY = {
   content: "base64data",
   mimeType: "application/pdf",
 };
 
-export const MOCK_RECEIPT = {
+// ---- Document AI 用フィクスチャ ----
+export const MOCK_DOCAI_TEXT = "領収書\nテスト商店\n2026年5月16日\n¥4,800\nT1234567890123";
+
+export const MOCK_DOCAI_ENTITIES = [
+  { type: "supplier_name", mentionText: "テスト商店", confidence: 0.9 },
+  {
+    type: "receipt_date",
+    mentionText: "2026年5月16日",
+    confidence: 0.95,
+    normalizedValue: { dateValue: { year: 2026, month: 5, day: 16 } },
+  },
+  {
+    type: "total_amount",
+    mentionText: "¥4,800",
+    confidence: 0.88,
+    normalizedValue: { moneyValue: { units: 4800, nanos: 0 } },
+  },
+  {
+    type: "total_tax_amount",
+    mentionText: "¥436",
+    confidence: 0.7,
+    normalizedValue: { moneyValue: { units: 436 } },
+  },
+  { type: "registration_number", mentionText: "T1234567890123", confidence: 0.8 },
+];
+
+export const MOCK_SDK_RESPONSE = [
+  { document: { entities: MOCK_DOCAI_ENTITIES, text: MOCK_DOCAI_TEXT } },
+];
+
+export const EXPECTED_DOCAI_RECEIPT = {
   supplierName: "テスト商店",
   receiptDate: "2026-05-16",
   totalAmount: 4800,
   taxAmount: 436,
-  lineItems: [{ description: "コーヒー", amount: 500 }],
-  transcription: "領収書 4800円",
+  registrationNumber: "T1234567890123",
+  transcription: MOCK_DOCAI_TEXT,
+  meta: {
+    source: "document-ai",
+    confidence: {
+      supplier_name: 0.9,
+      receipt_date: 0.95,
+      total_amount: 0.88,
+      total_tax_amount: 0.7,
+      registration_number: 0.8,
+    },
+  },
 };
 
-export const MOCK_GEMINI_RESPONSE = { text: JSON.stringify(MOCK_RECEIPT) };
+// ---- Gemini 用フィクスチャ ----
+export const MOCK_RECEIPT_FIELDS = {
+  supplierName: "テスト商店",
+  receiptDate: "2026-05-16",
+  totalAmount: 4800,
+  taxAmount: 436,
+  registrationNumber: "T1234567890123",
+  transcription: "領収書 テスト商店 4800円 T1234567890123",
+};
+
+export const MOCK_GEMINI_RESPONSE = { text: JSON.stringify(MOCK_RECEIPT_FIELDS) };
+
+export const EXPECTED_GEMINI_RECEIPT = {
+  ...MOCK_RECEIPT_FIELDS,
+  meta: { source: "gemini" },
+};
 
 type HandlerParams = Parameters<typeof handleParseDocument>;
 

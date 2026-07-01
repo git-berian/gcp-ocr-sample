@@ -2,8 +2,8 @@ import type { Request } from "firebase-functions/v2/https";
 import { validateApiKey } from "../infrastructure/auth-validator.js";
 import { validateParseDocumentRequest } from "../infrastructure/request-validator.js";
 import { loadFunctionsConfig } from "../infrastructure/config.js";
-import { createDocumentProcessor } from "../infrastructure/document-ai-client.js";
-import { parseDocument } from "../application/parse-document.js";
+import { createDocumentAiReceiptExtractor } from "../infrastructure/document-ai-client.js";
+import { extractReceipt } from "../application/extract-receipt.js";
 
 interface JsonResponse {
   status(code: number): JsonResponse;
@@ -38,37 +38,30 @@ export const handleParseDocument = async (req: Request, res: JsonResponse): Prom
 
   try {
     const config = loadFunctionsConfig();
-    const processor = createDocumentProcessor(config.location);
+    const extractor = createDocumentAiReceiptExtractor(config);
 
-    const entities = await parseDocument(
+    const receipt = await extractReceipt(
       {
-        projectId: config.projectId,
-        location: config.location,
-        processorId: config.processorId,
         content: validation.data.content,
         mimeType: validation.data.mimeType,
       },
-      processor,
+      extractor,
     );
 
-    const loggableTypes = new Set([
-      "currency",
-      "receipt_date",
-      "supplier_name",
-      "total_amount",
-      "registration_number",
-    ]);
-    const logEntities = entities.map((e) =>
-      loggableTypes.has(e.type ?? "")
-        ? { type: e.type, mentionText: e.mentionText, confidence: e.confidence }
-        : { type: e.type, confidence: e.confidence },
+    console.log(
+      `[AI] receipt:`,
+      JSON.stringify({
+        supplierName: receipt.supplierName,
+        receiptDate: receipt.receiptDate,
+        totalAmount: receipt.totalAmount,
+        registrationNumber: receipt.registrationNumber,
+      }),
     );
-    console.log(`[AI] entities:`, JSON.stringify(logEntities));
-    const body = { entities };
-    console.log(`[RES] 200 entities=${entities.length}`);
+    const body = { receipt };
+    console.log(`[RES] 200 receipt`);
     res.status(200).json(body);
   } catch (e: unknown) {
-    console.error("parseDocument 失敗:", e);
+    console.error("extractReceipt 失敗:", e);
     const body = { error: "内部サーバーエラー" };
     console.log(`[RES] 500`, JSON.stringify(body));
     res.status(500).json(body);

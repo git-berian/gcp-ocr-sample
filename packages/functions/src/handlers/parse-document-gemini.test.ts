@@ -12,7 +12,7 @@ vi.mock("../infrastructure/config.js", () => ({
 
 const mockExtract = vi.fn();
 vi.mock("../infrastructure/gemini-client.js", () => ({
-  createReceiptExtractor: () => ({ extract: mockExtract }),
+  createGeminiReceiptExtractor: () => ({ extract: mockExtract }),
 }));
 
 type HandlerParams = Parameters<typeof handleParseDocumentGemini>;
@@ -49,8 +49,9 @@ const mockReceipt = {
   receiptDate: "2026-05-16",
   totalAmount: 4800,
   taxAmount: 436,
-  lineItems: [],
+  registrationNumber: "T1234567890123",
   transcription: "領収書",
+  meta: { source: "gemini" as const },
 };
 
 describe("handleParseDocumentGemini", () => {

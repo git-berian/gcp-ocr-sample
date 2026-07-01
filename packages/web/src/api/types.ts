@@ -3,15 +3,23 @@ export interface ParseDocumentRequest {
   mimeType: string;
 }
 
-export interface Entity {
-  type: string;
-  mentionText: string;
-  confidence: number;
-  normalizedValue?: { text?: string; [key: string]: unknown };
+export interface ReceiptMeta {
+  source: "document-ai" | "gemini";
+  confidence?: Record<string, number>;
+}
+
+export interface ReceiptExtraction {
+  supplierName: string | null;
+  receiptDate: string | null; // YYYY-MM-DD（支払日）
+  totalAmount: number | null;
+  taxAmount: number | null;
+  registrationNumber: string | null; // インボイス登録番号。無ければ null
+  transcription: string;
+  meta?: ReceiptMeta;
 }
 
 export interface ParseDocumentResponse {
-  entities: Entity[];
+  receipt: ReceiptExtraction;
 }
 
 export type FileJobStatus = "pending" | "processing" | "success" | "error";

@@ -4,7 +4,7 @@ import { mockProcessDocument } from "../helpers/mock-document-ai.js";
 import {
   TEST_ENV,
   EXPECTED_PROCESSOR_NAME,
-  MOCK_ENTITIES,
+  EXPECTED_DOCAI_RECEIPT,
   MOCK_SDK_RESPONSE,
   VALID_REQUEST_BODY,
   createMockCallableRequest,
@@ -23,13 +23,13 @@ describe("handleParseDocumentCall（結合テスト）", () => {
     vi.unstubAllEnvs();
   });
 
-  it("正常系: バリデーション・Document AI 呼び出しを経て entities を返す", async () => {
+  it("正常系: バリデーション・Document AI 呼び出しを経て receipt を返す", async () => {
     mockProcessDocument.mockResolvedValue(MOCK_SDK_RESPONSE);
 
     const request = createMockCallableRequest();
     const result = await handleParseDocumentCall(request);
 
-    expect(result).toEqual({ entities: MOCK_ENTITIES });
+    expect(result).toEqual({ receipt: EXPECTED_DOCAI_RECEIPT });
 
     expect(mockProcessDocument).toHaveBeenCalledWith({
       name: EXPECTED_PROCESSOR_NAME,

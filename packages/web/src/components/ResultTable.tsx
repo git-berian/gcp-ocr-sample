@@ -1,41 +1,57 @@
-import type { Entity } from "../api/types";
+import type { ReceiptExtraction } from "../api/types";
 import styles from "./ResultTable.module.css";
 
 interface ResultTableProps {
-  entities: Entity[];
+  receipt: ReceiptExtraction | null;
 }
 
-export function ResultTable({ entities }: ResultTableProps) {
+const DASH = "—";
+
+function formatAmount(value: number | null): string {
+  return value != null ? `¥${value.toLocaleString()}` : DASH;
+}
+
+export function ResultTable({ receipt }: ResultTableProps) {
+  if (!receipt) {
+    return (
+      <div className={styles.wrapper}>
+        <p className={styles.emptyCell}>結果がありません</p>
+      </div>
+    );
+  }
+
+  const rows = [
+    { label: "店名", value: receipt.supplierName ?? DASH },
+    { label: "支払日", value: receipt.receiptDate ?? DASH },
+    { label: "金額", value: formatAmount(receipt.totalAmount) },
+    { label: "税額", value: formatAmount(receipt.taxAmount) },
+    { label: "登録番号", value: receipt.registrationNumber ?? "なし" },
+  ];
+
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>種別</th>
-            <th>テキスト</th>
-            <th>信頼度</th>
-            <th>正規化値</th>
+            <th>項目</th>
+            <th>値</th>
           </tr>
         </thead>
         <tbody>
-          {entities.length === 0 ? (
-            <tr>
-              <td colSpan={4} className={styles.emptyCell}>
-                エンティティが見つかりません
-              </td>
+          {rows.map((row) => (
+            <tr key={row.label}>
+              <td>{row.label}</td>
+              <td>{row.value}</td>
             </tr>
-          ) : (
-            entities.map((entity, index) => (
-              <tr key={index}>
-                <td>{entity.type}</td>
-                <td>{entity.mentionText}</td>
-                <td>{(entity.confidence * 100).toFixed(1)}%</td>
-                <td>{entity.normalizedValue?.text ?? ""}</td>
-              </tr>
-            ))
-          )}
+          ))}
         </tbody>
       </table>
+      {receipt.transcription && (
+        <details className={styles.transcription}>
+          <summary>書き起こし</summary>
+          <pre>{receipt.transcription}</pre>
+        </details>
+      )}
     </div>
   );
 }

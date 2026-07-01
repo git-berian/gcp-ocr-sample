@@ -1,12 +1,12 @@
 import { HttpsError, type CallableRequest } from "firebase-functions/v2/https";
 import { validateParseDocumentRequest } from "../infrastructure/request-validator.js";
 import { loadFunctionsConfig } from "../infrastructure/config.js";
-import { createDocumentProcessor } from "../infrastructure/document-ai-client.js";
-import { parseDocument, type ExtractedField } from "../application/parse-document.js";
+import { createDocumentAiReceiptExtractor } from "../infrastructure/document-ai-client.js";
+import { extractReceipt, type ReceiptExtraction } from "../application/extract-receipt.js";
 
 export const handleParseDocumentCall = async (
   request: CallableRequest,
-): Promise<{ entities: ExtractedField[] }> => {
+): Promise<{ receipt: ReceiptExtraction }> => {
   const validation = validateParseDocumentRequest(request.data);
   if (!validation.ok) {
     throw new HttpsError("invalid-argument", validation.message);
@@ -14,22 +14,19 @@ export const handleParseDocumentCall = async (
 
   try {
     const config = loadFunctionsConfig();
-    const processor = createDocumentProcessor(config.location);
+    const extractor = createDocumentAiReceiptExtractor(config);
 
-    const entities = await parseDocument(
+    const receipt = await extractReceipt(
       {
-        projectId: config.projectId,
-        location: config.location,
-        processorId: config.processorId,
         content: validation.data.content,
         mimeType: validation.data.mimeType,
       },
-      processor,
+      extractor,
     );
 
-    return { entities };
+    return { receipt };
   } catch (e: unknown) {
-    console.error("parseDocument 失敗:", e);
+    console.error("extractReceipt 失敗:", e);
     throw new HttpsError("internal", "内部サーバーエラー");
   }
 };

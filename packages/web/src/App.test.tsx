@@ -2,7 +2,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AppView } from "./App";
-import type { FileJob } from "./api/types";
+import type { FileJob, ReceiptExtraction } from "./api/types";
+
+function makeReceipt(overrides: Partial<ReceiptExtraction> = {}): ReceiptExtraction {
+  return {
+    supplierName: "テスト商店",
+    receiptDate: "2026-05-16",
+    totalAmount: 4800,
+    taxAmount: 436,
+    registrationNumber: "T1234567890123",
+    transcription: "書き起こし",
+    meta: { source: "gemini" },
+    ...overrides,
+  };
+}
 
 function createJob(overrides: Partial<FileJob> = {}): FileJob {
   return {
@@ -10,7 +23,7 @@ function createJob(overrides: Partial<FileJob> = {}): FileJob {
     file: new File([""], "test.png", { type: "image/png" }),
     fileName: "test.png",
     status: "success",
-    result: { entities: [] },
+    result: { receipt: makeReceipt() },
     error: "",
     ...overrides,
   };
@@ -44,13 +57,13 @@ describe("AppView", () => {
       createJob({
         id: "1",
         fileName: "receipt.png",
-        result: { entities: [{ type: "total", mentionText: "1000", confidence: 0.95 }] },
+        result: { receipt: makeReceipt({ supplierName: "領収書店" }) },
       }),
     ];
     render(<AppView {...defaultProps} jobs={jobs} />);
 
     expect(screen.getByRole("tablist")).toBeInTheDocument();
-    expect(screen.getByText("1000")).toBeInTheDocument();
+    expect(screen.getByText("領収書店")).toBeInTheDocument();
   });
 
   it("does not show ResultTabs when no jobs", () => {

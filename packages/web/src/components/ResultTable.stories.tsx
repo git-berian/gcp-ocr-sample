@@ -10,44 +10,34 @@ type Story = StoryObj<typeof meta>;
 
 export const Empty: Story = {
   args: {
-    entities: [],
+    receipt: null,
   },
 };
 
-export const WithEntities: Story = {
+export const WithReceipt: Story = {
   args: {
-    entities: [
-      {
-        type: "total_amount",
-        mentionText: "¥1,234",
-        confidence: 0.95,
-        normalizedValue: { text: "1234" },
-      },
-      {
-        type: "supplier_name",
-        mentionText: "Acme Corp",
-        confidence: 0.88,
-        normalizedValue: { text: "Acme Corp" },
-      },
-      {
-        type: "invoice_date",
-        mentionText: "2024-01-15",
-        confidence: 0.92,
-        normalizedValue: { text: "2024-01-15" },
-      },
-    ],
+    receipt: {
+      supplierName: "Acme Corp",
+      receiptDate: "2026-05-16",
+      totalAmount: 1234,
+      taxAmount: 112,
+      registrationNumber: "T1234567890123",
+      transcription: "領収書 Acme Corp ¥1,234 T1234567890123",
+      meta: { source: "gemini" },
+    },
   },
 };
 
-export const SingleEntity: Story = {
+export const WithoutRegistration: Story = {
   args: {
-    entities: [
-      {
-        type: "total_amount",
-        mentionText: "¥500",
-        confidence: 0.99,
-        normalizedValue: { text: "500" },
-      },
-    ],
+    receipt: {
+      supplierName: "個人商店",
+      receiptDate: "2026-03-20",
+      totalAmount: 500,
+      taxAmount: null,
+      registrationNumber: null,
+      transcription: "領収書 500円",
+      meta: { source: "document-ai" },
+    },
   },
 };

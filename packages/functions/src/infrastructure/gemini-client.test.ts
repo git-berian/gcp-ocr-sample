@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createReceiptExtractor } from "./gemini-client.js";
+import { createGeminiReceiptExtractor } from "./gemini-client.js";
 
 const mockGenerateContent = vi.hoisted(() => vi.fn());
 vi.mock("@google/genai", () => ({
@@ -22,11 +22,11 @@ const fullReceipt = {
   receiptDate: "2026-05-16",
   totalAmount: 4800,
   taxAmount: 436,
-  lineItems: [{ description: "コーヒー", amount: 500 }],
+  registrationNumber: "T1234567890123",
   transcription: "領収書 4800円",
 };
 
-describe("createReceiptExtractor", () => {
+describe("createGeminiReceiptExtractor", () => {
   beforeEach(() => {
     mockGenerateContent.mockReset();
   });
@@ -38,10 +38,10 @@ describe("createReceiptExtractor", () => {
   it("正常系: ReceiptExtraction を返し、generateContent を正しく呼ぶ", async () => {
     mockGenerateContent.mockResolvedValue({ text: JSON.stringify(fullReceipt) });
 
-    const extractor = createReceiptExtractor(config);
+    const extractor = createGeminiReceiptExtractor(config);
     const result = await extractor.extract(params);
 
-    expect(result).toEqual(fullReceipt);
+    expect(result).toEqual({ ...fullReceipt, meta: { source: "gemini" } });
 
     const arg = mockGenerateContent.mock.calls[0][0];
     expect(arg.model).toBe("gemini-2.5-flash");
@@ -56,7 +56,7 @@ describe("createReceiptExtractor", () => {
 
   it("空文字レスポンスでエラーを投げる", async () => {
     mockGenerateContent.mockResolvedValue({ text: "" });
-    const extractor = createReceiptExtractor(config);
+    const extractor = createGeminiReceiptExtractor(config);
     await expect(extractor.extract(params)).rejects.toThrow(
       "Gemini から空のレスポンスが返されました",
     );
@@ -64,7 +64,7 @@ describe("createReceiptExtractor", () => {
 
   it("text が undefined でもエラーを投げる", async () => {
     mockGenerateContent.mockResolvedValue({});
-    const extractor = createReceiptExtractor(config);
+    const extractor = createGeminiReceiptExtractor(config);
     await expect(extractor.extract(params)).rejects.toThrow(
       "Gemini から空のレスポンスが返されました",
     );
@@ -72,48 +72,49 @@ describe("createReceiptExtractor", () => {
 
   it("不正な JSON でエラーを投げる", async () => {
     mockGenerateContent.mockResolvedValue({ text: "not json{" });
-    const extractor = createReceiptExtractor(config);
+    const extractor = createGeminiReceiptExtractor(config);
     await expect(extractor.extract(params)).rejects.toThrow(
       "Gemini レスポンスの JSON 解析に失敗しました",
     );
   });
 
-  it("金額の文字列・全角・カンマを数値へ正規化し、読めない値は null にする", async () => {
+  it("金額の文字列・空文字・登録番号を正規化する", async () => {
     mockGenerateContent.mockResolvedValue({
       text: JSON.stringify({
         supplierName: "",
         receiptDate: null,
         totalAmount: "¥1,234",
         taxAmount: "１２３",
-        lineItems: [{ description: "品目", amount: "不明" }],
+        registrationNumber: "",
         transcription: "t",
       }),
     });
 
-    const extractor = createReceiptExtractor(config);
+    const extractor = createGeminiReceiptExtractor(config);
     const result = await extractor.extract(params);
 
-    expect(result.supplierName).toBeNull(); // 空文字は null に正規化
+    expect(result.supplierName).toBeNull();
     expect(result.receiptDate).toBeNull();
     expect(result.totalAmount).toBe(1234);
     expect(result.taxAmount).toBe(123);
-    expect(result.lineItems).toEqual([{ description: "品目", amount: null }]);
+    expect(result.registrationNumber).toBeNull();
+    expect(result.meta).toEqual({ source: "gemini" });
   });
 
-  it("lineItems が配列でない場合は空配列にする", async () => {
+  it("receiptDate が YYYY-MM-DD 以外なら null にする（契約担保）", async () => {
     mockGenerateContent.mockResolvedValue({
-      text: JSON.stringify({ ...fullReceipt, lineItems: null }),
+      text: JSON.stringify({ ...fullReceipt, receiptDate: "2026/05/16" }),
     });
 
-    const extractor = createReceiptExtractor(config);
+    const extractor = createGeminiReceiptExtractor(config);
     const result = await extractor.extract(params);
 
-    expect(result.lineItems).toEqual([]);
+    expect(result.receiptDate).toBeNull();
   });
 
   it("SDK エラーは呼び出し元に伝播する", async () => {
     mockGenerateContent.mockRejectedValue(new Error("Vertex error"));
-    const extractor = createReceiptExtractor(config);
+    const extractor = createGeminiReceiptExtractor(config);
     await expect(extractor.extract(params)).rejects.toThrow("Vertex error");
   });
 });

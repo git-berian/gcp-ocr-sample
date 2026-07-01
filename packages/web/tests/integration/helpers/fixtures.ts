@@ -1,11 +1,16 @@
-import type { Entity } from "../../../src/api/types";
+import type { ReceiptExtraction } from "../../../src/api/types";
 
-export const MOCK_ENTITIES: Entity[] = [
-  { type: "total_amount", mentionText: "1,234", confidence: 0.95 },
-  { type: "date", mentionText: "2024-01-15", confidence: 0.9 },
-];
+export const MOCK_RECEIPT: ReceiptExtraction = {
+  supplierName: "テスト商店",
+  receiptDate: "2026-05-16",
+  totalAmount: 4800,
+  taxAmount: 436,
+  registrationNumber: "T1234567890123",
+  transcription: "領収書 テスト商店 ¥4,800 T1234567890123",
+  meta: { source: "gemini" },
+};
 
-export const MOCK_API_RESPONSE = { data: { entities: MOCK_ENTITIES } };
+export const MOCK_API_RESPONSE = { data: { receipt: MOCK_RECEIPT } };
 
 export function createTestFile(
   name: string = "receipt.pdf",

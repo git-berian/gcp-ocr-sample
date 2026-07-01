@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { mockCallable } from "./helpers/mock-firebase";
-import { MOCK_ENTITIES, MOCK_API_RESPONSE, createTestFile } from "./helpers/fixtures";
+import { MOCK_RECEIPT, MOCK_API_RESPONSE, createTestFile } from "./helpers/fixtures";
 import { App } from "../../src/App";
 
 describe("App（結合テスト）", () => {
@@ -24,15 +24,14 @@ describe("App（結合テスト）", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText("1,234")).toBeInTheDocument();
+      expect(screen.getByText("テスト商店")).toBeInTheDocument();
     });
 
     expect(screen.getByRole("tablist")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /receipt\.pdf/ })).toBeInTheDocument();
-    expect(screen.getByText("total_amount")).toBeInTheDocument();
-    expect(screen.getByText("95.0%")).toBeInTheDocument();
-    expect(screen.getByText("date")).toBeInTheDocument();
-    expect(screen.getByText("2024-01-15")).toBeInTheDocument();
+    expect(screen.getByText("¥4,800")).toBeInTheDocument();
+    expect(screen.getByText("2026-05-16")).toBeInTheDocument();
+    expect(screen.getByText("T1234567890123")).toBeInTheDocument();
 
     expect(mockCallable).toHaveBeenCalledWith({
       content: expect.any(String),
@@ -42,8 +41,8 @@ describe("App（結合テスト）", () => {
 
   it("複数ファイル: 各ファイルの結果がタブで切り替えられる", async () => {
     mockCallable
-      .mockResolvedValueOnce({ data: { entities: [MOCK_ENTITIES[0]] } })
-      .mockResolvedValueOnce({ data: { entities: [MOCK_ENTITIES[1]] } });
+      .mockResolvedValueOnce({ data: { receipt: { ...MOCK_RECEIPT, supplierName: "店A" } } })
+      .mockResolvedValueOnce({ data: { receipt: { ...MOCK_RECEIPT, supplierName: "店B" } } });
     const user = userEvent.setup();
 
     render(<App />);
@@ -59,12 +58,11 @@ describe("App（結合テスト）", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText("1,234")).toBeInTheDocument();
+      expect(screen.getByText("店A")).toBeInTheDocument();
     });
 
     // 1つ目のタブが表示されている
     expect(screen.getByRole("tab", { name: /receipt-1\.pdf/ })).toBeInTheDocument();
-    expect(screen.getByText("total_amount")).toBeInTheDocument();
 
     // 2つ目のタブに切り替え
     await waitFor(() => {
@@ -73,7 +71,7 @@ describe("App（結合テスト）", () => {
     await user.click(screen.getByRole("tab", { name: /receipt-2\.png/ }));
 
     await waitFor(() => {
-      expect(screen.getByText("2024-01-15")).toBeInTheDocument();
+      expect(screen.getByText("店B")).toBeInTheDocument();
     });
 
     expect(mockCallable).toHaveBeenCalledTimes(2);
@@ -137,7 +135,7 @@ describe("App（結合テスト）", () => {
     await user.click(screen.getByRole("button", { name: "リトライ" }));
 
     await waitFor(() => {
-      expect(screen.getByText("1,234")).toBeInTheDocument();
+      expect(screen.getByText("テスト商店")).toBeInTheDocument();
     });
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -147,7 +145,10 @@ describe("App（結合テスト）", () => {
   it("ローディング状態: 解析中にタブ内に表示され、完了後に消える", async () => {
     let resolveCallable!: (value: typeof MOCK_API_RESPONSE) => void;
     mockCallable.mockImplementation(
-      () => new Promise((resolve) => { resolveCallable = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          resolveCallable = resolve;
+        }),
     );
     const user = userEvent.setup();
 
@@ -170,6 +171,6 @@ describe("App（結合テスト）", () => {
       expect(screen.queryByText("解析中...")).not.toBeInTheDocument();
     });
 
-    expect(screen.getByText("1,234")).toBeInTheDocument();
+    expect(screen.getByText("テスト商店")).toBeInTheDocument();
   });
 });

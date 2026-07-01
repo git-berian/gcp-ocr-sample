@@ -9,8 +9,9 @@ describe("extractReceipt", () => {
     receiptDate: "2026-05-16",
     totalAmount: 4800,
     taxAmount: 436,
-    lineItems: [{ description: "コーヒー", amount: 500 }],
+    registrationNumber: "T1234567890123",
     transcription: "領収書",
+    meta: { source: "gemini" },
   };
 
   function createMockExtractor(): ReceiptExtractor {

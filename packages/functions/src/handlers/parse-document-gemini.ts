@@ -2,7 +2,7 @@ import type { Request } from "firebase-functions/v2/https";
 import { validateApiKey } from "../infrastructure/auth-validator.js";
 import { validateParseDocumentRequest } from "../infrastructure/request-validator.js";
 import { loadGeminiConfig } from "../infrastructure/config.js";
-import { createReceiptExtractor } from "../infrastructure/gemini-client.js";
+import { createGeminiReceiptExtractor } from "../infrastructure/gemini-client.js";
 import { extractReceipt } from "../application/extract-receipt.js";
 
 interface JsonResponse {
@@ -38,7 +38,7 @@ export const handleParseDocumentGemini = async (req: Request, res: JsonResponse)
 
   try {
     const config = loadGeminiConfig();
-    const extractor = createReceiptExtractor(config);
+    const extractor = createGeminiReceiptExtractor(config);
 
     const receipt = await extractReceipt(
       {
@@ -54,7 +54,7 @@ export const handleParseDocumentGemini = async (req: Request, res: JsonResponse)
         supplierName: receipt.supplierName,
         receiptDate: receipt.receiptDate,
         totalAmount: receipt.totalAmount,
-        lineItems: receipt.lineItems.length,
+        registrationNumber: receipt.registrationNumber,
       }),
     );
     const body = { receipt };

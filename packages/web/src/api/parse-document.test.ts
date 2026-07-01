@@ -20,7 +20,15 @@ describe("parseDocument", () => {
 
   it("httpsCallable で parseDocumentCall を呼び出し、結果を返す", async () => {
     const mockResponse = {
-      entities: [{ type: "total", mentionText: "1000", confidence: 0.95 }],
+      receipt: {
+        supplierName: "テスト商店",
+        receiptDate: "2026-05-16",
+        totalAmount: 4800,
+        taxAmount: 436,
+        registrationNumber: "T1234567890123",
+        transcription: "書き起こし",
+        meta: { source: "gemini" },
+      },
     };
     mockCallable.mockResolvedValue({ data: mockResponse });
 

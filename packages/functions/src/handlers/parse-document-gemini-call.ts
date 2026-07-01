@@ -1,7 +1,7 @@
 import { HttpsError, type CallableRequest } from "firebase-functions/v2/https";
 import { validateParseDocumentRequest } from "../infrastructure/request-validator.js";
 import { loadGeminiConfig } from "../infrastructure/config.js";
-import { createReceiptExtractor } from "../infrastructure/gemini-client.js";
+import { createGeminiReceiptExtractor } from "../infrastructure/gemini-client.js";
 import { extractReceipt, type ReceiptExtraction } from "../application/extract-receipt.js";
 
 export const handleParseDocumentGeminiCall = async (
@@ -14,7 +14,7 @@ export const handleParseDocumentGeminiCall = async (
 
   try {
     const config = loadGeminiConfig();
-    const extractor = createReceiptExtractor(config);
+    const extractor = createGeminiReceiptExtractor(config);
 
     const receipt = await extractReceipt(
       {

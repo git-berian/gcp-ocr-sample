@@ -3,6 +3,17 @@ import { renderHook, act } from "@testing-library/react";
 import { useParseDocuments } from "./useParseDocuments";
 import * as parseDocumentApi from "../api/parse-document";
 import * as fileUtils from "../utils/file";
+import type { ReceiptExtraction } from "../api/types";
+
+const RECEIPT: ReceiptExtraction = {
+  supplierName: "テスト商店",
+  receiptDate: "2026-05-16",
+  totalAmount: 4800,
+  taxAmount: 436,
+  registrationNumber: "T1234567890123",
+  transcription: "書き起こし",
+  meta: { source: "gemini" },
+};
 
 vi.mock("../api/parse-document");
 vi.mock("../utils/file", async (importOriginal) => {
@@ -29,9 +40,7 @@ describe("useParseDocuments", () => {
   });
 
   it("複数ファイルを送信して全て成功する", async () => {
-    const mockResponse = {
-      entities: [{ type: "total", mentionText: "1000", confidence: 0.95 }],
-    };
+    const mockResponse = { receipt: RECEIPT };
     vi.mocked(parseDocumentApi.parseDocument).mockResolvedValue(mockResponse);
 
     const { result } = renderHook(() => useParseDocuments());
@@ -60,7 +69,7 @@ describe("useParseDocuments", () => {
 
   it("部分的な失敗を許容する", async () => {
     vi.mocked(parseDocumentApi.parseDocument)
-      .mockResolvedValueOnce({ entities: [] })
+      .mockResolvedValueOnce({ receipt: RECEIPT })
       .mockRejectedValueOnce(new Error("API error"));
 
     const { result } = renderHook(() => useParseDocuments());
@@ -109,7 +118,7 @@ describe("useParseDocuments", () => {
   it("エラーのジョブをリトライできる", async () => {
     vi.mocked(parseDocumentApi.parseDocument)
       .mockRejectedValueOnce(new Error("fail"))
-      .mockResolvedValueOnce({ entities: [] });
+      .mockResolvedValueOnce({ receipt: RECEIPT });
 
     const { result } = renderHook(() => useParseDocuments());
     const files = [new File(["a"], "retry.png", { type: "image/png" })];
@@ -136,11 +145,11 @@ describe("useParseDocuments", () => {
       });
     });
 
-    expect(result.current.jobs[0].result).toEqual({ entities: [] });
+    expect(result.current.jobs[0].result).toEqual({ receipt: RECEIPT });
   });
 
   it("エラー以外のジョブはリトライしない", async () => {
-    vi.mocked(parseDocumentApi.parseDocument).mockResolvedValue({ entities: [] });
+    vi.mocked(parseDocumentApi.parseDocument).mockResolvedValue({ receipt: RECEIPT });
 
     const { result } = renderHook(() => useParseDocuments());
     const files = [new File(["a"], "ok.png", { type: "image/png" })];

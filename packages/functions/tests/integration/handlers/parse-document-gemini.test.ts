@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mockGenerateContent } from "../helpers/mock-gemini.js";
 import {
   TEST_ENV,
-  MOCK_RECEIPT,
+  EXPECTED_GEMINI_RECEIPT,
   MOCK_GEMINI_RESPONSE,
   createMockReqRes,
 } from "../helpers/fixtures.js";
@@ -30,7 +30,7 @@ describe("handleParseDocumentGemini（結合テスト）", () => {
     await handleParseDocumentGemini(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ receipt: MOCK_RECEIPT });
+    expect(res.json).toHaveBeenCalledWith({ receipt: EXPECTED_GEMINI_RECEIPT });
   });
 
   it("認証エラー: APIキーなしで 401 を返し、Gemini を呼ばない", async () => {

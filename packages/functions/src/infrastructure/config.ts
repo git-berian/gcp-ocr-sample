@@ -17,3 +17,20 @@ export function loadFunctionsConfig(): FunctionsConfig {
     processorId: mustEnv("DOCAI_PROCESSOR_ID"),
   };
 }
+
+export interface GeminiConfig {
+  projectId: string;
+  location: string;
+  model: string;
+  timeoutMs: number;
+}
+
+export function loadGeminiConfig(): GeminiConfig {
+  const rawTimeout = Number(process.env.GEMINI_TIMEOUT_MS);
+  return {
+    projectId: mustEnv("GCP_PROJECT_ID"),
+    location: process.env.GEMINI_LOCATION || "global",
+    model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+    timeoutMs: Number.isFinite(rawTimeout) && rawTimeout > 0 ? rawTimeout : 30000,
+  };
+}

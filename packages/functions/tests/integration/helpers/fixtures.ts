@@ -6,6 +6,8 @@ export const TEST_ENV = {
   GCP_PROJECT_ID: "test-project",
   DOCAI_LOCATION: "us",
   DOCAI_PROCESSOR_ID: "proc-123",
+  GEMINI_LOCATION: "global",
+  GEMINI_MODEL: "gemini-2.5-flash",
   API_KEY: "test-api-key-12345",
 } as const;
 
@@ -19,6 +21,17 @@ export const VALID_REQUEST_BODY = {
   content: "base64data",
   mimeType: "application/pdf",
 };
+
+export const MOCK_RECEIPT = {
+  supplierName: "テスト商店",
+  receiptDate: "2026-05-16",
+  totalAmount: 4800,
+  taxAmount: 436,
+  lineItems: [{ description: "コーヒー", amount: 500 }],
+  transcription: "領収書 4800円",
+};
+
+export const MOCK_GEMINI_RESPONSE = { text: JSON.stringify(MOCK_RECEIPT) };
 
 type HandlerParams = Parameters<typeof handleParseDocument>;
 

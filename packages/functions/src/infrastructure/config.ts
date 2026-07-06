@@ -34,3 +34,20 @@ export function loadGeminiConfig(): GeminiConfig {
     timeoutMs: Number.isFinite(rawTimeout) && rawTimeout > 0 ? rawTimeout : 30000,
   };
 }
+
+export interface ClaudeConfig {
+  projectId: string;
+  location: string;
+  model: string;
+  timeoutMs: number;
+}
+
+export function loadClaudeConfig(): ClaudeConfig {
+  const rawTimeout = Number(process.env.CLAUDE_TIMEOUT_MS);
+  return {
+    projectId: mustEnv("GCP_PROJECT_ID"),
+    location: process.env.CLAUDE_LOCATION || "global",
+    model: process.env.CLAUDE_MODEL || "claude-opus-4-8",
+    timeoutMs: Number.isFinite(rawTimeout) && rawTimeout > 0 ? rawTimeout : 30000,
+  };
+}

@@ -1,11 +1,6 @@
 import { GoogleGenAI, Type, type Schema } from "@google/genai";
 import type { ReceiptExtraction, ReceiptExtractor } from "../application/extract-receipt.js";
-import {
-  toIsoDateOrNull,
-  toNumberOrNull,
-  toRegistrationNumberOrNull,
-  toStringOrNull,
-} from "../application/receipt-normalize.js";
+import { normalizeReceiptExtraction } from "../application/receipt-normalize.js";
 
 const PROMPT = `あなたは日本の領収書・レシートの読み取り専門家です。
 画像から領収書情報を抽出し、指定スキーマの JSON のみを返してください。手書き文字も可能な限り正確に読み取ること。
@@ -80,20 +75,7 @@ export function createGeminiReceiptExtractor(config: {
         throw new Error("Gemini レスポンスの JSON 解析に失敗しました");
       }
 
-      return normalizeReceiptExtraction(parsed);
+      return normalizeReceiptExtraction(parsed, "gemini");
     },
-  };
-}
-
-function normalizeReceiptExtraction(parsed: unknown): ReceiptExtraction {
-  const obj = (parsed && typeof parsed === "object" ? parsed : {}) as Record<string, unknown>;
-  return {
-    supplierName: toStringOrNull(obj.supplierName),
-    receiptDate: toIsoDateOrNull(obj.receiptDate),
-    totalAmount: toNumberOrNull(obj.totalAmount),
-    taxAmount: toNumberOrNull(obj.taxAmount),
-    registrationNumber: toRegistrationNumberOrNull(obj.registrationNumber),
-    transcription: typeof obj.transcription === "string" ? obj.transcription : "",
-    meta: { source: "gemini" },
   };
 }

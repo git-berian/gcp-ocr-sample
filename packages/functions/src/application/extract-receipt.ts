@@ -11,7 +11,7 @@ export interface ReceiptExtraction {
 }
 
 export interface ReceiptMeta {
-  source: "document-ai" | "gemini";
+  source: "document-ai" | "gemini" | "claude";
   confidence?: Record<string, number>;
 }
 

@@ -1,14 +1,29 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createClaudeReceiptExtractor } from "./claude-client.js";
+import type { ClaudeConfig } from "./config.js";
 
-const mockCreate = vi.hoisted(() => vi.fn());
+// api / vertex 両トランスポートの SDK をモックする。
+const mockApiCreate = vi.hoisted(() => vi.fn());
+const mockVertexCreate = vi.hoisted(() => vi.fn());
+vi.mock("@anthropic-ai/sdk", () => ({
+  default: class {
+    messages = { create: mockApiCreate };
+  },
+}));
 vi.mock("@anthropic-ai/vertex-sdk", () => ({
   AnthropicVertex: class {
-    messages = { create: mockCreate };
+    messages = { create: mockVertexCreate };
   },
 }));
 
-const config = {
+const apiConfig: ClaudeConfig = {
+  transport: "api",
+  apiKey: "sk-ant-test",
+  model: "claude-opus-4-8",
+  timeoutMs: 30000,
+};
+const vertexConfig: ClaudeConfig = {
+  transport: "vertex",
   projectId: "test-project",
   location: "global",
   model: "claude-opus-4-8",
@@ -31,141 +46,158 @@ function textResponse(text: string) {
 
 describe("createClaudeReceiptExtractor", () => {
   beforeEach(() => {
-    mockCreate.mockReset();
+    mockApiCreate.mockReset();
+    mockVertexCreate.mockReset();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("正常系: ReceiptExtraction を返し、messages.create を正しく呼ぶ", async () => {
-    mockCreate.mockResolvedValue(textResponse(JSON.stringify(fullReceipt)));
+  describe("トランスポート切替", () => {
+    it("api: Anthropic 直接 API を使い、Vertex は呼ばない", async () => {
+      mockApiCreate.mockResolvedValue(textResponse(JSON.stringify(fullReceipt)));
 
-    const extractor = createClaudeReceiptExtractor(config);
-    const result = await extractor.extract(params);
+      const result = await createClaudeReceiptExtractor(apiConfig).extract(params);
 
-    expect(result).toEqual({ ...fullReceipt, meta: { source: "claude" } });
-
-    const arg = mockCreate.mock.calls[0][0];
-    expect(arg.model).toBe("claude-opus-4-8");
-    expect(arg.messages[0].content[0]).toEqual({
-      type: "image",
-      source: { type: "base64", media_type: "image/jpeg", data: "base64data" },
+      expect(result).toEqual({ ...fullReceipt, meta: { source: "claude" } });
+      expect(mockApiCreate).toHaveBeenCalledTimes(1);
+      expect(mockVertexCreate).not.toHaveBeenCalled();
     });
-    expect(arg.output_config.format.type).toBe("json_schema");
-    expect(arg.output_config.format.schema).toBeDefined();
-    // タイムアウトはリクエストオプション（第2引数）で渡す
-    expect(mockCreate.mock.calls[0][1]).toEqual({ timeout: 30000 });
-  });
 
-  it("サンプリングパラメータと thinking を送らない（claude-opus-4-8 は 400 になるため）", async () => {
-    mockCreate.mockResolvedValue(textResponse(JSON.stringify(fullReceipt)));
+    it("vertex: AnthropicVertex を使い、api は呼ばない", async () => {
+      mockVertexCreate.mockResolvedValue(textResponse(JSON.stringify(fullReceipt)));
 
-    const extractor = createClaudeReceiptExtractor(config);
-    await extractor.extract(params);
+      const result = await createClaudeReceiptExtractor(vertexConfig).extract(params);
 
-    const arg = mockCreate.mock.calls[0][0];
-    expect(arg.temperature).toBeUndefined();
-    expect(arg.top_p).toBeUndefined();
-    expect(arg.top_k).toBeUndefined();
-    expect(arg.thinking).toBeUndefined();
-  });
-
-  it("PDF は document ブロックで送る", async () => {
-    mockCreate.mockResolvedValue(textResponse(JSON.stringify(fullReceipt)));
-
-    const extractor = createClaudeReceiptExtractor(config);
-    await extractor.extract({ content: "pdfbase64", mimeType: "application/pdf" });
-
-    const arg = mockCreate.mock.calls[0][0];
-    expect(arg.messages[0].content[0]).toEqual({
-      type: "document",
-      source: { type: "base64", media_type: "application/pdf", data: "pdfbase64" },
+      expect(result).toEqual({ ...fullReceipt, meta: { source: "claude" } });
+      expect(mockVertexCreate).toHaveBeenCalledTimes(1);
+      expect(mockApiCreate).not.toHaveBeenCalled();
     });
   });
 
-  it("stop_reason が max_tokens なら打ち切りエラーを投げる（JSON 解析前）", async () => {
-    mockCreate.mockResolvedValue({
-      stop_reason: "max_tokens",
-      content: [{ type: "text", text: '{"supplierName":"テ' }],
+  describe("共有ロジック（api トランスポートで検証）", () => {
+    it("正常系: messages.create を正しく呼ぶ", async () => {
+      mockApiCreate.mockResolvedValue(textResponse(JSON.stringify(fullReceipt)));
+
+      await createClaudeReceiptExtractor(apiConfig).extract(params);
+
+      const arg = mockApiCreate.mock.calls[0][0];
+      expect(arg.model).toBe("claude-opus-4-8");
+      expect(arg.messages[0].content[0]).toEqual({
+        type: "image",
+        source: { type: "base64", media_type: "image/jpeg", data: "base64data" },
+      });
+      expect(arg.output_config.format.type).toBe("json_schema");
+      expect(arg.output_config.format.schema).toBeDefined();
+      // タイムアウトはリクエストオプション（第2引数）で渡す
+      expect(mockApiCreate.mock.calls[0][1]).toEqual({ timeout: 30000 });
     });
-    const extractor = createClaudeReceiptExtractor(config);
-    await expect(extractor.extract(params)).rejects.toThrow(
-      "Claude の出力が max_tokens で打ち切られました（transcription が長すぎる可能性）",
-    );
-  });
 
-  it("stop_reason が refusal なら拒否エラーを投げる", async () => {
-    mockCreate.mockResolvedValue({ stop_reason: "refusal", content: [] });
-    const extractor = createClaudeReceiptExtractor(config);
-    await expect(extractor.extract(params)).rejects.toThrow(
-      "Claude がリクエストを拒否しました（refusal）",
-    );
-  });
+    it("サンプリングパラメータと thinking を送らない（400 回避）", async () => {
+      mockApiCreate.mockResolvedValue(textResponse(JSON.stringify(fullReceipt)));
 
-  it("text ブロックが無ければエラーを投げる", async () => {
-    mockCreate.mockResolvedValue({ content: [] });
-    const extractor = createClaudeReceiptExtractor(config);
-    await expect(extractor.extract(params)).rejects.toThrow(
-      "Claude から空のレスポンスが返されました",
-    );
-  });
+      await createClaudeReceiptExtractor(apiConfig).extract(params);
 
-  it("空文字の text ブロックでエラーを投げる", async () => {
-    mockCreate.mockResolvedValue(textResponse("   "));
-    const extractor = createClaudeReceiptExtractor(config);
-    await expect(extractor.extract(params)).rejects.toThrow(
-      "Claude から空のレスポンスが返されました",
-    );
-  });
+      const arg = mockApiCreate.mock.calls[0][0];
+      expect(arg.temperature).toBeUndefined();
+      expect(arg.top_p).toBeUndefined();
+      expect(arg.top_k).toBeUndefined();
+      expect(arg.thinking).toBeUndefined();
+    });
 
-  it("不正な JSON でエラーを投げる", async () => {
-    mockCreate.mockResolvedValue(textResponse("not json{"));
-    const extractor = createClaudeReceiptExtractor(config);
-    await expect(extractor.extract(params)).rejects.toThrow(
-      "Claude レスポンスの JSON 解析に失敗しました",
-    );
-  });
+    it("PDF は document ブロックで送る", async () => {
+      mockApiCreate.mockResolvedValue(textResponse(JSON.stringify(fullReceipt)));
 
-  it("金額の文字列・空文字・登録番号を正規化する", async () => {
-    mockCreate.mockResolvedValue(
-      textResponse(
-        JSON.stringify({
-          supplierName: "",
-          receiptDate: null,
-          totalAmount: "¥1,234",
-          taxAmount: "１２３",
-          registrationNumber: "",
-          transcription: "t",
-        }),
-      ),
-    );
+      await createClaudeReceiptExtractor(apiConfig).extract({
+        content: "pdfbase64",
+        mimeType: "application/pdf",
+      });
 
-    const extractor = createClaudeReceiptExtractor(config);
-    const result = await extractor.extract(params);
+      const arg = mockApiCreate.mock.calls[0][0];
+      expect(arg.messages[0].content[0]).toEqual({
+        type: "document",
+        source: { type: "base64", media_type: "application/pdf", data: "pdfbase64" },
+      });
+    });
 
-    expect(result.supplierName).toBeNull();
-    expect(result.receiptDate).toBeNull();
-    expect(result.totalAmount).toBe(1234);
-    expect(result.taxAmount).toBe(123);
-    expect(result.registrationNumber).toBeNull();
-    expect(result.meta).toEqual({ source: "claude" });
-  });
+    it("stop_reason が max_tokens なら打ち切りエラーを投げる（JSON 解析前）", async () => {
+      mockApiCreate.mockResolvedValue({
+        stop_reason: "max_tokens",
+        content: [{ type: "text", text: '{"supplierName":"テ' }],
+      });
+      await expect(createClaudeReceiptExtractor(apiConfig).extract(params)).rejects.toThrow(
+        "Claude の出力が max_tokens で打ち切られました（transcription が長すぎる可能性）",
+      );
+    });
 
-  it("receiptDate が YYYY-MM-DD 以外なら null にする（契約担保）", async () => {
-    mockCreate.mockResolvedValue(
-      textResponse(JSON.stringify({ ...fullReceipt, receiptDate: "2026/05/16" })),
-    );
+    it("stop_reason が refusal なら拒否エラーを投げる", async () => {
+      mockApiCreate.mockResolvedValue({ stop_reason: "refusal", content: [] });
+      await expect(createClaudeReceiptExtractor(apiConfig).extract(params)).rejects.toThrow(
+        "Claude がリクエストを拒否しました（refusal）",
+      );
+    });
 
-    const extractor = createClaudeReceiptExtractor(config);
-    const result = await extractor.extract(params);
+    it("text ブロックが無ければエラーを投げる", async () => {
+      mockApiCreate.mockResolvedValue({ content: [] });
+      await expect(createClaudeReceiptExtractor(apiConfig).extract(params)).rejects.toThrow(
+        "Claude から空のレスポンスが返されました",
+      );
+    });
 
-    expect(result.receiptDate).toBeNull();
-  });
+    it("空文字の text ブロックでエラーを投げる", async () => {
+      mockApiCreate.mockResolvedValue(textResponse("   "));
+      await expect(createClaudeReceiptExtractor(apiConfig).extract(params)).rejects.toThrow(
+        "Claude から空のレスポンスが返されました",
+      );
+    });
 
-  it("SDK エラーは呼び出し元に伝播する", async () => {
-    mockCreate.mockRejectedValue(new Error("Vertex error"));
-    const extractor = createClaudeReceiptExtractor(config);
-    await expect(extractor.extract(params)).rejects.toThrow("Vertex error");
+    it("不正な JSON でエラーを投げる", async () => {
+      mockApiCreate.mockResolvedValue(textResponse("not json{"));
+      await expect(createClaudeReceiptExtractor(apiConfig).extract(params)).rejects.toThrow(
+        "Claude レスポンスの JSON 解析に失敗しました",
+      );
+    });
+
+    it("金額の文字列・空文字・登録番号を正規化する", async () => {
+      mockApiCreate.mockResolvedValue(
+        textResponse(
+          JSON.stringify({
+            supplierName: "",
+            receiptDate: null,
+            totalAmount: "¥1,234",
+            taxAmount: "１２３",
+            registrationNumber: "",
+            transcription: "t",
+          }),
+        ),
+      );
+
+      const result = await createClaudeReceiptExtractor(apiConfig).extract(params);
+
+      expect(result.supplierName).toBeNull();
+      expect(result.receiptDate).toBeNull();
+      expect(result.totalAmount).toBe(1234);
+      expect(result.taxAmount).toBe(123);
+      expect(result.registrationNumber).toBeNull();
+      expect(result.meta).toEqual({ source: "claude" });
+    });
+
+    it("receiptDate が YYYY-MM-DD 以外なら null にする（契約担保）", async () => {
+      mockApiCreate.mockResolvedValue(
+        textResponse(JSON.stringify({ ...fullReceipt, receiptDate: "2026/05/16" })),
+      );
+
+      const result = await createClaudeReceiptExtractor(apiConfig).extract(params);
+
+      expect(result.receiptDate).toBeNull();
+    });
+
+    it("SDK エラーは呼び出し元に伝播する", async () => {
+      mockApiCreate.mockRejectedValue(new Error("Anthropic error"));
+      await expect(createClaudeReceiptExtractor(apiConfig).extract(params)).rejects.toThrow(
+        "Anthropic error",
+      );
+    });
   });
 });

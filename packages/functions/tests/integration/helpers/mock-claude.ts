@@ -2,9 +2,10 @@ import { vi } from "vitest";
 
 export const mockMessagesCreate = vi.fn();
 
-vi.mock("@anthropic-ai/vertex-sdk", () => {
+// 既定トランスポート（api）の SDK をモックする（ADR-0013）。
+vi.mock("@anthropic-ai/sdk", () => {
   return {
-    AnthropicVertex: class {
+    default: class {
       messages = { create: mockMessagesCreate };
     },
   };

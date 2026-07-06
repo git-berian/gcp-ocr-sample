@@ -1,5 +1,7 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { AnthropicVertex } from "@anthropic-ai/vertex-sdk";
 import type { ReceiptExtraction, ReceiptExtractor } from "../application/extract-receipt.js";
+import type { ClaudeConfig } from "./config.js";
 import { normalizeReceiptExtraction } from "../application/receipt-normalize.js";
 
 const PROMPT = `あなたは日本の領収書・レシートの読み取り専門家です。
@@ -76,21 +78,21 @@ function buildUserContent(params: { content: string; mimeType: string }) {
   ];
 }
 
-export function createClaudeReceiptExtractor(config: {
-  projectId: string;
-  location: string;
-  model: string;
-  timeoutMs: number;
-}): ReceiptExtractor {
-  const client = new AnthropicVertex({
-    projectId: config.projectId,
-    region: config.location,
-    // Anthropic SDK はタイムアウトも再試行するため、既定の maxRetries=2 では
-    // 最悪 timeout×3 の実時間となり Cloud Functions（gen2 既定 60 秒）を超過し、
-    // かつ画像 base64 を再送してトークンコストが増える。呼び出し側に外側の
-    // タイムアウトがあるため再試行は無効化する。
-    maxRetries: 0,
-  });
+export function createClaudeReceiptExtractor(config: ClaudeConfig): ReceiptExtractor {
+  // トランスポートでクライアント生成のみ分岐する（ADR-0013）。以降の
+  // messages.create / レスポンス処理は両 SDK で同一形状のため共有する。
+  // Anthropic SDK はタイムアウトも再試行するため、既定の maxRetries=2 では
+  // 最悪 timeout×3 の実時間となり Cloud Functions（gen2 既定 60 秒）を超過し、
+  // かつ画像 base64 を再送してトークンコストが増える。呼び出し側に外側の
+  // タイムアウトがあるため再試行は無効化する。
+  const client =
+    config.transport === "vertex"
+      ? new AnthropicVertex({
+          projectId: config.projectId,
+          region: config.location,
+          maxRetries: 0,
+        })
+      : new Anthropic({ apiKey: config.apiKey, maxRetries: 0 });
 
   return {
     async extract(params: { content: string; mimeType: string }): Promise<ReceiptExtraction> {

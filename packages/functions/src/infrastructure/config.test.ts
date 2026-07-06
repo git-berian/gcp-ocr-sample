@@ -94,14 +94,46 @@ describe("loadClaudeConfig", () => {
     vi.unstubAllEnvs();
   });
 
-  it("環境変数からClaudeConfigを構築する", () => {
+  it("既定（CLAUDE_TRANSPORT 未設定）は api トランスポートで ANTHROPIC_API_KEY を読む", () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-ant-test");
+    vi.stubEnv("CLAUDE_MODEL", "claude-sonnet-5");
+    vi.stubEnv("CLAUDE_TIMEOUT_MS", "15000");
+
+    expect(loadClaudeConfig()).toEqual({
+      transport: "api",
+      apiKey: "sk-ant-test",
+      model: "claude-sonnet-5",
+      timeoutMs: 15000,
+    });
+  });
+
+  it("api: CLAUDE_MODEL / CLAUDE_TIMEOUT_MS 未設定時は既定値を使う", () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-ant-test");
+    vi.stubEnv("CLAUDE_MODEL", "");
+    vi.stubEnv("CLAUDE_TIMEOUT_MS", "");
+
+    expect(loadClaudeConfig()).toEqual({
+      transport: "api",
+      apiKey: "sk-ant-test",
+      model: "claude-opus-4-8",
+      timeoutMs: 30000,
+    });
+  });
+
+  it("api: ANTHROPIC_API_KEY が欠けている場合、例外を投げる", () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
+    expect(() => loadClaudeConfig()).toThrow("Missing env: ANTHROPIC_API_KEY");
+  });
+
+  it("vertex: CLAUDE_TRANSPORT=vertex で projectId/location を読む", () => {
+    vi.stubEnv("CLAUDE_TRANSPORT", "vertex");
     vi.stubEnv("GCP_PROJECT_ID", "my-project");
     vi.stubEnv("CLAUDE_LOCATION", "us");
     vi.stubEnv("CLAUDE_MODEL", "claude-sonnet-5");
     vi.stubEnv("CLAUDE_TIMEOUT_MS", "15000");
 
-    const config = loadClaudeConfig();
-    expect(config).toEqual({
+    expect(loadClaudeConfig()).toEqual({
+      transport: "vertex",
       projectId: "my-project",
       location: "us",
       model: "claude-sonnet-5",
@@ -109,30 +141,32 @@ describe("loadClaudeConfig", () => {
     });
   });
 
-  it("CLAUDE_LOCATION / CLAUDE_MODEL / CLAUDE_TIMEOUT_MS 未設定時は既定値を使う", () => {
+  it("vertex: CLAUDE_LOCATION 未設定時は global を既定にする", () => {
+    vi.stubEnv("CLAUDE_TRANSPORT", "vertex");
     vi.stubEnv("GCP_PROJECT_ID", "my-project");
     vi.stubEnv("CLAUDE_LOCATION", "");
-    vi.stubEnv("CLAUDE_MODEL", "");
-    vi.stubEnv("CLAUDE_TIMEOUT_MS", "");
 
     const config = loadClaudeConfig();
-    expect(config).toEqual({
-      projectId: "my-project",
-      location: "global",
-      model: "claude-opus-4-8",
-      timeoutMs: 30000,
-    });
+    expect(config.transport).toBe("vertex");
+    expect(config).toMatchObject({ location: "global", model: "claude-opus-4-8" });
   });
 
-  it("CLAUDE_TIMEOUT_MS が不正値なら既定値 30000 を使う", () => {
-    vi.stubEnv("GCP_PROJECT_ID", "my-project");
+  it("vertex: GCP_PROJECT_ID が欠けている場合、例外を投げる", () => {
+    vi.stubEnv("CLAUDE_TRANSPORT", "vertex");
+    vi.stubEnv("GCP_PROJECT_ID", "");
+    expect(() => loadClaudeConfig()).toThrow("Missing env: GCP_PROJECT_ID");
+  });
+
+  it("CLAUDE_TIMEOUT_MS が不正値なら既定値 30000 を使う（api）", () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-ant-test");
     vi.stubEnv("CLAUDE_TIMEOUT_MS", "abc");
 
     expect(loadClaudeConfig().timeoutMs).toBe(30000);
   });
 
-  it("GCP_PROJECT_IDが欠けている場合、例外を投げる", () => {
-    vi.stubEnv("GCP_PROJECT_ID", "");
-    expect(() => loadClaudeConfig()).toThrow("Missing env: GCP_PROJECT_ID");
+  it("CLAUDE_TRANSPORT が未知の値なら例外を投げる（誤設定検知）", () => {
+    vi.stubEnv("CLAUDE_TRANSPORT", "Vertex");
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-ant-test");
+    expect(() => loadClaudeConfig()).toThrow("Invalid CLAUDE_TRANSPORT: Vertex（api | vertex）");
   });
 });

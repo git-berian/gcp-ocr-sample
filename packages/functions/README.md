@@ -112,14 +112,14 @@ Firebase Functions は[環境構成ファイル](https://firebase.google.com/doc
 | `DOCAI_LOCATION`     | Yes  | Document AI のロケーション（例: `asia-southeast1`） |
 | `DOCAI_PROCESSOR_ID` | Yes  | Document AI プロセッサ ID                           |
 
-### API_KEY の管理
+### FUNCTIONS_API_KEY の管理
 
-`parseDocumentHttp`（onRequest）は Bearer トークンによる API キー認証を行います。
+`parseDocumentHttp`（onRequest）は Bearer トークンによる呼び出し側 API キー認証を行います。
 
-- **ローカル開発**: `.env.local` に `API_KEY=<値>` を設定（エミュレータが読み込む）
+- **ローカル開発**: `.env.local` に `FUNCTIONS_API_KEY=<値>` を設定（エミュレータが読み込む）
 - **デプロイ環境**: Google Cloud Secret Manager で管理（後述）
 
-コード上は `defineSecret("API_KEY")` で宣言し、`secrets: [apiKey]` で関数に注入しています。
+コード上は `defineSecret("FUNCTIONS_API_KEY")` で宣言し、`secrets: [functionsApiKey]` で関数に注入しています。
 
 ## デプロイ
 
@@ -138,14 +138,14 @@ Firebase Functions は[環境構成ファイル](https://firebase.google.com/doc
 npm run docker:functions:sh
 
 # コンテナ内で
-firebase functions:secrets:set API_KEY --project <project-id>
+firebase functions:secrets:set FUNCTIONS_API_KEY --project <project-id>
 # プロンプトに従って値を入力
 ```
 
 設定済みのシークレットは以下で確認できます。
 
 ```bash
-firebase functions:secrets:get API_KEY --project <project-id>
+firebase functions:secrets:get FUNCTIONS_API_KEY --project <project-id>
 ```
 
 ### デプロイの実行

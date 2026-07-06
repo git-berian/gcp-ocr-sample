@@ -20,7 +20,7 @@ export const handleParseDocumentGemini = async (req: Request, res: JsonResponse)
     return;
   }
 
-  const authResult = validateApiKey(req.headers.authorization, process.env.API_KEY ?? "");
+  const authResult = validateApiKey(req.headers.authorization, process.env.FUNCTIONS_API_KEY ?? "");
   if (!authResult.ok) {
     const body = { error: authResult.message };
     console.log(`[RES] 401`, JSON.stringify(body));

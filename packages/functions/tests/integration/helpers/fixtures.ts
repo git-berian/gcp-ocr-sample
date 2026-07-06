@@ -12,7 +12,7 @@ export const TEST_ENV = {
   CLAUDE_MODEL: "claude-opus-4-8",
   CLAUDE_LOCATION: "global",
   ANTHROPIC_API_KEY: "sk-ant-test",
-  API_KEY: "test-api-key-12345",
+  FUNCTIONS_API_KEY: "test-api-key-12345",
 } as const;
 
 export const EXPECTED_PROCESSOR_NAME = `projects/${TEST_ENV.GCP_PROJECT_ID}/locations/${TEST_ENV.DOCAI_LOCATION}/processors/${TEST_ENV.DOCAI_PROCESSOR_ID}`;

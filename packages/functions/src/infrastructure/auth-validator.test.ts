@@ -18,7 +18,8 @@ describe("validateApiKey", () => {
     const result = validateApiKey("Basic abc123", validKey);
     expect(result).toEqual({
       ok: false,
-      message: "Authorization ヘッダーの形式が不正です。Bearer <API_KEY> を使用してください。",
+      message:
+        "Authorization ヘッダーの形式が不正です。Bearer <FUNCTIONS_API_KEY> を使用してください。",
     });
   });
 

@@ -22,7 +22,8 @@ export function validateApiKey(
   if (!authorizationHeader.startsWith("Bearer ")) {
     return {
       ok: false,
-      message: "Authorization ヘッダーの形式が不正です。Bearer <API_KEY> を使用してください。",
+      message:
+        "Authorization ヘッダーの形式が不正です。Bearer <FUNCTIONS_API_KEY> を使用してください。",
     };
   }
 

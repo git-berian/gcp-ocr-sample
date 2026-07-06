@@ -14,7 +14,7 @@ describe("handleParseDocumentGemini（結合テスト）", () => {
     vi.stubEnv("GCP_PROJECT_ID", TEST_ENV.GCP_PROJECT_ID);
     vi.stubEnv("GEMINI_LOCATION", TEST_ENV.GEMINI_LOCATION);
     vi.stubEnv("GEMINI_MODEL", TEST_ENV.GEMINI_MODEL);
-    vi.stubEnv("API_KEY", TEST_ENV.API_KEY);
+    vi.stubEnv("FUNCTIONS_API_KEY", TEST_ENV.FUNCTIONS_API_KEY);
   });
 
   afterEach(() => {
@@ -25,7 +25,7 @@ describe("handleParseDocumentGemini（結合テスト）", () => {
     mockGenerateContent.mockResolvedValue(MOCK_GEMINI_RESPONSE);
 
     const { req, res } = createMockReqRes({
-      headers: { authorization: `Bearer ${TEST_ENV.API_KEY}` },
+      headers: { authorization: `Bearer ${TEST_ENV.FUNCTIONS_API_KEY}` },
     });
     await handleParseDocumentGemini(req, res);
 
@@ -44,7 +44,7 @@ describe("handleParseDocumentGemini（結合テスト）", () => {
   it("バリデーションエラー: サポート外の mimeType で 400 を返す", async () => {
     const { req, res } = createMockReqRes({
       body: { content: "base64data", mimeType: "text/plain" },
-      headers: { authorization: `Bearer ${TEST_ENV.API_KEY}` },
+      headers: { authorization: `Bearer ${TEST_ENV.FUNCTIONS_API_KEY}` },
     });
     await handleParseDocumentGemini(req, res);
 
@@ -56,7 +56,7 @@ describe("handleParseDocumentGemini（結合テスト）", () => {
     mockGenerateContent.mockRejectedValue(new Error("Vertex unavailable"));
 
     const { req, res } = createMockReqRes({
-      headers: { authorization: `Bearer ${TEST_ENV.API_KEY}` },
+      headers: { authorization: `Bearer ${TEST_ENV.FUNCTIONS_API_KEY}` },
     });
     await handleParseDocumentGemini(req, res);
 
@@ -68,7 +68,7 @@ describe("handleParseDocumentGemini（結合テスト）", () => {
     vi.stubEnv("GCP_PROJECT_ID", "");
 
     const { req, res } = createMockReqRes({
-      headers: { authorization: `Bearer ${TEST_ENV.API_KEY}` },
+      headers: { authorization: `Bearer ${TEST_ENV.FUNCTIONS_API_KEY}` },
     });
     await handleParseDocumentGemini(req, res);
 

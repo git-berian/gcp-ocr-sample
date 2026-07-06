@@ -16,7 +16,7 @@ describe("handleParseDocument（結合テスト）", () => {
     vi.stubEnv("GCP_PROJECT_ID", TEST_ENV.GCP_PROJECT_ID);
     vi.stubEnv("DOCAI_LOCATION", TEST_ENV.DOCAI_LOCATION);
     vi.stubEnv("DOCAI_PROCESSOR_ID", TEST_ENV.DOCAI_PROCESSOR_ID);
-    vi.stubEnv("API_KEY", TEST_ENV.API_KEY);
+    vi.stubEnv("FUNCTIONS_API_KEY", TEST_ENV.FUNCTIONS_API_KEY);
   });
 
   afterEach(() => {
@@ -27,7 +27,7 @@ describe("handleParseDocument（結合テスト）", () => {
     mockProcessDocument.mockResolvedValue(MOCK_SDK_RESPONSE);
 
     const { req, res } = createMockReqRes({
-      headers: { authorization: `Bearer ${TEST_ENV.API_KEY}` },
+      headers: { authorization: `Bearer ${TEST_ENV.FUNCTIONS_API_KEY}` },
     });
     await handleParseDocument(req, res);
 
@@ -56,7 +56,7 @@ describe("handleParseDocument（結合テスト）", () => {
   it("バリデーションエラー: サポート外の mimeType で 400 を返す", async () => {
     const { req, res } = createMockReqRes({
       body: { content: "base64data", mimeType: "text/plain" },
-      headers: { authorization: `Bearer ${TEST_ENV.API_KEY}` },
+      headers: { authorization: `Bearer ${TEST_ENV.FUNCTIONS_API_KEY}` },
     });
     await handleParseDocument(req, res);
 
@@ -68,7 +68,7 @@ describe("handleParseDocument（結合テスト）", () => {
     mockProcessDocument.mockRejectedValue(new Error("Document AI unavailable"));
 
     const { req, res } = createMockReqRes({
-      headers: { authorization: `Bearer ${TEST_ENV.API_KEY}` },
+      headers: { authorization: `Bearer ${TEST_ENV.FUNCTIONS_API_KEY}` },
     });
     await handleParseDocument(req, res);
 
@@ -82,7 +82,7 @@ describe("handleParseDocument（結合テスト）", () => {
     vi.stubEnv("DOCAI_PROCESSOR_ID", "");
 
     const { req, res } = createMockReqRes({
-      headers: { authorization: `Bearer ${TEST_ENV.API_KEY}` },
+      headers: { authorization: `Bearer ${TEST_ENV.FUNCTIONS_API_KEY}` },
     });
     await handleParseDocument(req, res);
 

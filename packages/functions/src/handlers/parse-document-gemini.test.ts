@@ -57,7 +57,7 @@ const mockReceipt = {
 describe("handleParseDocumentGemini", () => {
   beforeEach(() => {
     mockExtract.mockReset();
-    vi.stubEnv("API_KEY", TEST_API_KEY);
+    vi.stubEnv("FUNCTIONS_API_KEY", TEST_API_KEY);
   });
 
   afterEach(() => {

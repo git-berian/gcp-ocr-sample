@@ -1,6 +1,6 @@
 # @docai/web
 
-React + Vite による Web フロントエンドです。ファイルをアップロードすると Functions API 経由で OCR 結果を表示します。
+React + Vite による Web フロントエンドです。ファイルをアップロードし、抽出エンジン（Document AI / Gemini / Claude）を選択すると、Functions API 経由で OCR 結果を表示します。
 
 ## 開発コマンド
 

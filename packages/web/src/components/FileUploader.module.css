@@ -95,6 +95,43 @@
   color: var(--color-error);
 }
 
+.engineSelector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.engineLegend {
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.engineOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.engineOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.engineOption:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .submitButton {
   align-self: flex-start;
   padding: 10px 28px;

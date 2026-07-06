@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { parseDocument } from "../api/parse-document";
+import { DEFAULT_ENGINE, type Engine } from "../api/engines";
 import { fileToBase64, isValidMimeType } from "../utils/file";
 import { runWithConcurrency } from "../utils/concurrency";
 import type { FileJob } from "../api/types";
@@ -9,24 +10,25 @@ const CONCURRENCY_LIMIT = 3;
 export interface UseParseDocumentsReturn {
   jobs: FileJob[];
   isProcessing: boolean;
-  submitAll: (files: File[]) => void;
+  submitAll: (files: File[], engine?: Engine) => void;
   retry: (jobId: string) => void;
 }
 
-function createJob(file: File): FileJob {
+function createJob(file: File, engine: Engine): FileJob {
   return {
     id: crypto.randomUUID(),
     file,
     fileName: file.name,
+    engine,
     status: "pending",
     result: null,
     error: "",
   };
 }
 
-async function processJob(file: File): Promise<FileJob["result"]> {
+async function processJob(file: File, engine: Engine): Promise<FileJob["result"]> {
   const content = await fileToBase64(file);
-  const response = await parseDocument({ content, mimeType: file.type });
+  const response = await parseDocument({ content, mimeType: file.type }, engine);
   return response;
 }
 
@@ -52,7 +54,7 @@ export function useParseDocuments(): UseParseDocumentsReturn {
       }
 
       try {
-        const result = await processJob(job.file);
+        const result = await processJob(job.file, job.engine);
         updateJob(job.id, { status: "success", result });
       } catch (err) {
         updateJob(job.id, {
@@ -67,11 +69,11 @@ export function useParseDocuments(): UseParseDocumentsReturn {
   const isProcessingRef = useRef(false);
 
   const submitAll = useCallback(
-    (files: File[]) => {
+    (files: File[], engine: Engine = DEFAULT_ENGINE) => {
       if (isProcessingRef.current) return;
       isProcessingRef.current = true;
 
-      const newJobs = files.map(createJob);
+      const newJobs = files.map((file) => createJob(file, engine));
       setJobs(newJobs);
 
       const tasks = newJobs.map((job) => () => executeJob(job));

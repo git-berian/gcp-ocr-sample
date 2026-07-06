@@ -1,16 +1,18 @@
 import { useState, useCallback, type FormEvent, type DragEvent } from "react";
 import { SUPPORTED_MIME_TYPES, isValidMimeType } from "../utils/file";
+import { DEFAULT_ENGINE, ENGINES, ENGINE_ORDER, type Engine } from "../api/engines";
 import styles from "./FileUploader.module.css";
 
 const MAX_FILES = 20;
 
 interface FileUploaderProps {
-  onSubmit: (files: File[]) => void;
+  onSubmit: (files: File[], engine: Engine) => void;
   disabled: boolean;
 }
 
 export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
   const [files, setFiles] = useState<File[]>([]);
+  const [engine, setEngine] = useState<Engine>(DEFAULT_ENGINE);
   const [isDragging, setIsDragging] = useState(false);
   const [warning, setWarning] = useState("");
 
@@ -32,7 +34,7 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (files.length > 0) {
-      onSubmit(files);
+      onSubmit(files, engine);
     }
   };
 
@@ -107,6 +109,24 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
         )}
       </div>
       {warning && <p className={styles.warning}>{warning}</p>}
+      <fieldset className={styles.engineSelector} disabled={disabled}>
+        <legend className={styles.engineLegend}>抽出エンジン</legend>
+        <div className={styles.engineOptions}>
+          {ENGINE_ORDER.map((value) => (
+            <label key={value} className={styles.engineOption}>
+              <input
+                type="radio"
+                name="engine"
+                value={value}
+                checked={engine === value}
+                disabled={disabled}
+                onChange={() => setEngine(value)}
+              />
+              {ENGINES[value].label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
       <button
         type="submit"
         className={styles.submitButton}

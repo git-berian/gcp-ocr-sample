@@ -46,6 +46,18 @@ npm run test:watch       # テスト実行（ウォッチモード）
 
 結合テストのヘルパー（フィクスチャ・モック）は `tests/integration/helpers/` にまとめています。
 
+## エンドポイント
+
+3 つの抽出エンジン × onCall / onRequest の 6 関数を提供します（`src/index.ts`）。onCall は Hosting/Web 用（ADC 認証）、onRequest は外部サービス用（`FUNCTIONS_API_KEY` による Bearer 認証）。
+
+| エンジン                  | onCall（Web/ADC）         | onRequest（外部/API キー） |
+| ------------------------- | ------------------------- | -------------------------- |
+| Document AI（ADR-0002）   | `parseDocumentCall`       | `parseDocumentHttp`        |
+| Gemini（ADR-0010）        | `parseDocumentGeminiCall` | `parseDocumentGeminiHttp`  |
+| Claude（ADR-0012 / 0013） | `parseDocumentClaudeCall` | `parseDocumentClaudeHttp`  |
+
+レスポンスは Gemini / Claude が正準モデル `{ receipt: ReceiptExtraction }`（ADR-0011）、Document AI が `{ entities: ... }`。Claude の呼び出し経路は `CLAUDE_TRANSPORT`（api/vertex）で切り替えます（ADR-0013）。
+
 ## ローカル実行
 
 Docker コンテナ内で Firebase Emulator を使用してローカル実行します。
@@ -57,8 +69,8 @@ npm run docker:functions:start
 起動すると以下のようなログが表示されます：
 
 ```text
-✔  functions[<region>-parseDocument]: http function initialized
-    (http://127.0.0.1:8080/<project-id>/<region>/parseDocument)
+✔  functions[<region>-parseDocumentHttp]: http function initialized
+    (http://127.0.0.1:8080/<project-id>/<region>/parseDocumentHttp)
 ```
 
 リージョンは `onRequest` のオプションで指定した値（現在: `asia-northeast1`）です。
@@ -66,20 +78,21 @@ npm run docker:functions:start
 ### curl でリクエスト
 
 ローカルサーバーが起動したら、別ターミナルから curl でリクエストできます。
-URL は `http://localhost:8080/<project-id>/<region>/parseDocument` の形式です。
+URL は `http://localhost:8080/<project-id>/<region>/parseDocumentHttp` の形式です（Document AI 版・onRequest。Gemini は `parseDocumentGeminiHttp`、Claude は `parseDocumentClaudeHttp`）。
 
 ```bash
 # エミュレータ起動時のログに表示される URL を使用
-# 例: http://localhost:8080/your-gcp-project-id/asia-northeast1/parseDocument
-FUNCTION_URL="http://localhost:8080/your-gcp-project-id/asia-northeast1/parseDocument"
+# 例: http://localhost:8080/your-gcp-project-id/asia-northeast1/parseDocumentHttp
+FUNCTION_URL="http://localhost:8080/your-gcp-project-id/asia-northeast1/parseDocumentHttp"
 
 # リクエスト用 JSON ファイルを作成
 CONTENT=$(base64 -i input/receipt.jpg | tr -d '\n')
 printf '{"content":"%s","mimeType":"image/jpeg"}' "$CONTENT" > /tmp/request.json
 
-# curl でリクエスト（-d @ でファイルから読み込み）
+# curl でリクエスト（onRequest は FUNCTIONS_API_KEY による Bearer 認証が必要）
 curl -s -X POST "${FUNCTION_URL}" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${FUNCTIONS_API_KEY}" \
   -d @/tmp/request.json
 ```
 
@@ -89,8 +102,8 @@ curl -s -X POST "${FUNCTION_URL}" \
 npm run docker:functions:sh
 # コンテナ内で
 npm run shell
-# シェル内で関数を呼び出し
-parseDocument({method: "POST", body: {content: "base64data", mimeType: "application/pdf"}})
+# シェル内で関数を呼び出し（onRequest 版）
+parseDocumentHttp({method: "POST", body: {content: "base64data", mimeType: "application/pdf"}})
 ```
 
 ## 環境変数
@@ -113,6 +126,8 @@ Firebase Functions は[環境構成ファイル](https://firebase.google.com/doc
 | `GCP_PROJECT_ID`     | Yes  | GCP プロジェクト ID                                 |
 | `DOCAI_LOCATION`     | Yes  | Document AI のロケーション（例: `asia-southeast1`） |
 | `DOCAI_PROCESSOR_ID` | Yes  | Document AI プロセッサ ID                           |
+
+> Gemini / Claude エンジンの設定変数（`GEMINI_*` / `CLAUDE_TRANSPORT` / `CLAUDE_MODEL` / `CLAUDE_LOCATION` / `CLAUDE_TIMEOUT_MS` 等）はいずれも既定値があり任意です。詳細は `.env.example` を参照してください。
 
 ### FUNCTIONS_API_KEY の管理
 

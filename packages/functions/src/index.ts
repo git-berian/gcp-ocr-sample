@@ -4,6 +4,8 @@ import { handleParseDocumentCall } from "./handlers/parse-document-call.js";
 import { handleParseDocument } from "./handlers/parse-document.js";
 import { handleParseDocumentGeminiCall } from "./handlers/parse-document-gemini-call.js";
 import { handleParseDocumentGemini } from "./handlers/parse-document-gemini.js";
+import { handleParseDocumentClaudeCall } from "./handlers/parse-document-claude-call.js";
+import { handleParseDocumentClaude } from "./handlers/parse-document-claude.js";
 
 const apiKey = defineSecret("API_KEY");
 
@@ -26,4 +28,16 @@ export const parseDocumentGeminiCall = onCall(
 export const parseDocumentGeminiHttp = onRequest(
   { region: "asia-northeast1", secrets: [apiKey] },
   handleParseDocumentGemini,
+);
+
+/** Hosting（Web）用 — Claude onCall（ADC 認証） */
+export const parseDocumentClaudeCall = onCall(
+  { region: "asia-northeast1" },
+  handleParseDocumentClaudeCall,
+);
+
+/** 外部サービス用 — Claude onRequest + API キー認証 */
+export const parseDocumentClaudeHttp = onRequest(
+  { region: "asia-northeast1", secrets: [apiKey] },
+  handleParseDocumentClaude,
 );

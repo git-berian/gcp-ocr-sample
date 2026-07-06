@@ -8,6 +8,8 @@ export const TEST_ENV = {
   DOCAI_PROCESSOR_ID: "proc-123",
   GEMINI_LOCATION: "global",
   GEMINI_MODEL: "gemini-2.5-flash",
+  CLAUDE_LOCATION: "global",
+  CLAUDE_MODEL: "claude-opus-4-8",
   API_KEY: "test-api-key-12345",
 } as const;
 
@@ -82,6 +84,16 @@ export const MOCK_GEMINI_RESPONSE = { text: JSON.stringify(MOCK_RECEIPT_FIELDS) 
 export const EXPECTED_GEMINI_RECEIPT = {
   ...MOCK_RECEIPT_FIELDS,
   meta: { source: "gemini" },
+};
+
+// ---- Claude 用フィクスチャ ----
+export const MOCK_CLAUDE_RESPONSE = {
+  content: [{ type: "text", text: JSON.stringify(MOCK_RECEIPT_FIELDS) }],
+};
+
+export const EXPECTED_CLAUDE_RECEIPT = {
+  ...MOCK_RECEIPT_FIELDS,
+  meta: { source: "claude" },
 };
 
 type HandlerParams = Parameters<typeof handleParseDocument>;

@@ -1,7 +1,8 @@
 /**
- * 領収書抽出値の正規化ヘルパー（Document AI / Gemini 双方のアダプタで共有）。
- * 外部依存を持たない純粋関数のみ。
+ * 領収書抽出値の正規化ヘルパー（Document AI / Gemini / Claude 各アダプタで共有）。
+ * フィールド単位の正規化は外部依存を持たない純粋関数。
  */
+import type { ReceiptExtraction, ReceiptMeta } from "./extract-receipt.js";
 
 /** 空文字を null に正規化する。文字列以外は null。 */
 export function toStringOrNull(value: unknown): string | null {
@@ -87,4 +88,25 @@ export function moneyToNumber(
   if (!Number.isFinite(unitsNum) || !Number.isFinite(nanosNum)) return null;
   const value = unitsNum + nanosNum / 1e9;
   return Number.isFinite(value) ? value : null;
+}
+
+/**
+ * LLM（Gemini / Claude）が返す JSON を正準モデル ReceiptExtraction へ正規化する。
+ * 抽出契約（日付/登録番号/金額の正規化・フィールド形状）をエンジン間で共有し、
+ * ドリフトを防ぐ。source のみエンジンごとに指定する。
+ */
+export function normalizeReceiptExtraction(
+  parsed: unknown,
+  source: ReceiptMeta["source"],
+): ReceiptExtraction {
+  const obj = (parsed && typeof parsed === "object" ? parsed : {}) as Record<string, unknown>;
+  return {
+    supplierName: toStringOrNull(obj.supplierName),
+    receiptDate: toIsoDateOrNull(obj.receiptDate),
+    totalAmount: toNumberOrNull(obj.totalAmount),
+    taxAmount: toNumberOrNull(obj.taxAmount),
+    registrationNumber: toRegistrationNumberOrNull(obj.registrationNumber),
+    transcription: typeof obj.transcription === "string" ? obj.transcription : "",
+    meta: { source },
+  };
 }

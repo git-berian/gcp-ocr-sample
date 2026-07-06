@@ -6,7 +6,9 @@ Document AI を使用した OCR 機能を Firebase Functions HTTP API として�
 
 ```bash
 npm run docker:functions:lint           # ESLint 実行
+npm run docker:functions:lint:fix       # ESLint 自動修正
 npm run docker:functions:format:check   # Prettier チェック
+npm run docker:functions:format         # Prettier フォーマット
 npm run docker:functions:test           # テスト実行（全テスト）
 npm run docker:functions:test:unit     # ユニットテストのみ実行
 npm run docker:functions:test:integration  # 結合テストのみ実行

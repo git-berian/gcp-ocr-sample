@@ -1,14 +1,14 @@
 # OCR Sample
 
-Google Cloud Document AI を使用してレシート等の画像・PDF から情報を抽出する OCR ツールです。
+Google Cloud Document AI・Vertex AI Gemini・Claude（Anthropic）を抽出エンジンに使い、レシート等の画像・PDF から情報を抽出する OCR ツールです。
 モノレポ構成を採用しており、デプロイ単位ごとにパッケージを分離しています。各パッケージは独立した `node_modules` と `package-lock.json` を持ちます。
 
 ## モノレポ構成
 
-| パッケージ                                  | 説明                                                  |
-| ------------------------------------------- | ----------------------------------------------------- |
-| [`packages/functions`](packages/functions/) | Firebase Functions HTTP API（Document AI による OCR） |
-| [`packages/web`](packages/web/)             | Web フロントエンド（React + Vite SPA）                |
+| パッケージ                                  | 説明                                                                    |
+| ------------------------------------------- | ----------------------------------------------------------------------- |
+| [`packages/functions`](packages/functions/) | Firebase Functions HTTP API（Document AI / Gemini / Claude による OCR） |
+| [`packages/web`](packages/web/)             | Web フロントエンド（React + Vite SPA）                                  |
 
 ## 必要なもの
 
@@ -70,7 +70,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 | **ハンドラ層**         | `packages/functions/src/handlers/`       | HTTP リクエスト処理                                          |
 | **ドメイン層**         | `packages/functions/src/domain/`         | 純粋なビジネスロジック（外部依存なし）                       |
 | **アプリケーション層** | `packages/functions/src/application/`    | ユースケースの実行。インターフェースを通じてインフラ層に依存 |
-| **インフラ層**         | `packages/functions/src/infrastructure/` | 外部サービス連携（GCP Document AI・環境変数）                |
+| **インフラ層**         | `packages/functions/src/infrastructure/` | 外部サービス連携（Document AI / Gemini / Claude・環境変数）  |
 
 エントリーポイント（`packages/functions/src/index.ts`）は Cloud Functions の関数登録のみを行い、具体的なロジックは持ちません。
 
@@ -156,6 +156,9 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 | Playwright               | ^1.52                              |
 | Vite                     | ^8.0                               |
 | @google-cloud/documentai | ^9.5.0                             |
+| @google/genai            | ^2.10                              |
+| @anthropic-ai/vertex-sdk | ^0.19                              |
+| @anthropic-ai/sdk        | ^0.110                             |
 | firebase-functions       | ^6.3                               |
 | firebase-admin           | ^13.4                              |
 

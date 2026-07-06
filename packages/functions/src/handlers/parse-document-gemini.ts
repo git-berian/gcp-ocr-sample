@@ -48,13 +48,16 @@ export const handleParseDocumentGemini = async (req: Request, res: JsonResponse)
       extractor,
     );
 
+    // 領収書は店名・金額・登録番号など PII/取引情報を含むため、値そのものは
+    // ログに出さない。抽出可否（デバッグに有用）と source のみを記録する。
     console.log(
-      `[AI] receipt:`,
+      `[AI] receipt extracted`,
       JSON.stringify({
-        supplierName: receipt.supplierName,
-        receiptDate: receipt.receiptDate,
-        totalAmount: receipt.totalAmount,
-        registrationNumber: receipt.registrationNumber,
+        source: receipt.meta?.source,
+        hasSupplierName: receipt.supplierName !== null,
+        hasReceiptDate: receipt.receiptDate !== null,
+        hasTotalAmount: receipt.totalAmount !== null,
+        hasRegistrationNumber: receipt.registrationNumber !== null,
       }),
     );
     const body = { receipt };

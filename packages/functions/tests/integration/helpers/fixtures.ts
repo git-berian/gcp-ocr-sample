@@ -8,8 +8,10 @@ export const TEST_ENV = {
   DOCAI_PROCESSOR_ID: "proc-123",
   GEMINI_LOCATION: "global",
   GEMINI_MODEL: "gemini-2.5-flash",
-  CLAUDE_LOCATION: "global",
+  CLAUDE_TRANSPORT: "api",
   CLAUDE_MODEL: "claude-opus-4-8",
+  CLAUDE_LOCATION: "global",
+  ANTHROPIC_API_KEY: "sk-ant-test",
   API_KEY: "test-api-key-12345",
 } as const;
 

@@ -11,8 +11,9 @@ import { handleParseDocumentClaude } from "../../../src/handlers/parse-document-
 describe("handleParseDocumentClaude（結合テスト）", () => {
   beforeEach(() => {
     mockMessagesCreate.mockReset();
-    vi.stubEnv("GCP_PROJECT_ID", TEST_ENV.GCP_PROJECT_ID);
-    vi.stubEnv("CLAUDE_LOCATION", TEST_ENV.CLAUDE_LOCATION);
+    // 既定トランスポート（api）で検証する（ADR-0013）
+    vi.stubEnv("CLAUDE_TRANSPORT", TEST_ENV.CLAUDE_TRANSPORT);
+    vi.stubEnv("ANTHROPIC_API_KEY", TEST_ENV.ANTHROPIC_API_KEY);
     vi.stubEnv("CLAUDE_MODEL", TEST_ENV.CLAUDE_MODEL);
     vi.stubEnv("API_KEY", TEST_ENV.API_KEY);
   });
@@ -64,8 +65,8 @@ describe("handleParseDocumentClaude（結合テスト）", () => {
     expect(res.json).toHaveBeenCalledWith({ error: "内部サーバーエラー" });
   });
 
-  it("設定エラー: GCP_PROJECT_ID 不足で 500 を返し、Claude を呼ばない", async () => {
-    vi.stubEnv("GCP_PROJECT_ID", "");
+  it("設定エラー: ANTHROPIC_API_KEY 不足で 500 を返し、Claude を呼ばない", async () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
 
     const { req, res } = createMockReqRes({
       headers: { authorization: `Bearer ${TEST_ENV.API_KEY}` },

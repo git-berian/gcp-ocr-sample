@@ -8,6 +8,8 @@ import { handleParseDocumentClaudeCall } from "./handlers/parse-document-claude-
 import { handleParseDocumentClaude } from "./handlers/parse-document-claude.js";
 
 const apiKey = defineSecret("API_KEY");
+// Claude 直接 API 経路（CLAUDE_TRANSPORT=api）用。vertex 経路では未使用（ADR-0013）。
+const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
 
 /** Hosting（Web）用 — onCall */
 export const parseDocumentCall = onCall({ region: "asia-northeast1" }, handleParseDocumentCall);
@@ -30,14 +32,14 @@ export const parseDocumentGeminiHttp = onRequest(
   handleParseDocumentGemini,
 );
 
-/** Hosting（Web）用 — Claude onCall（ADC 認証） */
+/** Hosting（Web）用 — Claude onCall（api 経路は ANTHROPIC_API_KEY、vertex 経路は ADC） */
 export const parseDocumentClaudeCall = onCall(
-  { region: "asia-northeast1" },
+  { region: "asia-northeast1", secrets: [anthropicApiKey] },
   handleParseDocumentClaudeCall,
 );
 
-/** 外部サービス用 — Claude onRequest + API キー認証 */
+/** 外部サービス用 — Claude onRequest + 呼び出し側 API キー認証（+ api 経路は ANTHROPIC_API_KEY） */
 export const parseDocumentClaudeHttp = onRequest(
-  { region: "asia-northeast1", secrets: [apiKey] },
+  { region: "asia-northeast1", secrets: [apiKey, anthropicApiKey] },
   handleParseDocumentClaude,
 );

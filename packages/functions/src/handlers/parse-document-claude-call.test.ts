@@ -4,8 +4,8 @@ import { handleParseDocumentClaudeCall } from "./parse-document-claude-call.js";
 
 vi.mock("../infrastructure/config.js", () => ({
   loadClaudeConfig: () => ({
-    projectId: "test-project",
-    location: "global",
+    transport: "api",
+    apiKey: "sk-ant-test",
     model: "claude-opus-4-8",
     timeoutMs: 30000,
   }),

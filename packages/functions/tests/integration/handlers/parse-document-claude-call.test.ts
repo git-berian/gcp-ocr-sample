@@ -13,8 +13,9 @@ import { handleParseDocumentClaudeCall } from "../../../src/handlers/parse-docum
 describe("handleParseDocumentClaudeCall（結合テスト）", () => {
   beforeEach(() => {
     mockMessagesCreate.mockReset();
-    vi.stubEnv("GCP_PROJECT_ID", TEST_ENV.GCP_PROJECT_ID);
-    vi.stubEnv("CLAUDE_LOCATION", TEST_ENV.CLAUDE_LOCATION);
+    // 既定トランスポート（api）で検証する（ADR-0013）
+    vi.stubEnv("CLAUDE_TRANSPORT", TEST_ENV.CLAUDE_TRANSPORT);
+    vi.stubEnv("ANTHROPIC_API_KEY", TEST_ENV.ANTHROPIC_API_KEY);
     vi.stubEnv("CLAUDE_MODEL", TEST_ENV.CLAUDE_MODEL);
   });
 
@@ -69,8 +70,8 @@ describe("handleParseDocumentClaudeCall（結合テスト）", () => {
     );
   });
 
-  it("設定エラー: GCP_PROJECT_ID 不足で HttpsError(internal) を投げる", async () => {
-    vi.stubEnv("GCP_PROJECT_ID", "");
+  it("設定エラー: ANTHROPIC_API_KEY 不足で HttpsError(internal) を投げる", async () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
 
     await expect(handleParseDocumentClaudeCall(createMockCallableRequest())).rejects.toSatisfy(
       (error: HttpsError) => {

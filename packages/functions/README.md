@@ -121,6 +121,18 @@ Firebase Functions は[環境構成ファイル](https://firebase.google.com/doc
 
 コード上は `defineSecret("FUNCTIONS_API_KEY")` で宣言し、`secrets: [functionsApiKey]` で関数に注入しています。
 
+### Claude 認証（ANTHROPIC_API_KEY / CLAUDE_TRANSPORT）
+
+`parseDocumentClaude*` は Claude の呼び出し経路を `CLAUDE_TRANSPORT` で切り替えます（ADR-0013）。
+
+- `CLAUDE_TRANSPORT=api`（既定）: Anthropic 直接 API。`ANTHROPIC_API_KEY` を使用。
+- `CLAUDE_TRANSPORT=vertex`: Vertex AI 経由（ADC 認証）。`ANTHROPIC_API_KEY` は未使用。
+
+- **ローカル開発**: api 経路を試す場合、`.env.local` に `ANTHROPIC_API_KEY=<値>` を設定（エミュレータが読み込む）。
+- **デプロイ環境**: Google Cloud Secret Manager で管理（後述）。
+
+コード上は `defineSecret("ANTHROPIC_API_KEY")` で Claude 関数に宣言しています。**この宣言は `CLAUDE_TRANSPORT` の値に関わらず有効なため、`vertex` 運用でも Secret Manager に `ANTHROPIC_API_KEY`（ダミー値可）が存在しないとデプロイに失敗します。**
+
 ## デプロイ
 
 デプロイ前に以下の準備が必要です：
@@ -132,13 +144,17 @@ Firebase Functions は[環境構成ファイル](https://firebase.google.com/doc
 
 ### Secret Manager のセットアップ
 
-`parseDocumentHttp` は API キーを Secret Manager から取得します。初回デプロイ前にシークレットを設定してください。
+HTTP 関数は API キーを Secret Manager から取得します。初回デプロイ前に**両方**のシークレットを設定してください。
+
+- `FUNCTIONS_API_KEY`: HTTP エンドポイント（`parseDocument*Http`）の呼び出し側認証キー。
+- `ANTHROPIC_API_KEY`: Claude 直接 API 経路用。Claude 関数に `defineSecret` 宣言があるため、`CLAUDE_TRANSPORT=vertex` 運用でも設定が必要（ダミー値可。未設定だとデプロイに失敗）。
 
 ```bash
 npm run docker:functions:sh
 
 # コンテナ内で
 firebase functions:secrets:set FUNCTIONS_API_KEY --project <project-id>
+firebase functions:secrets:set ANTHROPIC_API_KEY --project <project-id>
 # プロンプトに従って値を入力
 ```
 

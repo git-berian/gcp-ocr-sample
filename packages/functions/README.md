@@ -1,6 +1,6 @@
 # @docai/functions
 
-Document AI を使用した OCR 機能を Firebase Functions HTTP API として提供するパッケージです。
+Document AI / Vertex AI Gemini / Claude（Anthropic）による OCR 機能を Firebase Functions HTTP API として提供するパッケージです。
 
 ## 開発コマンド
 

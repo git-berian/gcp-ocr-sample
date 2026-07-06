@@ -1,10 +1,12 @@
+import type { Engine } from "./engines";
+
 export interface ParseDocumentRequest {
   content: string;
   mimeType: string;
 }
 
 export interface ReceiptMeta {
-  source: "document-ai" | "gemini" | "claude";
+  source: Engine;
   confidence?: Record<string, number>;
 }
 
@@ -28,6 +30,7 @@ export interface FileJob {
   id: string;
   file: File;
   fileName: string;
+  engine: Engine;
   status: FileJobStatus;
   result: ParseDocumentResponse | null;
   error: string;

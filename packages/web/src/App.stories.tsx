@@ -21,6 +21,7 @@ function createJob(overrides: Partial<FileJob> = {}): FileJob {
     id: crypto.randomUUID(),
     file: new File([""], "dummy.png", { type: "image/png" }),
     fileName: "dummy.png",
+    engine: "document-ai",
     status: "success",
     result: { receipt: makeReceipt() },
     error: "",

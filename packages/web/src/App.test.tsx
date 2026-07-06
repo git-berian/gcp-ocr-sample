@@ -22,6 +22,7 @@ function createJob(overrides: Partial<FileJob> = {}): FileJob {
     id: "job-1",
     file: new File([""], "test.png", { type: "image/png" }),
     fileName: "test.png",
+    engine: "document-ai",
     status: "success",
     result: { receipt: makeReceipt() },
     error: "",
@@ -48,7 +49,7 @@ describe("AppView", () => {
   it("renders the title and file uploader", () => {
     render(<AppView {...defaultProps} />);
 
-    expect(screen.getByText("DocAI 経費パーサー")).toBeInTheDocument();
+    expect(screen.getByText("経費パーサー")).toBeInTheDocument();
     expect(screen.getByLabelText("ファイル")).toBeInTheDocument();
   });
 
@@ -91,6 +92,6 @@ describe("AppView", () => {
     await user.upload(input, file);
     await user.click(screen.getByRole("button", { name: "解析" }));
 
-    expect(mockSubmit).toHaveBeenCalledWith([file]);
+    expect(mockSubmit).toHaveBeenCalledWith([file], "document-ai");
   });
 });

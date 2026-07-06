@@ -18,11 +18,11 @@ Google Cloud Document AI・Vertex AI Gemini・Claude（Anthropic）を抽出エ�
 - GCP プロジェクトとサービスアカウントキー（JSON）— GCP 認証（ADC）に使用
 - Firebase CLI（`npm install -g firebase-tools`）— Functions のデプロイ時に必要
 
-抽出エンジンごとの前提（設定変数は `packages/functions/.env.example` 参照）:
+抽出エンジンは Web の UI から選択でき（既定は Document AI）、Functions は各エンジンに対応する関数を提供します。前提（設定変数は `packages/functions/.env.example` 参照）:
 
-- **Document AI**（既定・Web が使用）: Document AI API の有効化、プロセッサ（Expense Parser 等）
-- **Vertex AI Gemini**（任意 / `parseDocumentGemini*`）: Vertex AI API の有効化（認証はサービスアカウントの ADC を流用。ADR-0010）
-- **Claude**（任意 / `parseDocumentClaude*`）: 直接 API（`CLAUDE_TRANSPORT=api`・既定）は Anthropic API キー（`ANTHROPIC_API_KEY`）、Vertex 経由（`CLAUDE_TRANSPORT=vertex`）は Vertex AI 上での Claude 有効化（ADR-0012 / 0013）
+- **Document AI**（既定 / `parseDocument*`）: Document AI API の有効化、プロセッサ（Expense Parser 等）
+- **Vertex AI Gemini**（`parseDocumentGemini*`）: Vertex AI API の有効化（認証はサービスアカウントの ADC を流用。ADR-0010）
+- **Claude**（`parseDocumentClaude*`）: 直接 API（`CLAUDE_TRANSPORT=api`・既定）は Anthropic API キー（`ANTHROPIC_API_KEY`）、Vertex 経由（`CLAUDE_TRANSPORT=vertex`）は Vertex AI 上での Claude 有効化（ADR-0012 / 0013）
 
 ## セットアップ
 

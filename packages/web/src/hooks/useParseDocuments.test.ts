@@ -67,6 +67,91 @@ describe("useParseDocuments", () => {
     expect(result.current.isProcessing).toBe(false);
   });
 
+  it("選択したエンジンを parseDocument に渡す", async () => {
+    vi.mocked(parseDocumentApi.parseDocument).mockResolvedValue({ receipt: RECEIPT });
+
+    const { result } = renderHook(() => useParseDocuments());
+    const files = [new File(["a"], "receipt.png", { type: "image/png" })];
+
+    await act(async () => {
+      result.current.submitAll(files, "gemini");
+    });
+
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(result.current.jobs[0].status).toBe("success");
+      });
+    });
+
+    expect(parseDocumentApi.parseDocument).toHaveBeenCalledWith(
+      { content: "base64data", mimeType: "image/png" },
+      "gemini",
+    );
+    expect(result.current.jobs[0].engine).toBe("gemini");
+  });
+
+  it("エンジン未指定なら document-ai を使う", async () => {
+    vi.mocked(parseDocumentApi.parseDocument).mockResolvedValue({ receipt: RECEIPT });
+
+    const { result } = renderHook(() => useParseDocuments());
+    const files = [new File(["a"], "receipt.png", { type: "image/png" })];
+
+    await act(async () => {
+      result.current.submitAll(files);
+    });
+
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(result.current.jobs[0].status).toBe("success");
+      });
+    });
+
+    expect(parseDocumentApi.parseDocument).toHaveBeenCalledWith(
+      { content: "base64data", mimeType: "image/png" },
+      "document-ai",
+    );
+  });
+
+  it("リトライ時も送信時と同じエンジンを使う", async () => {
+    vi.mocked(parseDocumentApi.parseDocument)
+      .mockRejectedValueOnce(new Error("fail"))
+      .mockResolvedValueOnce({ receipt: RECEIPT });
+
+    const { result } = renderHook(() => useParseDocuments());
+    const files = [new File(["a"], "retry.png", { type: "image/png" })];
+
+    await act(async () => {
+      result.current.submitAll(files, "claude");
+    });
+
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(result.current.jobs[0].status).toBe("error");
+      });
+    });
+
+    await act(async () => {
+      result.current.retry(result.current.jobs[0].id);
+    });
+
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(result.current.jobs[0].status).toBe("success");
+      });
+    });
+
+    expect(parseDocumentApi.parseDocument).toHaveBeenNthCalledWith(
+      1,
+      { content: "base64data", mimeType: "image/png" },
+      "claude",
+    );
+    expect(parseDocumentApi.parseDocument).toHaveBeenNthCalledWith(
+      2,
+      { content: "base64data", mimeType: "image/png" },
+      "claude",
+    );
+  });
+
   it("部分的な失敗を許容する", async () => {
     vi.mocked(parseDocumentApi.parseDocument)
       .mockResolvedValueOnce({ receipt: RECEIPT })

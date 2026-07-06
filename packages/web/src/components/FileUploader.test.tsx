@@ -11,7 +11,7 @@ describe("FileUploader", () => {
     expect(screen.getByRole("button", { name: "解析" })).toBeInTheDocument();
   });
 
-  it("calls onSubmit with selected files when form is submitted", async () => {
+  it("calls onSubmit with selected files and the default engine when form is submitted", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<FileUploader onSubmit={onSubmit} disabled={false} />);
@@ -24,7 +24,36 @@ describe("FileUploader", () => {
     await user.upload(input, files);
     await user.click(screen.getByRole("button", { name: "解析" }));
 
-    expect(onSubmit).toHaveBeenCalledWith(files);
+    expect(onSubmit).toHaveBeenCalledWith(files, "document-ai");
+  });
+
+  it("defaults the engine radio to Document AI", () => {
+    render(<FileUploader onSubmit={vi.fn()} disabled={false} />);
+
+    expect(screen.getByRole("radio", { name: "Document AI" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "Gemini" })).not.toBeChecked();
+    expect(screen.getByRole("radio", { name: "Claude" })).not.toBeChecked();
+  });
+
+  it("submits with the selected engine", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<FileUploader onSubmit={onSubmit} disabled={false} />);
+
+    const file = new File(["a"], "a.png", { type: "image/png" });
+    await user.upload(screen.getByLabelText("ファイル"), file);
+    await user.click(screen.getByRole("radio", { name: "Claude" }));
+    await user.click(screen.getByRole("button", { name: "解析" }));
+
+    expect(onSubmit).toHaveBeenCalledWith([file], "claude");
+  });
+
+  it("disables the engine radios when disabled prop is true", () => {
+    render(<FileUploader onSubmit={vi.fn()} disabled={true} />);
+
+    expect(screen.getByRole("radio", { name: "Document AI" })).toBeDisabled();
+    expect(screen.getByRole("radio", { name: "Gemini" })).toBeDisabled();
+    expect(screen.getByRole("radio", { name: "Claude" })).toBeDisabled();
   });
 
   it("does not call onSubmit when no file is selected", async () => {

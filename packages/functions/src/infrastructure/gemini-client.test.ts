@@ -12,7 +12,7 @@ vi.mock("@google/genai", () => ({
 const config = {
   projectId: "test-project",
   location: "global",
-  model: "gemini-2.5-flash",
+  model: "gemini-3.5-flash-lite",
   timeoutMs: 30000,
 };
 const params = { content: "base64data", mimeType: "image/jpeg" };
@@ -44,7 +44,7 @@ describe("createGeminiReceiptExtractor", () => {
     expect(result).toEqual({ ...fullReceipt, meta: { source: "gemini" } });
 
     const arg = mockGenerateContent.mock.calls[0][0];
-    expect(arg.model).toBe("gemini-2.5-flash");
+    expect(arg.model).toBe("gemini-3.5-flash-lite");
     expect(arg.contents[0].parts[0]).toEqual({
       inlineData: { mimeType: "image/jpeg", data: "base64data" },
     });

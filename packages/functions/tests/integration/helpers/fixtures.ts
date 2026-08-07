@@ -7,7 +7,7 @@ export const TEST_ENV = {
   DOCAI_LOCATION: "us",
   DOCAI_PROCESSOR_ID: "proc-123",
   GEMINI_LOCATION: "global",
-  GEMINI_MODEL: "gemini-2.5-flash",
+  GEMINI_MODEL: "gemini-3.5-flash-lite",
   CLAUDE_TRANSPORT: "api",
   CLAUDE_MODEL: "claude-opus-4-8",
   CLAUDE_LOCATION: "global",

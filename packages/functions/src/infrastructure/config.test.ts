@@ -49,14 +49,14 @@ describe("loadGeminiConfig", () => {
   it("環境変数からGeminiConfigを構築する", () => {
     vi.stubEnv("GCP_PROJECT_ID", "my-project");
     vi.stubEnv("GEMINI_LOCATION", "asia-northeast1");
-    vi.stubEnv("GEMINI_MODEL", "gemini-2.5-pro");
+    vi.stubEnv("GEMINI_MODEL", "gemini-3.5-flash");
     vi.stubEnv("GEMINI_TIMEOUT_MS", "15000");
 
     const config = loadGeminiConfig();
     expect(config).toEqual({
       projectId: "my-project",
       location: "asia-northeast1",
-      model: "gemini-2.5-pro",
+      model: "gemini-3.5-flash",
       timeoutMs: 15000,
     });
   });
@@ -71,7 +71,7 @@ describe("loadGeminiConfig", () => {
     expect(config).toEqual({
       projectId: "my-project",
       location: "global",
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash-lite",
       timeoutMs: 30000,
     });
   });

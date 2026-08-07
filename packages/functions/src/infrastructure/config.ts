@@ -30,7 +30,7 @@ export function loadGeminiConfig(): GeminiConfig {
   return {
     projectId: mustEnv("GCP_PROJECT_ID"),
     location: process.env.GEMINI_LOCATION || "global",
-    model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+    model: process.env.GEMINI_MODEL || "gemini-3.5-flash-lite",
     timeoutMs: Number.isFinite(rawTimeout) && rawTimeout > 0 ? rawTimeout : 30000,
   };
 }

@@ -43,7 +43,7 @@ ADR-0012 は廃止しない。本 ADR は ADR-0012 の「直接 API を却下」
 - **コスト**: 単価は Vertex と同水準（既定 `claude-opus-4-8` 入力 $5.00 / 出力 $25.00・100万トークンあたり）。従量課金は **Anthropic 側の請求**となり、GCP 請求とは別系統。1 枚あたり概算は ADR-0012 のコスト表を流用し、実測は本 ADR の検証で採取する。
 - **クォータ・レート制限**: Anthropic API の**アカウント単位のレート上限（RPM / ITPM / OTPM、利用 Tier に依存）**に従う。GCP クォータ非依存。件数増加時は Tier 引き上げ・バックオフ方針を評価する。
 - **レイテンシー**: `claude-opus-4-8` は高精度な一方、応答時間は Gemini Flash より長くなり得る（ADR-0012 と同様）。`CLAUDE_TIMEOUT_MS`（既定 30 秒）と Cloud Functions タイムアウト（gen2 既定 60 秒）の妥当性を検証で確認する。SDK の再試行（既定 maxRetries=2 でタイムアウトも再試行）は Vertex 実装同様に無効化し、関数の外側デッドライン超過とコスト増を避ける。
-- **データレジデンシー・個人情報（最重要トレードオフ）**: 領収書には店名・日付・金額・登録番号など個人情報・取引情報が含まれる。直接 API では、これらが **GCP / Vertex を経由せず Anthropic の API（主に米国リージョン）へ送信**される。Anthropic API は既定で**入力データをモデル学習に使用せず**、一定期間で削除する運用だが、**GCP 内に処理が閉じる Vertex 経路とは処理主体・データ処理条件（DPA）が異なる**。本 ADR では **評価 / POC 目的に限り許容**とする。**本番採用の前に、Anthropic のデータ処理条件・DPA の確認、個人情報保護法・契約上の要件充足、必要に応じ ZDR（ゼロデータ保持）等のオプション要否を検討する**ことを必須とする。データ所在要件が厳しい場合は `CLAUDE_TRANSPORT=vertex` を選ぶ。ただし後述の「Vertex 経路の再評価」の通り、この用途では **3 条件**が必要になる（2026-08-14 時点でいずれも未充足）。(1) `global` は処理リージョンを保証しないため `CLAUDE_LOCATION` にマルチリージョン／リージョン指定が必要（ADR-0012）、(2) **そのリージョンでのクォータ付与**（実測では `us-east5` は 429。クォータはリージョンごとに別枠）、(3) 組織ポリシーによる構造化出力の許可、またはコード側での代替実装。
+- **データレジデンシー・個人情報（最重要トレードオフ）**: 領収書には店名・日付・金額・登録番号など個人情報・取引情報が含まれる。直接 API では、これらが **GCP / Vertex を経由せず Anthropic の API（主に米国リージョン）へ送信**される。Anthropic API は既定で**入力データをモデル学習に使用せず**、一定期間で削除する運用だが、**GCP 内に処理が閉じる Vertex 経路とは処理主体・データ処理条件（DPA）が異なる**。本 ADR では **評価 / POC 目的に限り許容**とする。**本番採用の前に、Anthropic のデータ処理条件・DPA の確認、個人情報保護法・契約上の要件充足、必要に応じ ZDR（ゼロデータ保持）等のオプション要否を検討する**ことを必須とする。データ所在要件が厳しい場合は `CLAUDE_TRANSPORT=vertex` を選ぶ。ただし後述の「Vertex 経路の再評価」の通り、この用途では **3 条件**が必要になる（2026-08-14 時点で (2)(3) が未充足。付与済みの `global` のクォータは、処理リージョンを保証しないためこの用途には使えない）。(1) `global` は処理リージョンを保証しないため `CLAUDE_LOCATION` にマルチリージョン／リージョン指定が必要（ADR-0012）、(2) **そのリージョンでのクォータ付与**（実測では `us-east5` は 429。クォータはリージョンごとに別枠）、(3) 組織ポリシーによる構造化出力の許可、またはコード側での代替実装。
 - **コンプライアンス・セキュリティ**: 新シークレット `ANTHROPIC_API_KEY` を **Secret Manager** で管理する（コードにハードコードしない。ローカルは `.env.local`、デプロイ環境は Functions ランタイムのサービスアカウントに Secret アクセス権を付与）。キー漏洩時のローテーション手順を運用に含める。`onRequest` の呼び出し側認証は既存 `API_KEY` を流用する。Vertex 経路と異なり `roles/aiplatform.user` は不要。
 - **受容リスク（本 ADR のスコープであえて対応しないと決めた事項）**:
   - Anthropic のデータ処理条件の詳細確認・DPA 締結は本 ADR では行わない（本番採用前に実施）。
@@ -89,7 +89,7 @@ ADR-0012 は廃止しない。本 ADR は ADR-0012 の「直接 API を却下」
 
 実装（`createClaudeReceiptExtractor`）をそのまま `CLAUDE_TRANSPORT=vertex` で実行すると、画像リクエストが **400 FAILED_PRECONDITION** で失敗する。
 
-```
+```text
 Organization Policy constraint constraints/vertexai.allowedPartnerModelFeatures violated
 ... attempting to use a disallowed feature structured_outputs for Partner model claude-opus-4-8
 ```

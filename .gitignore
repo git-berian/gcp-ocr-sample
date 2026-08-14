@@ -15,4 +15,6 @@ tasks
 secrets
 input
 logs
+*-debug.log
+*-debug.*.log
 .firebase

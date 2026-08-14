@@ -145,6 +145,8 @@ Firebase Functions は[環境構成ファイル](https://firebase.google.com/doc
 - `CLAUDE_TRANSPORT=api`（既定）: Anthropic 直接 API。`ANTHROPIC_API_KEY` を使用。
 - `CLAUDE_TRANSPORT=vertex`: Vertex AI 経由（ADC 認証）。`ANTHROPIC_API_KEY` は未使用。
 
+> **注意（2026-08-14 時点）**: `vertex` は本プロジェクトの GCP 環境では**利用できません**。組織のポリシー制約 `constraints/vertexai.allowedPartnerModelFeatures` により構造化出力（`output_config.format`）が拒否され、抽出リクエストが全て `400 FAILED_PRECONDITION` になります（組織配下のプロジェクトでは既定で拒否されます）。有効化に必要な条件は ADR-0013「Vertex 経路の再評価」を参照してください。
+
 - **ローカル開発**: api 経路を試す場合、`.env.local` に `ANTHROPIC_API_KEY=<値>` を設定（エミュレータが読み込む）。
 - **デプロイ環境**: Google Cloud Secret Manager で管理（後述）。
 

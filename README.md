@@ -22,7 +22,7 @@ Google Cloud Document AI・Vertex AI Gemini・Claude（Anthropic）を抽出エ�
 
 - **Document AI**（既定 / `parseDocument*`）: Document AI API の有効化、プロセッサ（Expense Parser 等）
 - **Vertex AI Gemini**（`parseDocumentGemini*`）: Vertex AI API の有効化（認証はサービスアカウントの ADC を流用。ADR-0010）
-- **Claude**（`parseDocumentClaude*`）: 直接 API（`CLAUDE_TRANSPORT=api`・既定）は Anthropic API キー（`ANTHROPIC_API_KEY`）、Vertex 経由（`CLAUDE_TRANSPORT=vertex`）は Vertex AI 上での Claude 有効化（ADR-0012 / 0013）
+- **Claude**（`parseDocumentClaude*`）: 直接 API（`CLAUDE_TRANSPORT=api`・既定）は Anthropic API キー（`ANTHROPIC_API_KEY`）、Vertex 経由（`CLAUDE_TRANSPORT=vertex`）は Vertex AI 上での Claude 有効化（ADR-0012 / 0013）。なお `vertex` は組織のポリシーで構造化出力が許可されている必要があり、本プロジェクトの GCP 環境では 2026-08-14 時点で利用できません（ADR-0013「Vertex 経路の再評価」参照）
 
 ## セットアップ
 

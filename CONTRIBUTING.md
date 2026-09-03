@@ -109,13 +109,102 @@ GitHub Actions（`.github/workflows/ci.yml`）で以下を自動実行します�
 
 ## Dependabot
 
-Dependabot（`.github/dependabot.yml`）で依存パッケージを自動監視しています。
+Dependabot（`.github/dependabot.yml`）で依存パッケージの **security update のみ**を監視しています。
+全エントリに `open-pull-requests-limit: 0` を指定しているため、通常の version update PR は
+作成されません（#203）。major を含む通常の更新は「依存パッケージの更新」の手順で手動対応します。
 
 | 対象           | ディレクトリ          | 頻度   |
 | -------------- | --------------------- | ------ |
+| npm            | `/`                   | weekly |
 | npm            | `packages/functions/` | weekly |
 | npm            | `packages/web/`       | weekly |
 | GitHub Actions | `/`                   | weekly |
+
+## 依存パッケージの更新
+
+上記のとおり Dependabot からは通常の更新 PR が来ないため、手動で判断します。
+
+### 手順
+
+1. `npm view <package> dist-tags` でその時点の最新版を確認する（Dependabot PR や Issue に書かれた
+   版数は「書かれた時点」のスナップショットなので鵜呑みにしない）
+2. `grep -n '"<package>"' package.json packages/*/package.json` で対象箇所を洗い出す
+   （同じ依存が root と各パッケージの両方にあることがある）
+3. 対象の `package.json` を書き換える
+4. lock を Docker 経由で再生成する（下記）
+5. lock の差分内訳を確認し、意図しない間接依存の推移が混ざっていないか見る
+6. Docker 経由で lint / format:check / build / test:coverage を実行する。web は VRT も実行する（下記）
+7. ホスト側の `node_modules` を追従させる（下記）
+8. root の依存を変更した場合は、git hook と commitlint の動作も確認する（下記）
+9. 版数を記載しているドキュメント（README.md の技術スタック表等）を更新する
+
+### lock の再生成（Docker）
+
+lock は Docker 内で生成したものを正とします。ローカルの Node / npm バージョンに成果物を
+依存させないためです。
+
+```bash
+# packages/functions
+docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions \
+  npm install --ignore-scripts
+
+# packages/web
+docker-compose -f packages/web/docker/docker-compose.yml run --rm web \
+  npm install --ignore-scripts
+
+# root（専用の docker script がないため /app を作業ディレクトリにする）
+docker-compose -f packages/functions/docker/docker-compose.yml run --rm --workdir /app functions \
+  npm install --package-lock-only --ignore-scripts
+```
+
+root だけ `--package-lock-only` を付けます。compose の `root_node_modules` volume は
+ホストの `node_modules`（macOS ビルドのバイナリを含む）をコンテナから隠すための**空のマスク**であり、
+実体を入れる用途ではありません（entrypoint が chown していないため実体を入れようとすると EACCES になります）。
+root の devDeps（husky / commitlint / lint-staged 等）はホストの git hook と CI ランナーで動くもので、
+Docker 内では使いません。
+
+### ホスト側 node_modules
+
+ホストの `node_modules` は **WebStorm の型解決・補完のため**に置いています。
+成果物には使いませんが、依存を更新したら追従させます。
+
+| 目的                        | 実行場所 | コマンド                        |
+| --------------------------- | -------- | ------------------------------- |
+| lock の生成・更新（正）     | Docker   | 上記の `npm install`            |
+| 検証（lint / build / test） | Docker   | `npm run docker:<pkg>:*`        |
+| WebStorm の型解決           | ホスト   | `npm ci`（root と各パッケージ） |
+
+ホストで `npm install` を実行すると、ローカルの npm バージョン次第で `package-lock.json` を
+書き換えてしまいます。ホストは `npm ci` で lock に追従するだけの役割に徹し、実行後は
+`git status` で lock に差分が出ていないことを確認してください。
+
+### VRT の確認（web）
+
+web の依存を更新したら VRT を実行します。**スナップショットを更新する場合も、必ず Storybook の
+ビルドから行ってください。**
+
+```bash
+npm run docker:web:build:storybook
+npm run docker:web:test:visual        # 比較
+npm run docker:web:test:visual:update # 差分が正当だと確認できた場合のみ
+```
+
+`storybook-static` は named volume 内にあり、ソースを変更しただけでは再ビルドされません。
+ビルドを飛ばして `test:visual:update` を単独実行すると、古い成果物に対してスナップショットが
+記録され、退行を取り込んだまま緑になります。差分が出たら、まず画像を目視して原因を確認してください。
+
+### root の依存を変更した場合
+
+root の devDeps（`@commitlint/cli` / `husky` / `lint-staged` / `eslint` / `prettier` / `typescript`）は
+Docker では使わず、**ホストの git hook と CI の `commitlint` ジョブ**が使います。
+`docker:<pkg>:*` の検証では壊れても気づけないため、別途確認します。
+
+```bash
+npm ci                                        # ホスト側（前述のとおり npm install は使わない）
+npx commitlint --from origin/main --to HEAD   # CI の commitlint ジョブと同等
+```
+
+lint-staged / husky はコミット時のフックで実行されるため、実際にコミットして動作を確認します。
 
 ## ADR（Architecture Decision Records）
 
@@ -134,7 +223,7 @@ Dependabot（`.github/dependabot.yml`）で依存パッケージを自動監視�
 
 - ルートの `tsconfig.json` に共通設定（target, module, strict 等）を定義
 - 各パッケージの `tsconfig.json` で extends して outDir / rootDir を指定
-- テスト用は `tsconfig.test.json`（noEmit: true、`src` + `tests` を含む）
+- テスト用は `tsconfig.test.json`（noEmit: true、`src` + `tests` を含む）— 現状 `packages/functions` のみ
 
 ### Vitest (`packages/functions/vitest.config.ts`, `packages/web/vitest.config.ts`)
 

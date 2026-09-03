@@ -10,6 +10,7 @@ import {
   createMockCallableRequest,
 } from "../helpers/fixtures.js";
 import { handleParseDocumentCall } from "../../../src/handlers/parse-document-call.js";
+import { spyOnConsoleError, EXTRACT_FAILURE_LOG_PREFIX } from "../../support/console.js";
 
 describe("handleParseDocumentCall（結合テスト）", () => {
   beforeEach(() => {
@@ -55,6 +56,7 @@ describe("handleParseDocumentCall（結合テスト）", () => {
   });
 
   it("SDK エラー: Document AI がエラーを返した場合に HttpsError(internal) を投げる", async () => {
+    const consoleError = spyOnConsoleError();
     mockProcessDocument.mockRejectedValue(new Error("Document AI unavailable"));
 
     const request = createMockCallableRequest();
@@ -65,9 +67,12 @@ describe("handleParseDocumentCall（結合テスト）", () => {
       expect(error.message).toBe("内部サーバーエラー");
       return true;
     });
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 
   it("設定エラー: 環境変数不足で HttpsError(internal) を投げる", async () => {
+    const consoleError = spyOnConsoleError();
     vi.stubEnv("GCP_PROJECT_ID", "");
     vi.stubEnv("DOCAI_LOCATION", "");
     vi.stubEnv("DOCAI_PROCESSOR_ID", "");
@@ -81,5 +86,7 @@ describe("handleParseDocumentCall（結合テスト）", () => {
     });
 
     expect(mockProcessDocument).not.toHaveBeenCalled();
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 });

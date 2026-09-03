@@ -7,6 +7,7 @@ import {
   createMockReqRes,
 } from "../helpers/fixtures.js";
 import { handleParseDocumentClaude } from "../../../src/handlers/parse-document-claude.js";
+import { spyOnConsoleError, EXTRACT_FAILURE_LOG_PREFIX } from "../../support/console.js";
 
 describe("handleParseDocumentClaude（結合テスト）", () => {
   beforeEach(() => {
@@ -54,6 +55,7 @@ describe("handleParseDocumentClaude（結合テスト）", () => {
   });
 
   it("SDK エラー時は 500 を返す", async () => {
+    const consoleError = spyOnConsoleError();
     mockMessagesCreate.mockRejectedValue(new Error("Vertex unavailable"));
 
     const { req, res } = createMockReqRes({
@@ -63,9 +65,12 @@ describe("handleParseDocumentClaude（結合テスト）", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: "内部サーバーエラー" });
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 
   it("設定エラー: ANTHROPIC_API_KEY 不足で 500 を返し、Claude を呼ばない", async () => {
+    const consoleError = spyOnConsoleError();
     vi.stubEnv("ANTHROPIC_API_KEY", "");
 
     const { req, res } = createMockReqRes({
@@ -75,5 +80,7 @@ describe("handleParseDocumentClaude（結合テスト）", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(mockMessagesCreate).not.toHaveBeenCalled();
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 });

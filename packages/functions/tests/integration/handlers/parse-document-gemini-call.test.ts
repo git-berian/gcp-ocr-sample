@@ -9,6 +9,7 @@ import {
   createMockCallableRequest,
 } from "../helpers/fixtures.js";
 import { handleParseDocumentGeminiCall } from "../../../src/handlers/parse-document-gemini-call.js";
+import { spyOnConsoleError, EXTRACT_FAILURE_LOG_PREFIX } from "../../support/console.js";
 
 describe("handleParseDocumentGeminiCall（結合テスト）", () => {
   beforeEach(() => {
@@ -51,6 +52,7 @@ describe("handleParseDocumentGeminiCall（結合テスト）", () => {
   });
 
   it("SDK エラー: Gemini がエラーを返した場合に HttpsError(internal) を投げる", async () => {
+    const consoleError = spyOnConsoleError();
     mockGenerateContent.mockRejectedValue(new Error("Vertex unavailable"));
 
     await expect(handleParseDocumentGeminiCall(createMockCallableRequest())).rejects.toSatisfy(
@@ -61,9 +63,12 @@ describe("handleParseDocumentGeminiCall（結合テスト）", () => {
         return true;
       },
     );
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 
   it("設定エラー: GCP_PROJECT_ID 不足で HttpsError(internal) を投げる", async () => {
+    const consoleError = spyOnConsoleError();
     vi.stubEnv("GCP_PROJECT_ID", "");
 
     await expect(handleParseDocumentGeminiCall(createMockCallableRequest())).rejects.toSatisfy(
@@ -75,5 +80,7 @@ describe("handleParseDocumentGeminiCall（結合テスト）", () => {
     );
 
     expect(mockGenerateContent).not.toHaveBeenCalled();
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 });

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { HttpsError } from "firebase-functions/v2/https";
 import { handleParseDocumentClaudeCall } from "./parse-document-claude-call.js";
+import { spyOnConsoleError, EXTRACT_FAILURE_LOG_PREFIX } from "../../tests/support/console.js";
 
 vi.mock("../infrastructure/config.js", () => ({
   loadClaudeConfig: () => ({
@@ -61,6 +62,7 @@ describe("handleParseDocumentClaudeCall", () => {
   });
 
   it("抽出エラーで internal の HttpsError を投げる", async () => {
+    const consoleError = spyOnConsoleError();
     mockExtract.mockRejectedValue(new Error("Vertex error"));
 
     await expect(handleParseDocumentClaudeCall(createMockRequest())).rejects.toSatisfy(
@@ -71,9 +73,12 @@ describe("handleParseDocumentClaudeCall", () => {
         return true;
       },
     );
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 
   it("Error以外の例外でも internal の HttpsError を投げる", async () => {
+    const consoleError = spyOnConsoleError();
     mockExtract.mockRejectedValue("string error");
 
     await expect(handleParseDocumentClaudeCall(createMockRequest())).rejects.toSatisfy(
@@ -83,5 +88,7 @@ describe("handleParseDocumentClaudeCall", () => {
         return true;
       },
     );
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, "string error");
   });
 });

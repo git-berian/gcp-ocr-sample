@@ -153,7 +153,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 | Tool                     | Version                            |
 | ------------------------ | ---------------------------------- |
 | Node.js                  | 22 (Docker イメージ: node:22-slim) |
-| TypeScript               | ^5.9                               |
+| TypeScript               | ^6.0                               |
 | Vitest                   | ^4.0                               |
 | ESLint                   | ^10.0                              |
 | Prettier                 | ^3.8                               |

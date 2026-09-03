@@ -9,6 +9,10 @@
  */
 export const DEPLOY_MODES = {
   "documentaisample-488504": "development",
+  // プロジェクトを作成したらコメントを外して ID を入れる。
+  // `.firebaserc` のエイリアス追加と `.env.<mode>` の作成もあわせて必要（README 参照）。
+  // "<staging-project-id>": "staging",
+  // "<production-project-id>": "production",
 };
 
 /** バンドルに焼き込まれる Firebase 設定。1 つでも欠けると Functions 呼び出しに失敗する。 */

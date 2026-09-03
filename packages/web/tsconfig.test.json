@@ -1,7 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    // tests/scripts から scripts/*.mjs を import するため。checkJs は付けない（JS 自体は型検査しない）
+    "allowJs": true
   },
   "include": ["src", "tests", "e2e", ".storybook/**/*", "*.config.ts"],
   "exclude": ["dist", "node_modules", "coverage", "storybook-static"]

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { HttpsError } from "firebase-functions/v2/https";
 import { handleParseDocumentCall } from "./parse-document-call.js";
+import { spyOnConsoleError, EXTRACT_FAILURE_LOG_PREFIX } from "../../tests/support/console.js";
 
 vi.mock("../infrastructure/config.js", () => ({
   loadFunctionsConfig: () => ({
@@ -61,6 +62,7 @@ describe("handleParseDocumentCall", () => {
   });
 
   it("抽出エラーで internal の HttpsError を投げる", async () => {
+    const consoleError = spyOnConsoleError();
     mockExtract.mockRejectedValue(new Error("API error"));
 
     await expect(handleParseDocumentCall(createMockRequest())).rejects.toSatisfy(
@@ -71,9 +73,12 @@ describe("handleParseDocumentCall", () => {
         return true;
       },
     );
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 
   it("Error以外の例外でも internal の HttpsError を投げる", async () => {
+    const consoleError = spyOnConsoleError();
     mockExtract.mockRejectedValue("string error");
 
     await expect(handleParseDocumentCall(createMockRequest())).rejects.toSatisfy(
@@ -84,5 +89,7 @@ describe("handleParseDocumentCall", () => {
         return true;
       },
     );
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, "string error");
   });
 });

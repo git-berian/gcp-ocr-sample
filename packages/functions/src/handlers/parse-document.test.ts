@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { handleParseDocument } from "./parse-document.js";
+import { spyOnConsoleError, EXTRACT_FAILURE_LOG_PREFIX } from "../../tests/support/console.js";
 
 vi.mock("../infrastructure/config.js", () => ({
   loadFunctionsConfig: () => ({
@@ -115,6 +116,7 @@ describe("handleParseDocument", () => {
   });
 
   it("抽出エラー時は500を返す", async () => {
+    const consoleError = spyOnConsoleError();
     mockExtract.mockRejectedValue(new Error("API error"));
 
     const { req, res } = createMockReqRes({
@@ -124,9 +126,12 @@ describe("handleParseDocument", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: "内部サーバーエラー" });
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 
   it("Error以外の例外でも500を返す", async () => {
+    const consoleError = spyOnConsoleError();
     mockExtract.mockRejectedValue("string error");
 
     const { req, res } = createMockReqRes({
@@ -136,5 +141,7 @@ describe("handleParseDocument", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: "内部サーバーエラー" });
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, "string error");
   });
 });

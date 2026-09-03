@@ -9,6 +9,7 @@ import {
   createMockReqRes,
 } from "../helpers/fixtures.js";
 import { handleParseDocument } from "../../../src/handlers/parse-document.js";
+import { spyOnConsoleError, EXTRACT_FAILURE_LOG_PREFIX } from "../../support/console.js";
 
 describe("handleParseDocument（結合テスト）", () => {
   beforeEach(() => {
@@ -65,6 +66,7 @@ describe("handleParseDocument（結合テスト）", () => {
   });
 
   it("SDK エラー: Document AI がエラーを返した場合に 500 を返す", async () => {
+    const consoleError = spyOnConsoleError();
     mockProcessDocument.mockRejectedValue(new Error("Document AI unavailable"));
 
     const { req, res } = createMockReqRes({
@@ -74,9 +76,12 @@ describe("handleParseDocument（結合テスト）", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: "内部サーバーエラー" });
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 
   it("設定エラー: 環境変数不足で 500 を返す", async () => {
+    const consoleError = spyOnConsoleError();
     vi.stubEnv("GCP_PROJECT_ID", "");
     vi.stubEnv("DOCAI_LOCATION", "");
     vi.stubEnv("DOCAI_PROCESSOR_ID", "");
@@ -89,5 +94,7 @@ describe("handleParseDocument（結合テスト）", () => {
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: "内部サーバーエラー" });
     expect(mockProcessDocument).not.toHaveBeenCalled();
+
+    expect(consoleError).toHaveBeenCalledWith(EXTRACT_FAILURE_LOG_PREFIX, expect.any(Error));
   });
 });

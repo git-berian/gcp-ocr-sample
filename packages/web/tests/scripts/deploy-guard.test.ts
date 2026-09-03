@@ -12,6 +12,7 @@ function validEnv(projectId: string = PROJECT_ID): Record<string, string> {
     VITE_FIREBASE_STORAGE_BUCKET: `${projectId}.firebasestorage.app`,
     VITE_FIREBASE_MESSAGING_SENDER_ID: "123456789012",
     VITE_FIREBASE_APP_ID: "1:123456789012:web:abcdef",
+    VITE_APP_PASSWORD: "s3cret",
   };
 }
 
@@ -57,6 +58,16 @@ describe("collectEnvProblems", () => {
     expect(problems[0]).toContain("未設定");
     expect(problems[0]).toContain("VITE_FIREBASE_API_KEY");
     expect(problems[0]).toContain("VITE_FIREBASE_APP_ID");
+  });
+
+  it("VITE_APP_PASSWORD が未設定なら未設定として報告する", () => {
+    // 未設定だと App.tsx が PasswordGate を外し、保護なしで公開される。
+    const env = validEnv();
+    delete env.VITE_APP_PASSWORD;
+
+    const problems = collectEnvProblems(env, PROJECT_ID);
+
+    expect(problems).toEqual(["未設定: VITE_APP_PASSWORD"]);
   });
 
   it(".env.example の雛形値が残っていれば報告する", () => {

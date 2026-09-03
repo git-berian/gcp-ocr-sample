@@ -15,6 +15,13 @@ export default defineConfig({
         },
       },
       {
+        test: {
+          name: "scripts",
+          include: ["tests/scripts/**/*.test.ts"],
+          environment: "node",
+        },
+      },
+      {
         define: {
           __USE_EMULATOR__: false,
         },

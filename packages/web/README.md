@@ -21,6 +21,7 @@ npm run docker:web:typecheck           # 型検査（テスト・e2e・Storybook
 npm run docker:web:build               # Vite プロダクションビルド
 npm run docker:web:test                # テスト実行（全テスト）
 npm run docker:web:test:integration    # 結合テストのみ実行
+npm run docker:web:test:scripts        # ビルドスクリプトのテストのみ実行
 npm run docker:web:test:coverage       # テスト + カバレッジ計測
 npm run docker:web:dev                 # 開発サーバー起動
 npm run docker:web:sh                  # コンテナに入って操作
@@ -45,6 +46,7 @@ npm run format           # Prettier フォーマット
 npm run test             # テスト実行（全テスト）
 npm run test:unit        # ユニットテストのみ
 npm run test:integration # 結合テストのみ
+npm run test:scripts     # ビルドスクリプトのテストのみ
 npm run storybook -- --host 0.0.0.0  # Storybook 開発サーバー起動（--host 必須）
 npm run build:storybook  # Storybook 静的ビルド
 npm run test:coverage    # テスト + カバレッジ計測
@@ -53,17 +55,20 @@ npm run test:watch       # テスト実行（ウォッチモード）
 
 ## テスト構成
 
-テストは Vitest のプロジェクト機能で **unit**（単体テスト）と **integration**（結合テスト）に分離しています。
+テストは Vitest のプロジェクト機能で **unit**（単体テスト）、**integration**（結合テスト）、**scripts**（ビルドスクリプト）に分離しています。
 
 | 種別        | 配置場所                          | 説明                                                          |
 | ----------- | --------------------------------- | ------------------------------------------------------------- |
 | unit        | `src/**/*.test.{ts,tsx}`          | ソースコードと同じディレクトリに配置。依存は個別にモック      |
 | integration | `tests/integration/**/*.test.tsx` | App を実際の依存グラフで結合して検証。Firebase SDK のみモック |
+| scripts     | `tests/scripts/**/*.test.ts`      | デプロイガード（`scripts/deploy-guard.mjs`）の判定ロジック    |
 
 結合テストのヘルパー（フィクスチャ・モック）は `tests/integration/helpers/` にまとめています。
 Visual Regression テストは Vitest ではなく Playwright で実行し、`e2e/` に置いています。
 
-型検査・ESLint・Prettier は `src/` `tests/` `e2e/` `.storybook/` `*.config.ts` を対象にしています（ESLint / Prettier は `eslint.config.js` も）
+型検査は `src/` `tests/` `e2e/` `.storybook/` `*.config.ts` が対象です。
+`scripts/*.mjs` は `allowJs` で読み込むだけで（`checkJs` は付けていない）型検査の対象外です。
+ESLint・Prettier は上記に加えて `scripts/` と `eslint.config.js` も対象にしています
 （`npm run typecheck` は `tsconfig.test.json` を使用）。Vitest は型を検査しないため、
 テストコードの型崩れは `typecheck` で検出します。
 
@@ -135,7 +140,7 @@ firebase deploy --only hosting --project dev
 | ------------------------- | --------------------------- | ------------------ |
 | `documentaisample-488504` | `dev` / `default`           | `.env.development` |
 
-対応の定義は `scripts/build-for-deploy.mjs` の `DEPLOY_MODES` が唯一の正です。
+対応の定義は `scripts/deploy-guard.mjs` の `DEPLOY_MODES` が唯一の正です。
 Firebase CLI が predeploy フックに渡す `GCLOUD_PROJECT`（エイリアス解決後のプロジェクト ID）から mode を引きます。
 
 次の場合はビルドが失敗し、デプロイは中止されます。
@@ -153,7 +158,7 @@ Firebase CLI が predeploy フックに渡す `GCLOUD_PROJECT`（エイリアス
 3. `packages/web/.env.production` に実際の値を設定する（`.env.example` 参照）
    - `VITE_APP_PASSWORD` も設定する。未設定だと `PasswordGate` が外れ、
      誰でも UI から課金対象の Functions を呼べる状態で公開される（`src/App.tsx`）
-4. `scripts/build-for-deploy.mjs` の `DEPLOY_MODES` に `"<project-id>": "production"` を追加する
+4. `scripts/deploy-guard.mjs` の `DEPLOY_MODES` に `"<project-id>": "production"` を追加する
 5. Functions 側は `packages/functions/.env.<project-id>` と Secret Manager への登録が別途必要（`packages/functions/README.md` 参照）
 
 複数のデプロイ先ができたら、`.firebaserc` の `default` を外して `--project` を必須にすると、

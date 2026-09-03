@@ -7,8 +7,11 @@ React + Vite による Web フロントエンドです。ファイルをアッ�
 `check`（コミット前）と `verify`（デプロイ前）の使い分けは
 [ルート README の「検査コマンドの使い分け」](../../README.md#検査コマンドの使い分け)を参照してください。
 
+デプロイ前の完全な検査には、Storybook ビルドと VRT まで含む
+`npm run docker:verify`（ルートで実行）を使ってください。
+
 ```bash
-npm run docker:web:verify              # デプロイ前の全検査（読み取り専用）
+npm run docker:web:verify              # web の検査（読み取り専用・VRT は含まない）
 npm run docker:web:check               # コミット前チェック（lint:fix→typecheck→test）
 npm run docker:web:lint                # ESLint 実行
 npm run docker:web:lint:fix            # ESLint 自動修正
@@ -33,7 +36,7 @@ npm run docker:web:test:visual:update  # ベースラインスクリーンショ
 npm run docker:web:sh
 # コンテナ内で
 npm run check            # コミット前チェック（lint:fix→typecheck→test）
-npm run verify           # デプロイ前の全検査（読み取り専用）
+npm run verify           # web の検査（読み取り専用・VRT は含まない）
 npm run typecheck        # 型検査（テスト・e2e・Storybook・設定ファイルを含む）
 npm run build            # TypeScript + Vite ビルド
 npm run dev -- --host    # 開発サーバー起動（--host 必須）

@@ -7,8 +7,11 @@ Document AI / Vertex AI Gemini / Claude（Anthropic）による OCR 機能を Fi
 `check`（コミット前）と `verify`（デプロイ前）の使い分けは
 [ルート README の「検査コマンドの使い分け」](../../README.md#検査コマンドの使い分け)を参照してください。
 
+デプロイ前の完全な検査には、web の VRT まで含む
+`npm run docker:verify`（ルートで実行）を使ってください。
+
 ```bash
-npm run docker:functions:verify            # デプロイ前の全検査（読み取り専用）
+npm run docker:functions:verify            # functions の検査（読み取り専用）
 npm run docker:functions:check             # コミット前チェック（lint:fix→typecheck→test）
 npm run docker:functions:lint              # ESLint 実行
 npm run docker:functions:lint:fix          # ESLint 自動修正
@@ -30,7 +33,7 @@ npm run docker:functions:sh                # コンテナに入って操作
 npm run docker:functions:sh
 # コンテナ内で
 npm run check            # コミット前チェック（lint:fix→typecheck→test）
-npm run verify           # デプロイ前の全検査（読み取り専用）
+npm run verify           # functions の検査（読み取り専用）
 npm run typecheck        # 型検査（テスト・設定ファイルを含む）
 npm run build            # TypeScript ビルド
 npm run start            # ビルド＋Firebase Emulator 起動

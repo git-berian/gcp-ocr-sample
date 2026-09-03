@@ -97,13 +97,14 @@ npm run docker:web:check          # web のみ
 ### 4. デプロイ前 — `docker:verify`
 
 ```bash
-npm run docker:verify              # 両パッケージ + VRT
-npm run docker:functions:verify    # functions のみ
-npm run docker:web:verify          # web のみ
+npm run docker:verify              # 両パッケージ + Storybook ビルド + VRT
+npm run docker:functions:verify    # functions のみ（VRT なし）
+npm run docker:web:verify          # web のみ（VRT なし）
 ```
 
 `lint` → `format:check` → `typecheck` → `build` → `test:coverage` を実行し、
-さらに Storybook のビルドと VRT まで通します。カバレッジ閾値（80%）と VRT を含むため、
+さらに Storybook のビルドと VRT まで通します。VRT を含むのは `docker:verify` だけで、
+パッケージ個別の `docker:<pkg>:verify` には含まれません。カバレッジ閾値（80%）と VRT を含むため、
 **CI が見ているものと同等**です。
 
 `firebase deploy` の predeploy フックはビルドしかしません。つまり CI を経由せずに

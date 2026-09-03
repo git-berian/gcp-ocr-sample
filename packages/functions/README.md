@@ -5,19 +5,19 @@ Document AI / Vertex AI Gemini / Claude（Anthropic）による OCR 機能を Fi
 ## 開発コマンド
 
 ```bash
-npm run docker:functions:check          # 一括チェック（format/lint/typecheck/build/test）
-npm run docker:functions:lint           # ESLint 実行
-npm run docker:functions:lint:fix       # ESLint 自動修正
-npm run docker:functions:format:check   # Prettier チェック
-npm run docker:functions:format         # Prettier フォーマット
-npm run docker:functions:test           # テスト実行（全テスト）
-npm run docker:functions:test:unit     # ユニットテストのみ実行
+npm run docker:functions:check             # 一括チェック（lint→format:check→typecheck→build→test）
+npm run docker:functions:lint              # ESLint 実行
+npm run docker:functions:lint:fix          # ESLint 自動修正
+npm run docker:functions:format:check      # Prettier チェック
+npm run docker:functions:format            # Prettier フォーマット
+npm run docker:functions:typecheck         # 型検査（テスト・設定ファイルを含む）
+npm run docker:functions:build             # TypeScript ビルド
+npm run docker:functions:test              # テスト実行（全テスト）
+npm run docker:functions:test:unit         # ユニットテストのみ実行
 npm run docker:functions:test:integration  # 結合テストのみ実行
-npm run docker:functions:test:coverage  # テスト + カバレッジ計測
-npm run docker:functions:start          # ビルド＋Firebase Emulator 起動
-npm run docker:functions:sh             # コンテナに入って操作
-npm run docker:functions:build          # TypeScript ビルド
-npm run docker:functions:typecheck      # テストを含む型検査
+npm run docker:functions:test:coverage     # テスト + カバレッジ計測
+npm run docker:functions:start             # ビルド＋Firebase Emulator 起動
+npm run docker:functions:sh                # コンテナに入って操作
 ```
 
 ### コンテナ内での操作
@@ -25,6 +25,8 @@ npm run docker:functions:typecheck      # テストを含む型検査
 ```bash
 npm run docker:functions:sh
 # コンテナ内で
+npm run check            # 一括チェック（lint→format:check→typecheck→build→test）
+npm run typecheck        # 型検査（テスト・設定ファイルを含む）
 npm run build            # TypeScript ビルド
 npm run start            # ビルド＋Firebase Emulator 起動
 npm run shell            # ビルド＋Firebase Functions Shell
@@ -47,6 +49,11 @@ npm run test:watch       # テスト実行（ウォッチモード）
 | integration | `tests/integration/**/*.test.ts` | ハンドラを実際の依存グラフで結合して検証。外部 API のみモック |
 
 結合テストのヘルパー（フィクスチャ・モック）は `tests/integration/helpers/` にまとめています。
+unit・integration の双方から使う共通のテスト補助は `tests/support/` に置いています。
+
+型検査・ESLint・Prettier は `src/` `tests/` `*.config.ts` を対象にしています
+（`npm run typecheck` は `tsconfig.test.json` を使用）。Vitest は型を検査しないため、
+テストコードの型崩れは `typecheck` で検出します。
 
 ## エンドポイント
 

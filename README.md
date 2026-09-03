@@ -111,6 +111,10 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │   │   │   ├── infrastructure/         # インフラ層
 │   │   │   ├── handlers/               # HTTP ハンドラ層
 │   │   │   └── index.ts                # エントリーポイント
+│   │   ├── tests/
+│   │   │   ├── integration/            # 結合テスト
+│   │   │   └── support/                # unit・integration 共通のテスト補助
+│   │   ├── docker/
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   ├── tsconfig.test.json          # テストを含む型検査用
@@ -133,6 +137,8 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │       │   ├── utils/                  # ユーティリティ
 │       │   ├── App.tsx                 # メインコンポーネント
 │       │   └── main.tsx                # エントリーポイント
+│       ├── tests/
+│       │   └── integration/            # 結合テスト
 │       ├── index.html
 │       ├── package.json
 │       ├── playwright.config.ts        # Playwright 設定

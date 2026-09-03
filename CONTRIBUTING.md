@@ -101,9 +101,20 @@ GitHub Actions（`.github/workflows/ci.yml`）で以下を自動実行します�
 - `npm run test:coverage` — テスト + カバレッジ計測
 
 CI ではどのチェックが落ちたかがステップ単位で分かるよう、あえて別ステップに分けています。
-ローカルでまとめて実行する場合は `npm run docker:check` を使ってください
-（パッケージごとに 1 コンテナを起動し、その中で 5 つを CI と同じ順に実行します）。
-`&&` で繋いでいるため最初の失敗で止まります。functions が落ちると web は実行されません。
+
+ローカルのコミット前チェックには `npm run docker:check` を使います。
+こちらは CI と同じものではなく、**手元で速く回すこと**を目的に絞っています。
+
+|              | `docker:check`（ローカル）        | CI                                                      |
+| ------------ | --------------------------------- | ------------------------------------------------------- |
+| 内容         | `lint:fix` → `typecheck` → `test` | lint → format:check → typecheck → build → test:coverage |
+| ファイル変更 | する（`lint:fix`）                | しない                                                  |
+| VRT          | 含まない                          | 含む（`visual-regression` ジョブ）                      |
+
+`lint:fix` でファイルを書き換えるため、CI では使いません（CI は成果物を変更してはいけない）。
+`&&` で繋いでいるので最初の失敗で止まります。functions が落ちると web は実行されません。
+ビルドとカバレッジは CI に任せ、手元で確認したい場合は `docker:<pkg>:build` /
+`docker:<pkg>:test:coverage` を個別に実行してください。
 
 共通ジョブ:
 
@@ -139,7 +150,7 @@ Dependabot（`.github/dependabot.yml`）で依存パッケージの **security u
 3. 対象の `package.json` を書き換える
 4. lock を Docker 経由で再生成する（下記）
 5. lock の差分内訳を確認し、意図しない間接依存の推移が混ざっていないか見る
-6. `npm run docker:check` で CI と同じ検査（lint / format:check / typecheck / build / test:coverage）を実行する。web は VRT も実行する（下記）
+6. Docker 経由で lint / format:check / typecheck / build / test:coverage を実行する。web は VRT も実行する（下記）
 7. ホスト側の `node_modules` を追従させる（下記）
 8. root の依存を変更した場合は、git hook と commitlint の動作も確認する（下記）
 9. 版数を記載しているドキュメント（README.md の技術スタック表等）を更新する

@@ -5,7 +5,7 @@ Document AI / Vertex AI Gemini / Claude（Anthropic）による OCR 機能を Fi
 ## 開発コマンド
 
 ```bash
-npm run docker:functions:check             # 一括チェック（lint→format:check→typecheck→build→test）
+npm run docker:functions:check             # コミット前チェック（lint:fix→typecheck→test）
 npm run docker:functions:lint              # ESLint 実行
 npm run docker:functions:lint:fix          # ESLint 自動修正
 npm run docker:functions:format:check      # Prettier チェック
@@ -25,7 +25,7 @@ npm run docker:functions:sh                # コンテナに入って操作
 ```bash
 npm run docker:functions:sh
 # コンテナ内で
-npm run check            # 一括チェック（lint→format:check→typecheck→build→test）
+npm run check            # コミット前チェック（lint:fix→typecheck→test）
 npm run typecheck        # 型検査（テスト・設定ファイルを含む）
 npm run build            # TypeScript ビルド
 npm run start            # ビルド＋Firebase Emulator 起動

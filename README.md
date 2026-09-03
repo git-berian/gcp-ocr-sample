@@ -64,7 +64,7 @@ npm run docker:setup
 開発コマンドは Docker 経由で実行します。ローカルの Node.js バージョンに依存しません。
 各パッケージの詳細な使い方は、それぞれの README を参照してください。
 
-CI と同じ検査（lint / format:check / typecheck / build / test:coverage）をまとめて実行するには次を使います。
+コミット前のチェック（lint:fix → typecheck → test）をまとめて実行するには次を使います。
 
 ```bash
 npm run docker:check              # 両パッケージ
@@ -72,10 +72,12 @@ npm run docker:functions:check    # functions のみ
 npm run docker:web:check          # web のみ
 ```
 
-パッケージごとに 1 コンテナを起動し、その中で 5 つをまとめて実行します。
+パッケージごとに 1 コンテナを起動し、その中で 3 つをまとめて実行します。
+`lint:fix` を含むため**ファイルを自動修正します**（読み取り専用ではありません）。
 
-VRT は Storybook のビルドと専用コンテナが必要なため `check` に含めていません
-（`npm run docker:web:build:storybook` → `npm run docker:web:test:visual`）。
+ビルド・カバレッジ・VRT は含みません。これらは CI が担保します
+（ローカルで確認する場合は `docker:<pkg>:build` / `docker:<pkg>:test:coverage`、
+VRT は `docker:web:build:storybook` → `docker:web:test:visual`）。
 
 - [Functions パッケージ](packages/functions/)
 - [Web パッケージ](packages/web/)

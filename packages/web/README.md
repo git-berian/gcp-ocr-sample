@@ -5,7 +5,7 @@ React + Vite による Web フロントエンドです。ファイルをアッ�
 ## 開発コマンド
 
 ```bash
-npm run docker:web:check               # 一括チェック（lint→format:check→typecheck→build→test）
+npm run docker:web:check               # コミット前チェック（lint:fix→typecheck→test）
 npm run docker:web:lint                # ESLint 実行
 npm run docker:web:lint:fix            # ESLint 自動修正
 npm run docker:web:format:check        # Prettier チェック
@@ -28,7 +28,7 @@ npm run docker:web:test:visual:update  # ベースラインスクリーンショ
 ```bash
 npm run docker:web:sh
 # コンテナ内で
-npm run check            # 一括チェック（lint→format:check→typecheck→build→test）
+npm run check            # コミット前チェック（lint:fix→typecheck→test）
 npm run typecheck        # 型検査（テスト・e2e・Storybook・設定ファイルを含む）
 npm run build            # TypeScript + Vite ビルド
 npm run dev -- --host    # 開発サーバー起動（--host 必須）

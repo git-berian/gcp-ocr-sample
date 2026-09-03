@@ -100,6 +100,11 @@ GitHub Actions（`.github/workflows/ci.yml`）で以下を自動実行します�
 - `npm run build` — TypeScript / Vite ビルド
 - `npm run test:coverage` — テスト + カバレッジ計測
 
+CI ではどのチェックが落ちたかがステップ単位で分かるよう、あえて別ステップに分けています。
+ローカルでまとめて実行する場合は `npm run docker:check` を使ってください
+（パッケージごとに 1 コンテナを起動し、その中で 5 つを CI と同じ順に実行します）。
+`&&` で繋いでいるため最初の失敗で止まります。functions が落ちると web は実行されません。
+
 共通ジョブ:
 
 - `visual-regression` — Storybook ビルド + Playwright による Visual Regression テスト
@@ -134,7 +139,7 @@ Dependabot（`.github/dependabot.yml`）で依存パッケージの **security u
 3. 対象の `package.json` を書き換える
 4. lock を Docker 経由で再生成する（下記）
 5. lock の差分内訳を確認し、意図しない間接依存の推移が混ざっていないか見る
-6. Docker 経由で lint / format:check / typecheck / build / test:coverage を実行する。web は VRT も実行する（下記）
+6. `npm run docker:check` で CI と同じ検査（lint / format:check / typecheck / build / test:coverage）を実行する。web は VRT も実行する（下記）
 7. ホスト側の `node_modules` を追従させる（下記）
 8. root の依存を変更した場合は、git hook と commitlint の動作も確認する（下記）
 9. 版数を記載しているドキュメント（README.md の技術スタック表等）を更新する
@@ -224,7 +229,10 @@ lint-staged / husky はコミット時のフックで実行されるため、実
 
 - ルートの `tsconfig.json` に共通設定（target, module, strict 等）を定義
 - 各パッケージの `tsconfig.json` で extends して outDir / rootDir を指定
-- テスト用は `tsconfig.test.json`（noEmit: true、`src` + `tests` を含む）。`typecheck` script で CI から実行する
+- テスト用は `tsconfig.test.json`（noEmit: true）。`typecheck` script で CI から実行する
+  - functions: `src` + `tests` + `*.config.ts`
+  - web: `src` + `tests` + `e2e` + `.storybook` + `*.config.ts`
+  - lint / format:check も同じ範囲を対象にしている（型だけ見て lint は見ない状態を作らない）
 
 ### Vitest (`packages/functions/vitest.config.ts`, `packages/web/vitest.config.ts`)
 

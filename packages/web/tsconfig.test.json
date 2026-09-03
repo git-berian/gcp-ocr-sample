@@ -3,6 +3,6 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["src", "tests", "e2e", ".storybook/**/*.ts", "*.config.ts"],
-  "exclude": []
+  "include": ["src", "tests", "e2e", ".storybook", "*.config.ts"],
+  "exclude": ["dist", "node_modules", "coverage", "storybook-static"]
 }

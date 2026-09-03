@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, onTestFinished } from "vitest";
 import { fileToBase64, isImageMimeType, isValidMimeType, SUPPORTED_MIME_TYPES } from "./file";
 
 describe("isValidMimeType", () => {
@@ -48,6 +48,11 @@ describe("fileToBase64", () => {
     const file = new File(["content"], "test.txt", { type: "text/plain" });
 
     const originalFileReader = globalThis.FileReader;
+    // アサーションが失敗しても差し替えを確実に戻す。末尾の代入だけだと、
+    // rejects の検証で落ちた時にパッチ済みの FileReader が後続テストへ漏れる。
+    onTestFinished(() => {
+      globalThis.FileReader = originalFileReader;
+    });
     const mockError = new DOMException("Read failed");
     globalThis.FileReader = class extends originalFileReader {
       readAsDataURL() {
@@ -60,7 +65,5 @@ describe("fileToBase64", () => {
     } as typeof FileReader;
 
     await expect(fileToBase64(file)).rejects.toBe(mockError);
-
-    globalThis.FileReader = originalFileReader;
   });
 });

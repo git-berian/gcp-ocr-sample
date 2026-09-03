@@ -60,7 +60,7 @@ npm run test:watch       # テスト実行（ウォッチモード）
 結合テストのヘルパー（フィクスチャ・モック）は `tests/integration/helpers/` にまとめています。
 Visual Regression テストは Vitest ではなく Playwright で実行し、`e2e/` に置いています。
 
-型検査・ESLint・Prettier は `src/` `tests/` `e2e/` `.storybook/` `*.config.ts` を対象にしています
+型検査・ESLint・Prettier は `src/` `tests/` `e2e/` `.storybook/` `*.config.ts` を対象にしています（ESLint / Prettier は `eslint.config.js` も）
 （`npm run typecheck` は `tsconfig.test.json` を使用）。Vitest は型を検査しないため、
 テストコードの型崩れは `typecheck` で検出します。
 

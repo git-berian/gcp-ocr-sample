@@ -77,7 +77,7 @@
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"
     ],
-    "packages/*/*.config.ts": [
+    "packages/*/{*.config.ts,eslint.config.js}": [
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"
     ],

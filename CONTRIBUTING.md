@@ -245,7 +245,10 @@ lint-staged / husky はコミット時のフックで実行されるため、実
 - テスト用は `tsconfig.test.json`（noEmit: true）。`typecheck` script で CI から実行する
   - functions: `src` + `tests` + `*.config.ts`
   - web: `src` + `tests` + `e2e` + `.storybook` + `*.config.ts`
-  - lint / format:check も同じ範囲を対象にしている（型だけ見て lint は見ない状態を作らない）
+  - `.storybook` は `include` に `.storybook/**/*` と書く。先頭ドットのディレクトリは
+    ディレクトリ名だけでは tsc にマッチしない（拡張子を省くと `.ts` / `.tsx` の両方を拾う）
+  - lint / format:check も同じ範囲に加えて `eslint.config.js` を対象にしている
+    （型だけ見て lint は見ない状態を作らない。`eslint.config.js` は JS なので型検査の対象外）
 
 ### Vitest (`packages/functions/vitest.config.ts`, `packages/web/vitest.config.ts`)
 

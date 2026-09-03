@@ -187,11 +187,11 @@ Docker 内では使いません。
 ホストの `node_modules` は **WebStorm の型解決・補完のため**に置いています。
 成果物には使いませんが、依存を更新したら追従させます。
 
-| 目的                        | 実行場所 | コマンド                        |
-| --------------------------- | -------- | ------------------------------- |
-| lock の生成・更新（正）     | Docker   | 上記の `npm install`            |
-| 検証（lint / build / test） | Docker   | `npm run docker:<pkg>:*`        |
-| WebStorm の型解決           | ホスト   | `npm ci`（root と各パッケージ） |
+| 目的                    | 実行場所 | コマンド                        |
+| ----------------------- | -------- | ------------------------------- |
+| lock の生成・更新（正） | Docker   | 上記の `npm install`            |
+| 検証                    | Docker   | `npm run docker:verify`         |
+| WebStorm の型解決       | ホスト   | `npm ci`（root と各パッケージ） |
 
 ホストで `npm install` を実行すると、ローカルの npm バージョン次第で `package-lock.json` を
 書き換えてしまいます。ホストは `npm ci` で lock に追従するだけの役割に徹し、実行後は

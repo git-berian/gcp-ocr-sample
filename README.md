@@ -64,7 +64,23 @@ npm run docker:setup
 開発コマンドは Docker 経由で実行します。ローカルの Node.js バージョンに依存しません。
 各パッケージの詳細な使い方は、それぞれの README を参照してください。
 
-コミット前のチェック（lint:fix → typecheck → test）をまとめて実行するには次を使います。
+- [Functions パッケージ](packages/functions/)
+- [Web パッケージ](packages/web/)
+
+## 検査コマンドの使い分け
+
+開発の流れの中で、次のタイミングで検査が入ります。
+
+| #   | タイミング            | 実行 | 何が動くか                                                | 所要時間 |
+| --- | --------------------- | ---- | --------------------------------------------------------- | -------- |
+| 1   | コミット前            | 手動 | `npm run docker:check`                                    | 約 8 秒  |
+| 2   | `git commit` した瞬間 | 自動 | husky + lint-staged（変更したファイルだけ整形・自動修正） | 数秒     |
+| 3   | push / PR 作成        | 自動 | GitHub Actions（CI）                                      | 約 2 分  |
+| 4   | デプロイ前            | 手動 | `npm run docker:verify`                                   | 約 30 秒 |
+
+手で叩くのは 1 と 4 の 2 つだけです。
+
+### 1. コミット前 — `docker:check`
 
 ```bash
 npm run docker:check              # 両パッケージ
@@ -72,15 +88,13 @@ npm run docker:functions:check    # functions のみ
 npm run docker:web:check          # web のみ
 ```
 
-パッケージごとに 1 コンテナを起動し、その中で 3 つをまとめて実行します。
+`lint:fix` → `typecheck` → `test` を実行します。**手元で速く回すこと**が目的なので、
+ビルド・カバレッジ・VRT は含みません。それらは 3 の CI と 4 の `verify` が担保します。
+
 `lint:fix` を含むため**ファイルを自動修正します**（読み取り専用ではありません）。
+コミットの直前に一度通しておくと、CI で落ちる原因のほとんどを先に潰せます。
 
-ビルド・カバレッジ・VRT は含みません。これらは CI と `docker:verify` が担保します。
-
-### デプロイ前の確認
-
-`firebase deploy` は predeploy フックでビルドするだけなので、CI を経由せずに本番へ出せます。
-デプロイ前は次のコマンドですべての検査を通してください。
+### 4. デプロイ前 — `docker:verify`
 
 ```bash
 npm run docker:verify              # 両パッケージ + VRT
@@ -88,20 +102,27 @@ npm run docker:functions:verify    # functions のみ
 npm run docker:web:verify          # web のみ
 ```
 
-`check` との違いは次のとおりです。
+`lint` → `format:check` → `typecheck` → `build` → `test:coverage` を実行し、
+さらに Storybook のビルドと VRT まで通します。カバレッジ閾値（80%）と VRT を含むため、
+**CI が見ているものと同等**です。
+
+`firebase deploy` の predeploy フックはビルドしかしません。つまり CI を経由せずに
+本番へ出せてしまうため、デプロイ前にはこのコマンドで塞いでください。
+
+読み取り専用なので、`check` と違ってファイルを書き換えません。
+
+### check と verify の違い
 
 |              | `docker:check`              | `docker:verify`                                         |
 | ------------ | --------------------------- | ------------------------------------------------------- |
-| 用途         | コミット前                  | デプロイ前                                              |
+| タイミング   | コミット前                  | デプロイ前                                              |
 | 内容         | lint:fix → typecheck → test | lint → format:check → typecheck → build → test:coverage |
 | ファイル変更 | する（`lint:fix`）          | **しない**（読み取り専用）                              |
 | VRT          | 含まない                    | 含む（`docker:verify` のみ）                            |
 | 所要時間     | 約 8 秒                     | 約 30 秒                                                |
 
-カバレッジ閾値（80%）と VRT を含むため、CI が見ているものと同等です。
-
-- [Functions パッケージ](packages/functions/)
-- [Web パッケージ](packages/web/)
+どちらも `&&` で繋いでいるため、最初の失敗で止まります。
+個別に実行したい場合は各パッケージの README を参照してください。
 
 ## アーキテクチャ
 

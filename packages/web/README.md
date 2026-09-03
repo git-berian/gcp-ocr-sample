@@ -4,6 +4,9 @@ React + Vite による Web フロントエンドです。ファイルをアッ�
 
 ## 開発コマンド
 
+`check`（コミット前）と `verify`（デプロイ前）の使い分けは
+[ルート README の「検査コマンドの使い分け」](../../README.md#検査コマンドの使い分け)を参照してください。
+
 ```bash
 npm run docker:web:verify              # デプロイ前の全検査（読み取り専用）
 npm run docker:web:check               # コミット前チェック（lint:fix→typecheck→test）

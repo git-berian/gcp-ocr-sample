@@ -1,6 +1,7 @@
 import { useState, useCallback, type FormEvent, type DragEvent } from "react";
 import { SUPPORTED_MIME_TYPES, isValidMimeType } from "../utils/file";
 import { DEFAULT_ENGINE, ENGINES, ENGINE_ORDER, type Engine } from "../api/engines";
+import { FilePreviewList } from "./FilePreviewList";
 import styles from "./FileUploader.module.css";
 
 const MAX_FILES = 20;
@@ -92,11 +93,7 @@ export function FileUploader({ onSubmit, disabled }: FileUploaderProps) {
         {files.length > 0 && (
           <div className={styles.fileList}>
             <p className={styles.fileCount}>選択済み: {files.length}件</p>
-            <ul className={styles.fileNames}>
-              {files.map((f, i) => (
-                <li key={i}>{f.name}</li>
-              ))}
-            </ul>
+            <FilePreviewList files={files} />
             <button
               type="button"
               className={styles.clearButton}

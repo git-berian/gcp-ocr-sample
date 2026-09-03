@@ -1,0 +1,70 @@
+.dialog {
+  /* App.css のグローバルリセット（* { margin: 0 }）が UA スタイルの margin: auto を
+     打ち消すため、中央寄せを明示的に戻す */
+  margin: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+}
+
+.dialog::backdrop {
+  background-color: rgba(26, 26, 26, 0.75);
+}
+
+.content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.image {
+  display: block;
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-alt);
+}
+
+.caption {
+  max-width: 90vw;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.closeButton {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 32px;
+  height: 32px;
+  font-size: 1.1rem;
+  line-height: 1;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.closeButton:hover {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}

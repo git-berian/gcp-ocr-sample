@@ -32,12 +32,6 @@
   font-size: 0.85rem;
 }
 
-.selectedFile {
-  margin-top: 8px;
-  font-size: 0.85rem;
-  color: var(--color-text);
-}
-
 .fileList {
   margin-top: 12px;
   text-align: left;
@@ -48,21 +42,6 @@
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: 4px;
-}
-
-.fileNames {
-  list-style: none;
-  font-size: 0.8rem;
-  color: var(--color-muted);
-  max-height: 120px;
-  overflow-y: auto;
-}
-
-.fileNames li {
-  padding: 2px 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .clearButton {

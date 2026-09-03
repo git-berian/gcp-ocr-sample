@@ -6,6 +6,11 @@ export function isValidMimeType(mimeType: string): mimeType is SupportedMimeType
   return (SUPPORTED_MIME_TYPES as readonly string[]).includes(mimeType);
 }
 
+/** ブラウザがそのままサムネイル表示できる形式か（PDF は不可） */
+export function isImageMimeType(mimeType: string): boolean {
+  return mimeType.startsWith("image/");
+}
+
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

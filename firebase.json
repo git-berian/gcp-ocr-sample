@@ -13,7 +13,7 @@
         "destination": "/index.html"
       }
     ],
-    "predeploy": "npm --prefix packages/web run build -- --mode ${VITE_MODE:-production}"
+    "predeploy": "node packages/web/scripts/build-for-deploy.mjs"
   },
   "emulators": {
     "functions": {

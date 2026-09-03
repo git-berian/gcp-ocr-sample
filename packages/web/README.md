@@ -118,7 +118,8 @@ CI では Storybook ビルド → Playwright テストが自動実行され、�
 
 ## デプロイ
 
-`firebase deploy` の `predeploy` フックで自動ビルドされます。環境変数 `VITE_MODE` でビルドモードを指定できます（デフォルト: production）。
+`firebase deploy` の `predeploy` フックで自動ビルドされます。ビルドに使う mode（= 読み込む `.env.<mode>`）は
+**デプロイ先の Firebase プロジェクトから自動で決まる**ため、環境変数を手で指定する必要はありません。
 
 ```bash
 npm run docker:web:sh
@@ -126,17 +127,39 @@ npm run docker:web:sh
 # コンテナ内で
 firebase login --no-localhost  # 初回のみ
 
-# 本番環境（デフォルト: mode=production）
-firebase deploy --only hosting --project <project-id>
-
 # 開発環境
-VITE_MODE=development firebase deploy --only hosting --project <project-id>
-
-# ステージング環境
-VITE_MODE=staging firebase deploy --only hosting --project <project-id>
+firebase deploy --only hosting --project dev
 ```
 
-> `firebase deploy` の predeploy フックはビルドのみで、lint・型検査・テスト・VRT は行いません。
+| デプロイ先プロジェクト    | エイリアス（`.firebaserc`） | 使われる env       |
+| ------------------------- | --------------------------- | ------------------ |
+| `documentaisample-488504` | `dev` / `default`           | `.env.development` |
+
+対応の定義は `scripts/build-for-deploy.mjs` の `DEPLOY_MODES` が唯一の正です。
+Firebase CLI が predeploy フックに渡す `GCLOUD_PROJECT`（エイリアス解決後のプロジェクト ID）から mode を引きます。
+
+次の場合はビルドが失敗し、デプロイは中止されます。
+
+- `DEPLOY_MODES` に無いプロジェクトへデプロイしようとした
+- 必須の `VITE_FIREBASE_*` が未設定、または `.env.example` の雛形値（`your-...`）のまま
+
+> 誤った Firebase 設定が焼き込まれると、Functions の呼び出し先が存在しないホストになり、
+> ブラウザ上は CORS エラーとして現れます。上記のチェックはこれを防ぐためのものです。
+
+### デプロイ先を追加する（例: 本番環境）
+
+1. Firebase プロジェクトを作成する
+2. `.firebaserc` にエイリアスを追加する（例: `"prod": "<project-id>"`）
+3. `packages/web/.env.production` に実際の値を設定する（`.env.example` 参照）
+   - `VITE_APP_PASSWORD` も設定する。未設定だと `PasswordGate` が外れ、
+     誰でも UI から課金対象の Functions を呼べる状態で公開される（`src/App.tsx`）
+4. `scripts/build-for-deploy.mjs` の `DEPLOY_MODES` に `"<project-id>": "production"` を追加する
+5. Functions 側は `packages/functions/.env.<project-id>` と Secret Manager への登録が別途必要（`packages/functions/README.md` 参照）
+
+複数のデプロイ先ができたら、`.firebaserc` の `default` を外して `--project` を必須にすると、
+指定漏れによる誤デプロイを防げます。
+
+> `firebase deploy` の predeploy フックはビルドと上記の設定チェックのみで、lint・型検査・テスト・VRT は行いません。
 > デプロイ前に `npm run docker:verify`（ホスト側）を通してください。
 
 デプロイ後、`https://<project-id>.web.app` で Web フロントエンドにアクセスできます。
@@ -146,13 +169,13 @@ Functions の呼び出しは Firebase SDK の `httpsCallable` で直接行うた
 
 Vite の [env ファイル読み込み規約](https://vite.dev/guide/env-and-mode) に従い、モードに応じたファイルが自動ロードされます。
 
-| ファイル           | 用途                                            | 読み込みタイミング                                    |
-| ------------------ | ----------------------------------------------- | ----------------------------------------------------- |
-| `.env`             | 全モード共通の設定                              | 常時                                                  |
-| `.env.development` | 開発環境（Firebase 設定・パスワード等）         | `npm run dev` / `npm run build -- --mode development` |
-| `.env.staging`     | ステージング環境（Firebase 設定・パスワード等） | `npm run build -- --mode staging`                     |
-| `.env.production`  | 本番環境（Firebase 設定・パスワード等）         | `npm run build`（mode=production）                    |
-| `.env.example`     | 設定項目のリファレンス（git 管理）              | —                                                     |
+| ファイル           | 用途                                            | 読み込みタイミング                             |
+| ------------------ | ----------------------------------------------- | ---------------------------------------------- |
+| `.env`             | 全モード共通の設定                              | 常時                                           |
+| `.env.development` | 開発環境（Firebase 設定・パスワード等）         | `npm run dev` / `dev` プロジェクトへのデプロイ |
+| `.env.staging`     | ステージング環境（Firebase 設定・パスワード等） | staging のデプロイ先を追加した場合             |
+| `.env.production`  | 本番環境（Firebase 設定・パスワード等）         | 本番のデプロイ先を追加した場合                 |
+| `.env.example`     | 設定項目のリファレンス（git 管理）              | —                                              |
 
 ### 必要な環境変数
 

@@ -77,6 +77,10 @@
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"
     ],
+    "packages/web/scripts/**/*.mjs": [
+      "eslint --no-error-on-unmatched-pattern --fix",
+      "prettier --write"
+    ],
     "packages/*/{*.config.ts,eslint.config.js}": [
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"

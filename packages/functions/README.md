@@ -127,12 +127,12 @@ parseDocumentHttp({method: "POST", body: {content: "base64data", mimeType: "appl
 
 Firebase Functions は[環境構成ファイル](https://firebase.google.com/docs/functions/config-env?gen=2nd)を使って環境変数を管理します。
 
-| ファイル            | 用途                                 | 読み込みタイミング                                                        |
-| ------------------- | ------------------------------------ | ------------------------------------------------------------------------- |
-| `.env`              | デフォルト設定（全プロジェクト共通） | デプロイ時・エミュレータ起動時                                            |
-| `.env.<project-id>` | プロジェクト固有の設定               | `.env` より優先。`--project` で指定したプロジェクト ID に一致するファイル |
-| `.env.local`        | ローカル開発用オーバーライド         | エミュレータ起動時のみ（デプロイには含まれない）                          |
-| `.env.example`      | 設定項目のリファレンス（git 管理）   | —                                                                         |
+| ファイル            | 用途                                 | 読み込みタイミング                                                                                        |
+| ------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `.env`              | デフォルト設定（全プロジェクト共通） | デプロイ時・エミュレータ起動時                                                                            |
+| `.env.<project-id>` | プロジェクト固有の設定               | `.env` より優先。`--project` で指定したプロジェクト ID（エイリアス指定時は解決後の ID）に一致するファイル |
+| `.env.local`        | ローカル開発用オーバーライド         | エミュレータ起動時のみ（デプロイには含まれない）                                                          |
+| `.env.example`      | 設定項目のリファレンス（git 管理）   | —                                                                                                         |
 
 ### 必要な環境変数
 
@@ -189,15 +189,15 @@ HTTP 関数は API キーを Secret Manager から取得します。初回デプ
 npm run docker:functions:sh
 
 # コンテナ内で
-firebase functions:secrets:set FUNCTIONS_API_KEY --project <project-id>
-firebase functions:secrets:set ANTHROPIC_API_KEY --project <project-id>
+firebase functions:secrets:set FUNCTIONS_API_KEY --project dev
+firebase functions:secrets:set ANTHROPIC_API_KEY --project dev
 # プロンプトに従って値を入力
 ```
 
 設定済みのシークレットは以下で確認できます。
 
 ```bash
-firebase functions:secrets:get FUNCTIONS_API_KEY --project <project-id>
+firebase functions:secrets:get FUNCTIONS_API_KEY --project dev
 ```
 
 ### デプロイの実行
@@ -207,8 +207,16 @@ npm run docker:functions:sh
 
 # コンテナ内で
 firebase login --no-localhost  # 初回のみ
-firebase deploy --only functions --project <project-id>
+firebase deploy --only functions --project dev
 ```
+
+`dev` は `.firebaserc` のエイリアス（開発プロジェクト）です。
+エイリアスで指定しても、読み込まれるのは解決後のプロジェクト ID に対応する `.env.<project-id>` です。
+`.env.<project-id>` と `.env.<エイリアス>` を両方置くとデプロイがエラーになるため、どちらか一方にします。
+
+デプロイ先を追加する場合は `.firebaserc` にエイリアスを、`packages/functions/` に
+`.env.<project-id>` を追加し、そのプロジェクトの Secret Manager にもシークレットを登録します。
+web 側の手順は `packages/web/README.md` を参照してください。
 
 > `firebase deploy` の predeploy フックはビルドのみで、lint・型検査・テストは行いません。
 > デプロイ前に `npm run docker:verify`（ホスト側）を通してください。

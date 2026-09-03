@@ -9,4 +9,11 @@ export default tseslint.config(
   {
     ignores: ["dist/", "storybook-static/"],
   },
+  {
+    // ビルドスクリプトは Node.js 上で動くため、Node のグローバルを許可する。
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: { process: "readonly", console: "readonly" },
+    },
+  },
 );

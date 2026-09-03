@@ -102,19 +102,21 @@ GitHub Actions（`.github/workflows/ci.yml`）で以下を自動実行します�
 
 CI ではどのチェックが落ちたかがステップ単位で分かるよう、あえて別ステップに分けています。
 
-ローカルのコミット前チェックには `npm run docker:check` を使います。
-こちらは CI と同じものではなく、**手元で速く回すこと**を目的に絞っています。
+ローカルには用途別に 2 つの一括コマンドがあります。
 
-|              | `docker:check`（ローカル）        | CI                                                      |
-| ------------ | --------------------------------- | ------------------------------------------------------- |
-| 内容         | `lint:fix` → `typecheck` → `test` | lint → format:check → typecheck → build → test:coverage |
-| ファイル変更 | する（`lint:fix`）                | しない                                                  |
-| VRT          | 含まない                          | 含む（`visual-regression` ジョブ）                      |
+|              | `docker:check`                    | `docker:verify`                                         | CI                                 |
+| ------------ | --------------------------------- | ------------------------------------------------------- | ---------------------------------- |
+| 用途         | コミット前                        | デプロイ前                                              | PR                                 |
+| 内容         | `lint:fix` → `typecheck` → `test` | lint → format:check → typecheck → build → test:coverage | 同左を別ステップで                 |
+| ファイル変更 | する（`lint:fix`）                | しない                                                  | しない                             |
+| VRT          | 含まない                          | 含む                                                    | 含む（`visual-regression` ジョブ） |
+| 所要時間     | 約 8 秒                           | 約 30 秒                                                | 約 2 分                            |
 
-`lint:fix` でファイルを書き換えるため、CI では使いません（CI は成果物を変更してはいけない）。
-`&&` で繋いでいるので最初の失敗で止まります。functions が落ちると web は実行されません。
-ビルドとカバレッジは CI に任せ、手元で確認したい場合は `docker:<pkg>:build` /
-`docker:<pkg>:test:coverage` を個別に実行してください。
+`firebase deploy` は predeploy フックでビルドするだけで、lint・型検査・テスト・VRT を行いません。
+CI を経由せずに本番へ出せてしまうため、**デプロイ前は必ず `npm run docker:verify` を通してください**。
+
+`lint:fix` でファイルを書き換えるため、`check` は CI では使いません（CI は成果物を変更してはいけない）。
+どちらも `&&` で繋いでいるので最初の失敗で止まります。functions が落ちると web は実行されません。
 
 共通ジョブ:
 
@@ -150,7 +152,7 @@ Dependabot（`.github/dependabot.yml`）で依存パッケージの **security u
 3. 対象の `package.json` を書き換える
 4. lock を Docker 経由で再生成する（下記）
 5. lock の差分内訳を確認し、意図しない間接依存の推移が混ざっていないか見る
-6. Docker 経由で lint / format:check / typecheck / build / test:coverage を実行する。web は VRT も実行する（下記）
+6. `npm run docker:verify` で全検査（lint / format:check / typecheck / build / test:coverage / VRT）を実行する
 7. ホスト側の `node_modules` を追従させる（下記）
 8. root の依存を変更した場合は、git hook と commitlint の動作も確認する（下記）
 9. 版数を記載しているドキュメント（README.md の技術スタック表等）を更新する

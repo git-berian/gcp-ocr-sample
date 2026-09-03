@@ -75,9 +75,30 @@ npm run docker:web:check          # web のみ
 パッケージごとに 1 コンテナを起動し、その中で 3 つをまとめて実行します。
 `lint:fix` を含むため**ファイルを自動修正します**（読み取り専用ではありません）。
 
-ビルド・カバレッジ・VRT は含みません。これらは CI が担保します
-（ローカルで確認する場合は `docker:<pkg>:build` / `docker:<pkg>:test:coverage`、
-VRT は `docker:web:build:storybook` → `docker:web:test:visual`）。
+ビルド・カバレッジ・VRT は含みません。これらは CI と `docker:verify` が担保します。
+
+### デプロイ前の確認
+
+`firebase deploy` は predeploy フックでビルドするだけなので、CI を経由せずに本番へ出せます。
+デプロイ前は次のコマンドですべての検査を通してください。
+
+```bash
+npm run docker:verify              # 両パッケージ + VRT
+npm run docker:functions:verify    # functions のみ
+npm run docker:web:verify          # web のみ
+```
+
+`check` との違いは次のとおりです。
+
+|              | `docker:check`              | `docker:verify`                                         |
+| ------------ | --------------------------- | ------------------------------------------------------- |
+| 用途         | コミット前                  | デプロイ前                                              |
+| 内容         | lint:fix → typecheck → test | lint → format:check → typecheck → build → test:coverage |
+| ファイル変更 | する（`lint:fix`）          | **しない**（読み取り専用）                              |
+| VRT          | 含まない                    | 含む（`docker:verify` のみ）                            |
+| 所要時間     | 約 8 秒                     | 約 30 秒                                                |
+
+カバレッジ閾値（80%）と VRT を含むため、CI が見ているものと同等です。
 
 - [Functions パッケージ](packages/functions/)
 - [Web パッケージ](packages/web/)

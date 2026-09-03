@@ -5,6 +5,7 @@ Document AI / Vertex AI Gemini / Claude（Anthropic）による OCR 機能を Fi
 ## 開発コマンド
 
 ```bash
+npm run docker:functions:verify            # デプロイ前の全検査（読み取り専用）
 npm run docker:functions:check             # コミット前チェック（lint:fix→typecheck→test）
 npm run docker:functions:lint              # ESLint 実行
 npm run docker:functions:lint:fix          # ESLint 自動修正
@@ -26,6 +27,7 @@ npm run docker:functions:sh                # コンテナに入って操作
 npm run docker:functions:sh
 # コンテナ内で
 npm run check            # コミット前チェック（lint:fix→typecheck→test）
+npm run verify           # デプロイ前の全検査（読み取り専用）
 npm run typecheck        # 型検査（テスト・設定ファイルを含む）
 npm run build            # TypeScript ビルド
 npm run start            # ビルド＋Firebase Emulator 起動
@@ -201,3 +203,6 @@ npm run docker:functions:sh
 firebase login --no-localhost  # 初回のみ
 firebase deploy --only functions --project <project-id>
 ```
+
+> `firebase deploy` の predeploy フックはビルドのみで、lint・型検査・テストは行いません。
+> デプロイ前に `npm run docker:verify`（ホスト側）を通してください。

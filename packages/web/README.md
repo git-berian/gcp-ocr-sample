@@ -5,6 +5,7 @@ React + Vite による Web フロントエンドです。ファイルをアッ�
 ## 開発コマンド
 
 ```bash
+npm run docker:web:verify              # デプロイ前の全検査（読み取り専用）
 npm run docker:web:check               # コミット前チェック（lint:fix→typecheck→test）
 npm run docker:web:lint                # ESLint 実行
 npm run docker:web:lint:fix            # ESLint 自動修正
@@ -29,6 +30,7 @@ npm run docker:web:test:visual:update  # ベースラインスクリーンショ
 npm run docker:web:sh
 # コンテナ内で
 npm run check            # コミット前チェック（lint:fix→typecheck→test）
+npm run verify           # デプロイ前の全検査（読み取り専用）
 npm run typecheck        # 型検査（テスト・e2e・Storybook・設定ファイルを含む）
 npm run build            # TypeScript + Vite ビルド
 npm run dev -- --host    # 開発サーバー起動（--host 必須）
@@ -127,6 +129,9 @@ VITE_MODE=development firebase deploy --only hosting --project <project-id>
 # ステージング環境
 VITE_MODE=staging firebase deploy --only hosting --project <project-id>
 ```
+
+> `firebase deploy` の predeploy フックはビルドのみで、lint・型検査・テスト・VRT は行いません。
+> デプロイ前に `npm run docker:verify`（ホスト側）を通してください。
 
 デプロイ後、`https://<project-id>.web.app` で Web フロントエンドにアクセスできます。
 Functions の呼び出しは Firebase SDK の `httpsCallable` で直接行うため、Hosting 側の API プロキシ設定は不要です。

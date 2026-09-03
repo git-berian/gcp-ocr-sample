@@ -52,7 +52,10 @@ describe("fileToBase64", () => {
     globalThis.FileReader = class extends originalFileReader {
       readAsDataURL() {
         Object.defineProperty(this, "error", { value: mockError });
-        this.onerror?.(new ProgressEvent("error"));
+        // ProgressEvent のコンストラクタは総称型を取れず ProgressEvent<EventTarget> になる。
+        // fileToBase64 の onerror はイベント引数を参照せず reader.error だけを見るため、
+        // ここでのキャストは実挙動に影響しない。
+        this.onerror?.(new ProgressEvent("error") as ProgressEvent<FileReader>);
       }
     } as typeof FileReader;
 

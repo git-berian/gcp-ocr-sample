@@ -100,6 +100,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │   │   │   └── index.ts                # エントリーポイント
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   │   ├── tsconfig.test.json          # テストを含む型検査用
 │   │   ├── vitest.config.ts
 │   │   └── eslint.config.js
 │   └── web/                           # Web フロントエンド（React + Vite）
@@ -123,6 +124,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │       ├── package.json
 │       ├── playwright.config.ts        # Playwright 設定
 │       ├── tsconfig.json
+│       ├── tsconfig.test.json          # テストを含む型検査用
 │       ├── vite.config.ts
 │       ├── vitest.config.ts
 │       └── eslint.config.js

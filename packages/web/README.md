@@ -15,6 +15,7 @@ npm run docker:web:test:coverage       # テスト + カバレッジ計測
 npm run docker:web:dev                 # 開発サーバー起動
 npm run docker:web:sh                  # コンテナに入って操作
 npm run docker:web:build               # Vite プロダクションビルド
+npm run docker:web:typecheck           # テストを含む型検査
 npm run docker:web:storybook           # Storybook 開発サーバー起動（localhost:6006）
 npm run docker:web:build:storybook     # Storybook 静的ビルド
 npm run docker:web:test:visual         # Visual Regression テスト実行

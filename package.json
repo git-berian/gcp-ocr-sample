@@ -6,6 +6,7 @@
     "docker:setup": "npm run docker:functions:setup && npm run docker:web:setup",
     "docker:functions:setup": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm ci --ignore-scripts",
     "docker:functions:build": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run build",
+    "docker:functions:typecheck": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run typecheck",
     "docker:functions:lint": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run lint",
     "docker:functions:lint:fix": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run lint:fix",
     "docker:functions:format:check": "docker-compose -f packages/functions/docker/docker-compose.yml run --rm functions npm run format:check",
@@ -19,6 +20,7 @@
     "docker:web:setup": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm ci --ignore-scripts",
     "docker:web:build": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run build",
     "docker:web:dev": "docker-compose -f packages/web/docker/docker-compose.yml run --rm --service-ports web npm run dev -- --host",
+    "docker:web:typecheck": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run typecheck",
     "docker:web:lint": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run lint",
     "docker:web:lint:fix": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run lint:fix",
     "docker:web:format:check": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run format:check",
@@ -54,6 +56,14 @@
       "prettier --write"
     ],
     "packages/web/src/**/*.{ts,tsx}": [
+      "eslint --no-error-on-unmatched-pattern --fix",
+      "prettier --write"
+    ],
+    "packages/web/tests/**/*.{ts,tsx}": [
+      "eslint --no-error-on-unmatched-pattern --fix",
+      "prettier --write"
+    ],
+    "packages/web/e2e/**/*.ts": [
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"
     ],

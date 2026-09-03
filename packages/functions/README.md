@@ -16,6 +16,7 @@ npm run docker:functions:test:coverage  # テスト + カバレッジ計測
 npm run docker:functions:start          # ビルド＋Firebase Emulator 起動
 npm run docker:functions:sh             # コンテナに入って操作
 npm run docker:functions:build          # TypeScript ビルド
+npm run docker:functions:typecheck      # テストを含む型検査
 ```
 
 ### コンテナ内での操作

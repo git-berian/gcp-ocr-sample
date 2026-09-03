@@ -96,6 +96,7 @@ GitHub Actions（`.github/workflows/ci.yml`）で以下を自動実行します�
 
 - `npm run lint` — ESLint
 - `npm run format:check` — Prettier
+- `npm run typecheck` — テストを含む型検査（`tsconfig.test.json`）
 - `npm run build` — TypeScript / Vite ビルド
 - `npm run test:coverage` — テスト + カバレッジ計測
 
@@ -133,7 +134,7 @@ Dependabot（`.github/dependabot.yml`）で依存パッケージの **security u
 3. 対象の `package.json` を書き換える
 4. lock を Docker 経由で再生成する（下記）
 5. lock の差分内訳を確認し、意図しない間接依存の推移が混ざっていないか見る
-6. Docker 経由で lint / format:check / build / test:coverage を実行する。web は VRT も実行する（下記）
+6. Docker 経由で lint / format:check / typecheck / build / test:coverage を実行する。web は VRT も実行する（下記）
 7. ホスト側の `node_modules` を追従させる（下記）
 8. root の依存を変更した場合は、git hook と commitlint の動作も確認する（下記）
 9. 版数を記載しているドキュメント（README.md の技術スタック表等）を更新する
@@ -223,7 +224,7 @@ lint-staged / husky はコミット時のフックで実行されるため、実
 
 - ルートの `tsconfig.json` に共通設定（target, module, strict 等）を定義
 - 各パッケージの `tsconfig.json` で extends して outDir / rootDir を指定
-- テスト用は `tsconfig.test.json`（noEmit: true、`src` + `tests` を含む）— 現状 `packages/functions` のみ
+- テスト用は `tsconfig.test.json`（noEmit: true、`src` + `tests` を含む）。`typecheck` script で CI から実行する
 
 ### Vitest (`packages/functions/vitest.config.ts`, `packages/web/vitest.config.ts`)
 

@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "lint": "eslint --no-error-on-unmatched-pattern src/ tests/",
     "lint:fix": "eslint --no-error-on-unmatched-pattern src/ tests/ --fix",
     "format": "prettier --write src/ tests/",

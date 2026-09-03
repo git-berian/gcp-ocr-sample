@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src", "tests", "e2e", ".storybook/**/*.ts", "*.config.ts"],
+  "exclude": []
+}

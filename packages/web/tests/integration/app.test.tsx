@@ -48,10 +48,7 @@ describe("App（結合テスト）", () => {
     render(<App />);
 
     const fileInput = screen.getByLabelText("ファイル");
-    const files = [
-      createTestFile("receipt-1.pdf"),
-      createTestFile("receipt-2.png", "image/png"),
-    ];
+    const files = [createTestFile("receipt-1.pdf"), createTestFile("receipt-2.png", "image/png")];
     await user.upload(fileInput, files);
 
     const submitButton = screen.getByRole("button", { name: "解析" });

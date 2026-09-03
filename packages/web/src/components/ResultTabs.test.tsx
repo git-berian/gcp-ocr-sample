@@ -22,6 +22,7 @@ function createJob(overrides: Partial<FileJob> = {}): FileJob {
     id: "job-1",
     file: new File([""], "test.png", { type: "image/png" }),
     fileName: "test.png",
+    engine: "document-ai",
     status: "success",
     result: { receipt: makeReceipt() },
     error: "",

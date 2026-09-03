@@ -67,6 +67,64 @@ npm run docker:setup
 - [Functions パッケージ](packages/functions/)
 - [Web パッケージ](packages/web/)
 
+## 検査コマンドの使い分け
+
+開発の流れの中で、次のタイミングで検査が入ります。
+
+| #   | タイミング            | 実行 | 何が動くか                                                | 所要時間 |
+| --- | --------------------- | ---- | --------------------------------------------------------- | -------- |
+| 1   | コミット前            | 手動 | `npm run docker:check`                                    | 約 8 秒  |
+| 2   | `git commit` した瞬間 | 自動 | husky + lint-staged（変更したファイルだけ整形・自動修正） | 数秒     |
+| 3   | push / PR 作成        | 自動 | GitHub Actions（CI）                                      | 約 2 分  |
+| 4   | デプロイ前            | 手動 | `npm run docker:verify`                                   | 約 30 秒 |
+
+手で叩くのは 1 と 4 の 2 つだけです。
+
+### 1. コミット前 — `docker:check`
+
+```bash
+npm run docker:check              # 両パッケージ
+npm run docker:functions:check    # functions のみ
+npm run docker:web:check          # web のみ
+```
+
+`lint:fix` → `typecheck` → `test` を実行します。**手元で速く回すこと**が目的なので、
+ビルド・カバレッジ・VRT は含みません。それらは 3 の CI と 4 の `verify` が担保します。
+
+`lint:fix` を含むため**ファイルを自動修正します**（読み取り専用ではありません）。
+コミットの直前に一度通しておくと、CI で落ちる原因のほとんどを先に潰せます。
+
+### 4. デプロイ前 — `docker:verify`
+
+```bash
+npm run docker:verify              # 両パッケージ + Storybook ビルド + VRT
+npm run docker:functions:verify    # functions のみ（VRT なし）
+npm run docker:web:verify          # web のみ（VRT なし）
+```
+
+`lint` → `format:check` → `typecheck` → `build` → `test:coverage` を実行し、
+さらに Storybook のビルドと VRT まで通します。VRT を含むのは `docker:verify` だけで、
+パッケージ個別の `docker:<pkg>:verify` には含まれません。カバレッジ閾値（80%）と VRT を含むため、
+**CI が見ているものと同等**です。
+
+`firebase deploy` の predeploy フックはビルドしかしません。つまり CI を経由せずに
+本番へ出せてしまうため、デプロイ前にはこのコマンドで塞いでください。
+
+読み取り専用なので、`check` と違ってファイルを書き換えません。
+
+### check と verify の違い
+
+|              | `docker:check`              | `docker:verify`                                         |
+| ------------ | --------------------------- | ------------------------------------------------------- |
+| タイミング   | コミット前                  | デプロイ前                                              |
+| 内容         | lint:fix → typecheck → test | lint → format:check → typecheck → build → test:coverage |
+| ファイル変更 | する（`lint:fix`）          | **しない**（読み取り専用）                              |
+| VRT          | 含まない                    | 含む（`docker:verify` のみ）                            |
+| 所要時間     | 約 8 秒                     | 約 30 秒                                                |
+
+どちらも `&&` で繋いでいるため、最初の失敗で止まります。
+個別に実行したい場合は各パッケージの README を参照してください。
+
 ## アーキテクチャ
 
 DDD（ドメイン駆動設計）に基づく 3 層構成を採用しています。
@@ -82,9 +140,20 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 
 ## Docker 構成
 
-| ファイル                                    | 用途   | 説明                                      |
-| ------------------------------------------- | ------ | ----------------------------------------- |
-| `packages/web/docker/Dockerfile.playwright` | テスト | Playwright ブラウザ同梱イメージ（VRT 用） |
+パッケージごとに独立した Docker 環境を持ちます。
+
+| ファイル                                       | 用途   | 説明                                                    |
+| ---------------------------------------------- | ------ | ------------------------------------------------------- |
+| `packages/functions/docker/Dockerfile`         | 開発   | Node.js 22 + Firebase CLI                               |
+| `packages/functions/docker/entrypoint.sh`      | 開発   | named volume の所有者を node ユーザーに変更してから実行 |
+| `packages/functions/docker/docker-compose.yml` | 開発   | functions サービス定義                                  |
+| `packages/web/docker/Dockerfile`               | 開発   | Node.js 22 + Firebase CLI                               |
+| `packages/web/docker/entrypoint.sh`            | 開発   | named volume の所有者を node ユーザーに変更してから実行 |
+| `packages/web/docker/docker-compose.yml`       | 開発   | web / playwright サービス定義                           |
+| `packages/web/docker/Dockerfile.playwright`    | テスト | Playwright ブラウザ同梱イメージ（VRT 用）               |
+
+`node_modules` は named volume に載せ、ホスト側（macOS ビルドのバイナリを含む）を
+コンテナから隠しています。依存の更新手順は [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
 
 ## ディレクトリ構成
 
@@ -98,8 +167,16 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │   │   │   ├── infrastructure/         # インフラ層
 │   │   │   ├── handlers/               # HTTP ハンドラ層
 │   │   │   └── index.ts                # エントリーポイント
+│   │   ├── tests/
+│   │   │   ├── integration/            # 結合テスト
+│   │   │   └── support/                # unit・integration 共通のテスト補助
+│   │   ├── docker/
+│   │   │   ├── Dockerfile
+│   │   │   ├── entrypoint.sh
+│   │   │   └── docker-compose.yml
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   │   ├── tsconfig.test.json          # テストを含む型検査用
 │   │   ├── vitest.config.ts
 │   │   └── eslint.config.js
 │   └── web/                           # Web フロントエンド（React + Vite）
@@ -109,6 +186,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │       ├── docker/
 │       │   ├── Dockerfile
 │       │   ├── Dockerfile.playwright   # Playwright 用 Docker イメージ
+│       │   ├── entrypoint.sh
 │       │   └── docker-compose.yml
 │       ├── e2e/
 │       │   └── components.visual.ts    # Visual Regression テスト
@@ -119,10 +197,13 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │       │   ├── utils/                  # ユーティリティ
 │       │   ├── App.tsx                 # メインコンポーネント
 │       │   └── main.tsx                # エントリーポイント
+│       ├── tests/
+│       │   └── integration/            # 結合テスト
 │       ├── index.html
 │       ├── package.json
 │       ├── playwright.config.ts        # Playwright 設定
 │       ├── tsconfig.json
+│       ├── tsconfig.test.json          # テストを含む型検査用
 │       ├── vite.config.ts
 │       ├── vitest.config.ts
 │       └── eslint.config.js

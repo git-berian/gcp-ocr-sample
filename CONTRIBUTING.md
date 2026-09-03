@@ -96,8 +96,27 @@ GitHub Actions（`.github/workflows/ci.yml`）で以下を自動実行します�
 
 - `npm run lint` — ESLint
 - `npm run format:check` — Prettier
+- `npm run typecheck` — テストを含む型検査（`tsconfig.test.json`）
 - `npm run build` — TypeScript / Vite ビルド
 - `npm run test:coverage` — テスト + カバレッジ計測
+
+CI ではどのチェックが落ちたかがステップ単位で分かるよう、あえて別ステップに分けています。
+
+ローカルには用途別に 2 つの一括コマンドがあります。
+
+|              | `docker:check`                    | `docker:verify`                                         | CI                                 |
+| ------------ | --------------------------------- | ------------------------------------------------------- | ---------------------------------- |
+| 用途         | コミット前                        | デプロイ前                                              | PR                                 |
+| 内容         | `lint:fix` → `typecheck` → `test` | lint → format:check → typecheck → build → test:coverage | 同左を別ステップで                 |
+| ファイル変更 | する（`lint:fix`）                | しない                                                  | しない                             |
+| VRT          | 含まない                          | 含む                                                    | 含む（`visual-regression` ジョブ） |
+| 所要時間     | 約 8 秒                           | 約 30 秒                                                | 約 2 分                            |
+
+`firebase deploy` は predeploy フックでビルドするだけで、lint・型検査・テスト・VRT を行いません。
+CI を経由せずに本番へ出せてしまうため、**デプロイ前は必ず `npm run docker:verify` を通してください**。
+
+`lint:fix` でファイルを書き換えるため、`check` は CI では使いません（CI は成果物を変更してはいけない）。
+どちらも `&&` で繋いでいるので最初の失敗で止まります。functions が落ちると web は実行されません。
 
 共通ジョブ:
 
@@ -133,7 +152,7 @@ Dependabot（`.github/dependabot.yml`）で依存パッケージの **security u
 3. 対象の `package.json` を書き換える
 4. lock を Docker 経由で再生成する（下記）
 5. lock の差分内訳を確認し、意図しない間接依存の推移が混ざっていないか見る
-6. Docker 経由で lint / format:check / build / test:coverage を実行する。web は VRT も実行する（下記）
+6. `npm run docker:verify` で全検査（lint / format:check / typecheck / build / test:coverage / VRT）を実行する
 7. ホスト側の `node_modules` を追従させる（下記）
 8. root の依存を変更した場合は、git hook と commitlint の動作も確認する（下記）
 9. 版数を記載しているドキュメント（README.md の技術スタック表等）を更新する
@@ -168,11 +187,11 @@ Docker 内では使いません。
 ホストの `node_modules` は **WebStorm の型解決・補完のため**に置いています。
 成果物には使いませんが、依存を更新したら追従させます。
 
-| 目的                        | 実行場所 | コマンド                        |
-| --------------------------- | -------- | ------------------------------- |
-| lock の生成・更新（正）     | Docker   | 上記の `npm install`            |
-| 検証（lint / build / test） | Docker   | `npm run docker:<pkg>:*`        |
-| WebStorm の型解決           | ホスト   | `npm ci`（root と各パッケージ） |
+| 目的                    | 実行場所 | コマンド                        |
+| ----------------------- | -------- | ------------------------------- |
+| lock の生成・更新（正） | Docker   | 上記の `npm install`            |
+| 検証                    | Docker   | `npm run docker:verify`         |
+| WebStorm の型解決       | ホスト   | `npm ci`（root と各パッケージ） |
 
 ホストで `npm install` を実行すると、ローカルの npm バージョン次第で `package-lock.json` を
 書き換えてしまいます。ホストは `npm ci` で lock に追従するだけの役割に徹し、実行後は
@@ -223,7 +242,13 @@ lint-staged / husky はコミット時のフックで実行されるため、実
 
 - ルートの `tsconfig.json` に共通設定（target, module, strict 等）を定義
 - 各パッケージの `tsconfig.json` で extends して outDir / rootDir を指定
-- テスト用は `tsconfig.test.json`（noEmit: true、`src` + `tests` を含む）— 現状 `packages/functions` のみ
+- テスト用は `tsconfig.test.json`（noEmit: true）。`typecheck` script で CI から実行する
+  - functions: `src` + `tests` + `*.config.ts`
+  - web: `src` + `tests` + `e2e` + `.storybook` + `*.config.ts`
+  - `.storybook` は `include` に `.storybook/**/*` と書く。先頭ドットのディレクトリは
+    ディレクトリ名だけでは tsc にマッチしない（拡張子を省くと `.ts` / `.tsx` の両方を拾う）
+  - lint / format:check も同じ範囲に加えて `eslint.config.js` を対象にしている
+    （型だけ見て lint は見ない状態を作らない。`eslint.config.js` は JS なので型検査の対象外）
 
 ### Vitest (`packages/functions/vitest.config.ts`, `packages/web/vitest.config.ts`)
 

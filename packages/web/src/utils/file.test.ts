@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, onTestFinished } from "vitest";
 import { fileToBase64, isImageMimeType, isValidMimeType, SUPPORTED_MIME_TYPES } from "./file";
 
 describe("isValidMimeType", () => {
@@ -48,16 +48,22 @@ describe("fileToBase64", () => {
     const file = new File(["content"], "test.txt", { type: "text/plain" });
 
     const originalFileReader = globalThis.FileReader;
+    // アサーションが失敗しても差し替えを確実に戻す。末尾の代入だけだと、
+    // rejects の検証で落ちた時にパッチ済みの FileReader が後続テストへ漏れる。
+    onTestFinished(() => {
+      globalThis.FileReader = originalFileReader;
+    });
     const mockError = new DOMException("Read failed");
     globalThis.FileReader = class extends originalFileReader {
       readAsDataURL() {
         Object.defineProperty(this, "error", { value: mockError });
-        this.onerror?.(new ProgressEvent("error"));
+        // ProgressEvent のコンストラクタは総称型を取れず ProgressEvent<EventTarget> になる。
+        // fileToBase64 の onerror はイベント引数を参照せず reader.error だけを見るため、
+        // ここでのキャストは実挙動に影響しない。
+        this.onerror?.(new ProgressEvent("error") as ProgressEvent<FileReader>);
       }
     } as typeof FileReader;
 
     await expect(fileToBase64(file)).rejects.toBe(mockError);
-
-    globalThis.FileReader = originalFileReader;
   });
 });

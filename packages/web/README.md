@@ -4,17 +4,26 @@ React + Vite による Web フロントエンドです。ファイルをアッ�
 
 ## 開発コマンド
 
+`check`（コミット前）と `verify`（デプロイ前）の使い分けは
+[ルート README の「検査コマンドの使い分け」](../../README.md#検査コマンドの使い分け)を参照してください。
+
+デプロイ前の完全な検査には、Storybook ビルドと VRT まで含む
+`npm run docker:verify`（ルートで実行）を使ってください。
+
 ```bash
+npm run docker:web:verify              # web の検査（読み取り専用・VRT は含まない）
+npm run docker:web:check               # コミット前チェック（lint:fix→typecheck→test）
 npm run docker:web:lint                # ESLint 実行
 npm run docker:web:lint:fix            # ESLint 自動修正
 npm run docker:web:format:check        # Prettier チェック
 npm run docker:web:format              # Prettier フォーマット
+npm run docker:web:typecheck           # 型検査（テスト・e2e・Storybook・設定ファイルを含む）
+npm run docker:web:build               # Vite プロダクションビルド
 npm run docker:web:test                # テスト実行（全テスト）
 npm run docker:web:test:integration    # 結合テストのみ実行
 npm run docker:web:test:coverage       # テスト + カバレッジ計測
 npm run docker:web:dev                 # 開発サーバー起動
 npm run docker:web:sh                  # コンテナに入って操作
-npm run docker:web:build               # Vite プロダクションビルド
 npm run docker:web:storybook           # Storybook 開発サーバー起動（localhost:6006）
 npm run docker:web:build:storybook     # Storybook 静的ビルド
 npm run docker:web:test:visual         # Visual Regression テスト実行
@@ -26,6 +35,9 @@ npm run docker:web:test:visual:update  # ベースラインスクリーンショ
 ```bash
 npm run docker:web:sh
 # コンテナ内で
+npm run check            # コミット前チェック（lint:fix→typecheck→test）
+npm run verify           # web の検査（読み取り専用・VRT は含まない）
+npm run typecheck        # 型検査（テスト・e2e・Storybook・設定ファイルを含む）
 npm run build            # TypeScript + Vite ビルド
 npm run dev -- --host    # 開発サーバー起動（--host 必須）
 npm run lint:fix         # ESLint 自動修正
@@ -49,6 +61,11 @@ npm run test:watch       # テスト実行（ウォッチモード）
 | integration | `tests/integration/**/*.test.tsx` | App を実際の依存グラフで結合して検証。Firebase SDK のみモック |
 
 結合テストのヘルパー（フィクスチャ・モック）は `tests/integration/helpers/` にまとめています。
+Visual Regression テストは Vitest ではなく Playwright で実行し、`e2e/` に置いています。
+
+型検査・ESLint・Prettier は `src/` `tests/` `e2e/` `.storybook/` `*.config.ts` を対象にしています（ESLint / Prettier は `eslint.config.js` も）
+（`npm run typecheck` は `tsconfig.test.json` を使用）。Vitest は型を検査しないため、
+テストコードの型崩れは `typecheck` で検出します。
 
 ## ローカル実行
 
@@ -118,6 +135,9 @@ VITE_MODE=development firebase deploy --only hosting --project <project-id>
 # ステージング環境
 VITE_MODE=staging firebase deploy --only hosting --project <project-id>
 ```
+
+> `firebase deploy` の predeploy フックはビルドのみで、lint・型検査・テスト・VRT は行いません。
+> デプロイ前に `npm run docker:verify`（ホスト側）を通してください。
 
 デプロイ後、`https://<project-id>.web.app` で Web フロントエンドにアクセスできます。
 Functions の呼び出しは Firebase SDK の `httpsCallable` で直接行うため、Hosting 側の API プロキシ設定は不要です。

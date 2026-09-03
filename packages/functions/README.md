@@ -4,18 +4,27 @@ Document AI / Vertex AI Gemini / Claude（Anthropic）による OCR 機能を Fi
 
 ## 開発コマンド
 
+`check`（コミット前）と `verify`（デプロイ前）の使い分けは
+[ルート README の「検査コマンドの使い分け」](../../README.md#検査コマンドの使い分け)を参照してください。
+
+デプロイ前の完全な検査には、web の VRT まで含む
+`npm run docker:verify`（ルートで実行）を使ってください。
+
 ```bash
-npm run docker:functions:lint           # ESLint 実行
-npm run docker:functions:lint:fix       # ESLint 自動修正
-npm run docker:functions:format:check   # Prettier チェック
-npm run docker:functions:format         # Prettier フォーマット
-npm run docker:functions:test           # テスト実行（全テスト）
-npm run docker:functions:test:unit     # ユニットテストのみ実行
+npm run docker:functions:verify            # functions の検査（読み取り専用）
+npm run docker:functions:check             # コミット前チェック（lint:fix→typecheck→test）
+npm run docker:functions:lint              # ESLint 実行
+npm run docker:functions:lint:fix          # ESLint 自動修正
+npm run docker:functions:format:check      # Prettier チェック
+npm run docker:functions:format            # Prettier フォーマット
+npm run docker:functions:typecheck         # 型検査（テスト・設定ファイルを含む）
+npm run docker:functions:build             # TypeScript ビルド
+npm run docker:functions:test              # テスト実行（全テスト）
+npm run docker:functions:test:unit         # ユニットテストのみ実行
 npm run docker:functions:test:integration  # 結合テストのみ実行
-npm run docker:functions:test:coverage  # テスト + カバレッジ計測
-npm run docker:functions:start          # ビルド＋Firebase Emulator 起動
-npm run docker:functions:sh             # コンテナに入って操作
-npm run docker:functions:build          # TypeScript ビルド
+npm run docker:functions:test:coverage     # テスト + カバレッジ計測
+npm run docker:functions:start             # ビルド＋Firebase Emulator 起動
+npm run docker:functions:sh                # コンテナに入って操作
 ```
 
 ### コンテナ内での操作
@@ -23,6 +32,9 @@ npm run docker:functions:build          # TypeScript ビルド
 ```bash
 npm run docker:functions:sh
 # コンテナ内で
+npm run check            # コミット前チェック（lint:fix→typecheck→test）
+npm run verify           # functions の検査（読み取り専用）
+npm run typecheck        # 型検査（テスト・設定ファイルを含む）
 npm run build            # TypeScript ビルド
 npm run start            # ビルド＋Firebase Emulator 起動
 npm run shell            # ビルド＋Firebase Functions Shell
@@ -45,6 +57,11 @@ npm run test:watch       # テスト実行（ウォッチモード）
 | integration | `tests/integration/**/*.test.ts` | ハンドラを実際の依存グラフで結合して検証。外部 API のみモック |
 
 結合テストのヘルパー（フィクスチャ・モック）は `tests/integration/helpers/` にまとめています。
+unit・integration の双方から使う共通のテスト補助は `tests/support/` に置いています。
+
+型検査・ESLint・Prettier は `src/` `tests/` `*.config.ts` を対象にしています（ESLint / Prettier は `eslint.config.js` も）
+（`npm run typecheck` は `tsconfig.test.json` を使用）。Vitest は型を検査しないため、
+テストコードの型崩れは `typecheck` で検出します。
 
 ## エンドポイント
 
@@ -192,3 +209,6 @@ npm run docker:functions:sh
 firebase login --no-localhost  # 初回のみ
 firebase deploy --only functions --project <project-id>
 ```
+
+> `firebase deploy` の predeploy フックはビルドのみで、lint・型検査・テストは行いません。
+> デプロイ前に `npm run docker:verify`（ホスト側）を通してください。

@@ -97,9 +97,20 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 
 ## Docker 構成
 
-| ファイル                                    | 用途   | 説明                                      |
-| ------------------------------------------- | ------ | ----------------------------------------- |
-| `packages/web/docker/Dockerfile.playwright` | テスト | Playwright ブラウザ同梱イメージ（VRT 用） |
+パッケージごとに独立した Docker 環境を持ちます。
+
+| ファイル                                       | 用途   | 説明                                                    |
+| ---------------------------------------------- | ------ | ------------------------------------------------------- |
+| `packages/functions/docker/Dockerfile`         | 開発   | Node.js 22 + Firebase CLI                               |
+| `packages/functions/docker/entrypoint.sh`      | 開発   | named volume の所有者を node ユーザーに変更してから実行 |
+| `packages/functions/docker/docker-compose.yml` | 開発   | functions サービス定義                                  |
+| `packages/web/docker/Dockerfile`               | 開発   | Node.js 22 + Firebase CLI                               |
+| `packages/web/docker/entrypoint.sh`            | 開発   | named volume の所有者を node ユーザーに変更してから実行 |
+| `packages/web/docker/docker-compose.yml`       | 開発   | web / playwright サービス定義                           |
+| `packages/web/docker/Dockerfile.playwright`    | テスト | Playwright ブラウザ同梱イメージ（VRT 用）               |
+
+`node_modules` は named volume に載せ、ホスト側（macOS ビルドのバイナリを含む）を
+コンテナから隠しています。依存の更新手順は [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
 
 ## ディレクトリ構成
 
@@ -117,6 +128,9 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │   │   │   ├── integration/            # 結合テスト
 │   │   │   └── support/                # unit・integration 共通のテスト補助
 │   │   ├── docker/
+│   │   │   ├── Dockerfile
+│   │   │   ├── entrypoint.sh
+│   │   │   └── docker-compose.yml
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   ├── tsconfig.test.json          # テストを含む型検査用
@@ -129,6 +143,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │       ├── docker/
 │       │   ├── Dockerfile
 │       │   ├── Dockerfile.playwright   # Playwright 用 Docker イメージ
+│       │   ├── entrypoint.sh
 │       │   └── docker-compose.yml
 │       ├── e2e/
 │       │   └── components.visual.ts    # Visual Regression テスト

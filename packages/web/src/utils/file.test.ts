@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fileToBase64, isValidMimeType, SUPPORTED_MIME_TYPES } from "./file";
+import { fileToBase64, isImageMimeType, isValidMimeType, SUPPORTED_MIME_TYPES } from "./file";
 
 describe("isValidMimeType", () => {
   it.each(SUPPORTED_MIME_TYPES)("returns true for %s", (mimeType) => {
@@ -9,6 +9,19 @@ describe("isValidMimeType", () => {
   it("returns false for unsupported MIME types", () => {
     expect(isValidMimeType("text/plain")).toBe(false);
     expect(isValidMimeType("image/gif")).toBe(false);
+  });
+});
+
+describe("isImageMimeType", () => {
+  it("returns true for image MIME types", () => {
+    expect(isImageMimeType("image/png")).toBe(true);
+    expect(isImageMimeType("image/jpeg")).toBe(true);
+  });
+
+  it("returns false for PDF and other non-image MIME types", () => {
+    expect(isImageMimeType("application/pdf")).toBe(false);
+    expect(isImageMimeType("text/plain")).toBe(false);
+    expect(isImageMimeType("")).toBe(false);
   });
 });
 

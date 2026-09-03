@@ -9,9 +9,18 @@
  */
 export const DEPLOY_MODES = {
   "documentaisample-488504": "development",
+  // プロジェクトを作成したらコメントを外して ID を入れる。
+  // `.firebaserc` のエイリアス追加と `.env.<mode>` の作成もあわせて必要（README 参照）。
+  // "<staging-project-id>": "staging",
+  // "<production-project-id>": "production",
 };
 
-/** バンドルに焼き込まれる Firebase 設定。1 つでも欠けると Functions 呼び出しに失敗する。 */
+/**
+ * デプロイ時に必ず設定されていなければならないキー。
+ * - `VITE_FIREBASE_*`: 1 つでも欠けると Functions 呼び出しに失敗する
+ * - `VITE_APP_PASSWORD`: 未設定だと `App.tsx` が PasswordGate を丸ごと外し、UI が素で公開される。
+ *   値はバンドルに含まれるため UI の目隠しであり、Functions 側の保護ではない
+ */
 const REQUIRED_ENV_KEYS = [
   "VITE_FIREBASE_API_KEY",
   "VITE_FIREBASE_AUTH_DOMAIN",
@@ -19,6 +28,7 @@ const REQUIRED_ENV_KEYS = [
   "VITE_FIREBASE_STORAGE_BUCKET",
   "VITE_FIREBASE_MESSAGING_SENDER_ID",
   "VITE_FIREBASE_APP_ID",
+  "VITE_APP_PASSWORD",
 ];
 
 /**

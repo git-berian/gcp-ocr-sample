@@ -194,6 +194,9 @@ firebase functions:secrets:set ANTHROPIC_API_KEY --project dev
 # プロンプトに従って値を入力
 ```
 
+シークレットはプロジェクトごとに登録が必要です。staging / 本番のプロジェクトを作成したら、
+`--project staging` / `--project prod` で同じ手順を実行します。
+
 設定済みのシークレットは以下で確認できます。
 
 ```bash
@@ -207,16 +210,30 @@ npm run docker:functions:sh
 
 # コンテナ内で
 firebase login --no-localhost  # 初回のみ
+
+# 開発環境
 firebase deploy --only functions --project dev
+
+# ステージング環境（プロジェクト作成後に有効）
+firebase deploy --only functions --project staging
+
+# 本番環境（プロジェクト作成後に有効）
+firebase deploy --only functions --project prod
 ```
 
-`dev` は `.firebaserc` のエイリアス（開発プロジェクト）です。
-エイリアスで指定しても、読み込まれるのは解決後のプロジェクト ID に対応する `.env.<project-id>` です。
+| 環境         | エイリアス（`.firebaserc`） | プロジェクト              | 使われる env                   | 状態   |
+| ------------ | --------------------------- | ------------------------- | ------------------------------ | ------ |
+| 開発         | `dev` / `default`           | `documentaisample-488504` | `.env.documentaisample-488504` | 稼働中 |
+| ステージング | `staging`                   | 未作成                    | `.env.<project-id>`            | 未作成 |
+| 本番         | `prod`                      | 未作成                    | `.env.<project-id>`            | 未作成 |
+
+staging / prod はプロジェクトを作成するまで `.firebaserc` にエイリアスが無いため、指定してもエラーになります。
+env はエイリアス指定でも解決後のプロジェクト ID に対応する `.env.<project-id>` が自動で選ばれるため、
+functions 側にコードの追加設定は不要です。
 `.env.<project-id>` と `.env.<エイリアス>` を両方置くとデプロイがエラーになるため、どちらか一方にします。
 
-デプロイ先を追加する場合は `.firebaserc` にエイリアスを、`packages/functions/` に
-`.env.<project-id>` を追加し、そのプロジェクトの Secret Manager にもシークレットを登録します。
-web 側の手順は `packages/web/README.md` を参照してください。
+デプロイ先を追加する手順（web / functions まとめ）は
+`packages/web/README.md` の「デプロイ先を追加する」に集約しています。
 
 > `firebase deploy` の predeploy フックはビルドのみで、lint・型検査・テストは行いません。
 > デプロイ前に `npm run docker:verify`（ホスト側）を通してください。

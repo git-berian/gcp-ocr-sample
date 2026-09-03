@@ -125,6 +125,27 @@ npm run docker:web:verify          # web のみ（VRT なし）
 どちらも `&&` で繋いでいるため、最初の失敗で止まります。
 個別に実行したい場合は各パッケージの README を参照してください。
 
+## デプロイ先
+
+| 環境         | エイリアス（`.firebaserc`） | プロジェクト              | 状態   |
+| ------------ | --------------------------- | ------------------------- | ------ |
+| 開発         | `dev` / `default`           | `documentaisample-488504` | 稼働中 |
+| ステージング | `staging`                   | 未作成                    | 未作成 |
+| 本番         | `prod`                      | 未作成                    | 未作成 |
+
+```bash
+# 各パッケージのコンテナ内で実行する（docker:web:sh / docker:functions:sh）
+firebase deploy --only hosting   --project dev   # web
+firebase deploy --only functions --project dev   # functions
+```
+
+web はデプロイ先プロジェクトから使う env（`.env.<mode>`）が自動で決まり、
+設定が未設定・雛形値のまま・別プロジェクトのものであればビルドが失敗します。
+functions は `.env.<project-id>` がプロジェクト ID で自動選択されます。
+
+staging / 本番のプロジェクトを作成したときの手順は
+[packages/web/README.md](packages/web/README.md) の「デプロイ先を追加する」に集約しています。
+
 ## アーキテクチャ
 
 DDD（ドメイン駆動設計）に基づく 3 層構成を採用しています。

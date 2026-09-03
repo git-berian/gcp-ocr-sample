@@ -134,11 +134,22 @@ firebase login --no-localhost  # 初回のみ
 
 # 開発環境
 firebase deploy --only hosting --project dev
+
+# ステージング環境（プロジェクト作成後に有効）
+firebase deploy --only hosting --project staging
+
+# 本番環境（プロジェクト作成後に有効）
+firebase deploy --only hosting --project prod
 ```
 
-| デプロイ先プロジェクト    | エイリアス（`.firebaserc`） | 使われる env       |
-| ------------------------- | --------------------------- | ------------------ |
-| `documentaisample-488504` | `dev` / `default`           | `.env.development` |
+| 環境         | エイリアス（`.firebaserc`） | プロジェクト              | 使われる env       | 状態   |
+| ------------ | --------------------------- | ------------------------- | ------------------ | ------ |
+| 開発         | `dev` / `default`           | `documentaisample-488504` | `.env.development` | 稼働中 |
+| ステージング | `staging`                   | 未作成                    | `.env.staging`     | 未作成 |
+| 本番         | `prod`                      | 未作成                    | `.env.production`  | 未作成 |
+
+staging / prod はプロジェクトを作成するまで `.firebaserc` にエイリアスが無いため、
+指定してもエラーになります。作成手順は下記「デプロイ先を追加する」を参照してください。
 
 対応の定義は `scripts/deploy-guard.mjs` の `DEPLOY_MODES` が唯一の正です。
 Firebase CLI が predeploy フックに渡す `GCLOUD_PROJECT`（エイリアス解決後のプロジェクト ID）から mode を引きます。
@@ -146,20 +157,55 @@ Firebase CLI が predeploy フックに渡す `GCLOUD_PROJECT`（エイリアス
 次の場合はビルドが失敗し、デプロイは中止されます。
 
 - `DEPLOY_MODES` に無いプロジェクトへデプロイしようとした
-- 必須の `VITE_FIREBASE_*` が未設定、または `.env.example` の雛形値（`your-...`）のまま
+- 必須の `VITE_FIREBASE_*` / `VITE_APP_PASSWORD` が未設定、または `.env.example` の雛形値（`your-...`）のまま
+- `VITE_FIREBASE_PROJECT_ID` がデプロイ先プロジェクトと一致しない
 
 > 誤った Firebase 設定が焼き込まれると、Functions の呼び出し先が存在しないホストになり、
 > ブラウザ上は CORS エラーとして現れます。上記のチェックはこれを防ぐためのものです。
 
-### デプロイ先を追加する（例: 本番環境）
+> `VITE_APP_PASSWORD` は UI の目隠しです。値はバンドルに含まれるため、
+> Functions 側の保護ではありません。
+
+### デプロイ先を追加する
+
+staging / 本番のプロジェクトを作成したときの手順です（web / functions 両方を含みます）。
+以下は本番（mode=production・エイリアス `prod`）の例です。
 
 1. Firebase プロジェクトを作成する
-2. `.firebaserc` にエイリアスを追加する（例: `"prod": "<project-id>"`）
-3. `packages/web/.env.production` に実際の値を設定する（`.env.example` 参照）
-   - `VITE_APP_PASSWORD` も設定する。未設定だと `PasswordGate` が外れ、
-     誰でも UI から課金対象の Functions を呼べる状態で公開される（`src/App.tsx`）
-4. `scripts/deploy-guard.mjs` の `DEPLOY_MODES` に `"<project-id>": "production"` を追加する
-5. Functions 側は `packages/functions/.env.<project-id>` と Secret Manager への登録が別途必要（`packages/functions/README.md` 参照）
+2. `.firebaserc` にエイリアスを追加する
+
+   ```json
+   {
+     "projects": {
+       "default": "documentaisample-488504",
+       "dev": "documentaisample-488504",
+       "prod": "<project-id>"
+     }
+   }
+   ```
+
+   `default` は消さないこと。`packages/functions` の `firebase emulators:start` /
+   `functions:shell` は `--project` を付けていないため、アクティブプロジェクトが無くなると
+   `npm run docker:functions:start` が失敗します。
+
+3. `packages/web/.env.production` を作成し、実際の値を設定する（`.env.example` 参照）
+4. `scripts/deploy-guard.mjs` の `DEPLOY_MODES` のコメントを外して ID を入れる
+
+   ```js
+   "<project-id>": "production",
+   ```
+
+5. `packages/functions/.env.<project-id>` を作成する（`packages/functions/.env.example` 参照）
+6. Secret Manager に `FUNCTIONS_API_KEY` / `ANTHROPIC_API_KEY` を登録する
+   （`packages/functions/README.md` の「シークレットの設定」）
+7. Document AI プロセッサを作成し、Vertex AI を有効化する
+
+3・4 のどちらかを忘れると web のビルドが失敗して止まります。
+一方 5・6・7（functions 側）の漏れはガードの対象外で、web は正常に公開され、
+UI からのリクエストが実行時にエラーになる形で現れます。
+
+ガードは `.env` / `.env.local`（端末ローカル・git 管理外）も読むため、
+端末側にだけ値がある状態でも通ります。`.env.<mode>` に入っていることを確認してください。
 
 複数のデプロイ先ができたら、`.firebaserc` の `default` を外して `--project` を必須にすると、
 指定漏れによる誤デプロイを防げます。
@@ -186,15 +232,15 @@ Vite の [env ファイル読み込み規約](https://vite.dev/guide/env-and-mod
 
 環境固有のファイル（`.env.development` 等）に設定します。
 
-| 変数名                              | 必須 | 説明                                            |
-| ----------------------------------- | ---- | ----------------------------------------------- |
-| `VITE_FIREBASE_API_KEY`             | Yes  | Firebase API キー                               |
-| `VITE_FIREBASE_AUTH_DOMAIN`         | Yes  | Firebase Auth ドメイン                          |
-| `VITE_FIREBASE_PROJECT_ID`          | Yes  | Firebase プロジェクト ID                        |
-| `VITE_FIREBASE_STORAGE_BUCKET`      | Yes  | Firebase Storage バケット                       |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Yes  | Firebase Messaging Sender ID                    |
-| `VITE_FIREBASE_APP_ID`              | Yes  | Firebase App ID                                 |
-| `VITE_APP_PASSWORD`                 | No   | UI アクセス制限用パスワード（未設定でスキップ） |
+| 変数名                              | 必須           | 説明                                                                                        |
+| ----------------------------------- | -------------- | ------------------------------------------------------------------------------------------- |
+| `VITE_FIREBASE_API_KEY`             | Yes            | Firebase API キー                                                                           |
+| `VITE_FIREBASE_AUTH_DOMAIN`         | Yes            | Firebase Auth ドメイン                                                                      |
+| `VITE_FIREBASE_PROJECT_ID`          | Yes            | Firebase プロジェクト ID                                                                    |
+| `VITE_FIREBASE_STORAGE_BUCKET`      | Yes            | Firebase Storage バケット                                                                   |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Yes            | Firebase Messaging Sender ID                                                                |
+| `VITE_FIREBASE_APP_ID`              | Yes            | Firebase App ID                                                                             |
+| `VITE_APP_PASSWORD`                 | デプロイ時のみ | UI アクセス制限用パスワード。値はバンドルに含まれるため UI の目隠し。`npm run dev` では不要 |
 
 ### Functions エミュレータ接続
 

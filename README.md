@@ -166,7 +166,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 | @anthropic-ai/vertex-sdk | ^0.19                              |
 | @anthropic-ai/sdk        | ^0.110                             |
 | firebase                 | ^12.11                             |
-| firebase-functions       | ^6.3                               |
+| firebase-functions       | ^7.3                               |
 | firebase-admin           | ^13.4                              |
 
 ## 開発に参加する

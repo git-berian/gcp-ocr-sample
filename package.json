@@ -34,7 +34,6 @@
     "docker:web:test": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run test",
     "docker:web:test:coverage": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run test:coverage",
     "docker:web:test:integration": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run test:integration",
-    "docker:web:test:scripts": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run test:scripts",
     "docker:web:storybook": "docker-compose -f packages/web/docker/docker-compose.yml run --rm --service-ports web bash -c 'npm run build:storybook && npx http-server storybook-static -p 6006 -a 0.0.0.0 --silent'",
     "docker:web:build:storybook": "docker-compose -f packages/web/docker/docker-compose.yml run --rm web npm run build:storybook",
     "docker:web:test:visual": "docker-compose -f packages/web/docker/docker-compose.yml run --rm playwright npx playwright test",
@@ -75,10 +74,6 @@
       "prettier --write"
     ],
     "packages/web/.storybook/**/*.{ts,tsx}": [
-      "eslint --no-error-on-unmatched-pattern --fix",
-      "prettier --write"
-    ],
-    "packages/web/scripts/**/*.mjs": [
       "eslint --no-error-on-unmatched-pattern --fix",
       "prettier --write"
     ],

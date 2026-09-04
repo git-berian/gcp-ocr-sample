@@ -1,7 +1,7 @@
 FROM node:22-slim
+# web はデプロイしないため Firebase CLI は入れない（ADR-0015）。
 RUN apt-get update && apt-get install -y --no-install-recommends gosu \
   && rm -rf /var/lib/apt/lists/* \
-  && npm install -g firebase-tools@15.11.0 \
   && mkdir -p /app/packages/web \
   && chown -R node:node /app \
   && echo "alias ll='ls -al'" >> /home/node/.bashrc

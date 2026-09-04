@@ -65,13 +65,16 @@ unit・integration の双方から使う共通のテスト補助は `tests/suppo
 
 ## エンドポイント
 
-3 つの抽出エンジン × onCall / onRequest の 6 関数を提供します（`src/index.ts`）。onCall は Hosting/Web 用（ADC 認証）、onRequest は外部サービス用（`FUNCTIONS_API_KEY` による Bearer 認証）。
+3 つの抽出エンジン × onCall / onRequest の 6 関数を提供します（`src/index.ts`）。
 
-| エンジン                  | onCall（Web/ADC）         | onRequest（外部/API キー） |
-| ------------------------- | ------------------------- | -------------------------- |
-| Document AI（ADR-0002）   | `parseDocumentCall`       | `parseDocumentHttp`        |
-| Gemini（ADR-0010）        | `parseDocumentGeminiCall` | `parseDocumentGeminiHttp`  |
-| Claude（ADR-0012 / 0013） | `parseDocumentClaudeCall` | `parseDocumentClaudeHttp`  |
+**onRequest（`*Http`）が唯一の入口です。** Web / 外部サービスのいずれからも `FUNCTIONS_API_KEY` による
+Bearer 認証で呼び出します。**onCall（`*Call`）は呼び出し元がいない未使用の関数で、削除予定です**（ADR-0015 / #267）。
+
+| エンジン                  | onCall（未使用・削除予定） | onRequest（Web / 外部・API キー） |
+| ------------------------- | -------------------------- | --------------------------------- |
+| Document AI（ADR-0002）   | `parseDocumentCall`        | `parseDocumentHttp`               |
+| Gemini（ADR-0010）        | `parseDocumentGeminiCall`  | `parseDocumentGeminiHttp`         |
+| Claude（ADR-0012 / 0013） | `parseDocumentClaudeCall`  | `parseDocumentClaudeHttp`         |
 
 レスポンスは Gemini / Claude が正準モデル `{ receipt: ReceiptExtraction }`（ADR-0011）、Document AI が `{ entities: ... }`。Claude の呼び出し経路は `CLAUDE_TRANSPORT`（api/vertex）で切り替えます（ADR-0013）。
 
@@ -229,15 +232,43 @@ firebase deploy --only functions --project prod
 
 `firebase login` の認証情報は named volume `firebase_config`（コンテナ内の `/home/node/.config`）に保存されます。
 コンテナを終了しても残るため、ログインは一度で済みます。ログインを解除するには `firebase logout` を実行してください。
-volume は functions / web で別々なので、web 側でも一度ログインが必要です。
+volume は functions / web で別々ですが、**web はデプロイしないため web 側のログインは不要です**（ADR-0015）。
 
 staging / prod はプロジェクトを作成するまで `.firebaserc` にエイリアスが無いため、指定してもエラーになります。
 env はエイリアス指定でも解決後のプロジェクト ID に対応する `.env.<project-id>` が自動で選ばれるため、
 functions 側にコードの追加設定は不要です。
 `.env.<project-id>` と `.env.<エイリアス>` を両方置くとデプロイがエラーになるため、どちらか一方にします。
 
-デプロイ先を追加する手順（web / functions まとめ）は
-`packages/web/README.md` の「デプロイ先を追加する」に集約しています。
+### デプロイ先を追加する
+
+staging / 本番のプロジェクトを作成したときの手順です。
+以下は本番（エイリアス `prod`）の例です。Web はデプロイしないため、対象は Functions のみです（ADR-0015）。
+
+1. Firebase プロジェクトを作成する
+2. `.firebaserc` にエイリアスを追加する
+
+   ```json
+   {
+     "projects": {
+       "default": "documentaisample-488504",
+       "dev": "documentaisample-488504",
+       "prod": "<project-id>"
+     }
+   }
+   ```
+
+   `default` は消さないこと。`firebase emulators:start` / `functions:shell` は `--project` を
+   付けていないため、アクティブプロジェクトが無くなると `npm run docker:functions:start` が失敗します。
+
+3. `packages/functions/.env.<project-id>` を作成する（`.env.example` 参照）
+4. Secret Manager に `FUNCTIONS_API_KEY` / `ANTHROPIC_API_KEY` を登録する（上記「シークレットの設定」）
+5. Document AI プロセッサを作成し、Vertex AI を有効化する
+
+これらの漏れはデプロイ時には検知されず、**呼び出し時のエラーとして現れます**。
+
+複数のデプロイ先ができたら、`.firebaserc` の `default` を外して `--project` を必須にすると、
+指定漏れによる誤デプロイを防げます。ただし `default` を外すとエミュレータの起動先が
+決まらなくなるため、`npm start` に `--project` を足す必要があります。
 
 > `firebase deploy` の predeploy フックはビルドのみで、lint・型検査・テストは行いません。
 > デプロイ前に `npm run docker:verify`（ホスト側）を通してください。

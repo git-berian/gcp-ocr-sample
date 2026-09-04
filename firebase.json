@@ -4,25 +4,10 @@
     "runtime": "nodejs22",
     "predeploy": "npm --prefix \"$RESOURCE_DIR\" run build"
   },
-  "hosting": {
-    "public": "packages/web/dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "predeploy": "node packages/web/scripts/build-for-deploy.mjs"
-  },
   "emulators": {
     "functions": {
       "host": "0.0.0.0",
       "port": 8080
-    },
-    "hosting": {
-      "host": "0.0.0.0",
-      "port": 5000
     }
   }
 }

@@ -49,6 +49,8 @@ AI（Claude）との協働における指示・品質・役割分担・セッシ
 
 ### レビュー指摘への対処
 
+- **CodeRabbit のレビューは自動では走らない。** コード変更を含む PR では `@coderabbitai review` を
+  コメントして手動で起動する（手順は `.claude/skills/create-pr.md`）
 - CodeRabbit等のレビュー指摘は原則すべて対処する
 - 対処しない場合は、無視する理由をPRコメントに記載する
 

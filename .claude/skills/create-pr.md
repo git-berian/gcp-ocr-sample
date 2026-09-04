@@ -16,6 +16,9 @@ description: PR作成時に使用。「PR作成して」等の依頼で自動ト
    - セキュリティ・エラーハンドリング・設計の観点で問題がないことを確認
 2. `git push -u origin <ブランチ名>` でリモートにプッシュ
 3. `gh pr create` で PR を作成
+4. **実コードの変更を含む PR は、`@coderabbitai review` をコメントしてレビューを手動起動する**
+   - このリポジトリでは CodeRabbit の自動レビューが走らない（後述）
+   - ドキュメントのみの PR は対象外
 
 ## ルール
 
@@ -30,3 +33,13 @@ description: PR作成時に使用。「PR作成して」等の依頼で自動ト
 - **マージ戦略**: Squash and merge
 - **レビュー**: 1 人以上の承認が必要
 - **CI**: 全ジョブがパスしていることが必須
+
+## CodeRabbit のレビュー起動
+
+`.coderabbit.yaml` の `auto_review` は有効だが、**CodeRabbit 側のポリシーで上書きされており自動レビューは走らない**。
+
+> This repository does not receive automatic reviews because it has fewer than 10 stars.
+
+そのため、コード PR では `@coderabbitai review` をコメントして手動で起動する。
+`CodeRabbit` の CI チェックはスキップ時も SUCCESS になるため、**チェックの緑はレビュー実施の証拠にならない**。
+実際にレビューコメントが付いたかを確認すること。

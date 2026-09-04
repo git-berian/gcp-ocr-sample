@@ -129,8 +129,8 @@ CI では Storybook ビルド → Playwright テストが自動実行され、�
 ```bash
 npm run docker:web:sh
 
-# コンテナ内で
-firebase login --no-localhost  # 初回のみ
+# コンテナ内で（認証情報は volume に残るため、初回とログアウト後のみ）
+firebase login --no-localhost
 
 # 開発環境
 firebase deploy --only hosting --project dev
@@ -147,6 +147,10 @@ firebase deploy --only hosting --project prod
 | 開発         | `dev` / `default`           | `documentaisample-488504` | `.env.development` | 稼働中 |
 | ステージング | `staging`                   | 未作成                    | `.env.staging`     | 未作成 |
 | 本番         | `prod`                      | 未作成                    | `.env.production`  | 未作成 |
+
+`firebase login` の認証情報は named volume `firebase_config`（コンテナ内の `/home/node/.config`）に保存されます。
+コンテナを終了しても残るため、ログインは一度で済みます。ログインを解除するには `firebase logout` を実行してください。
+volume は web / functions で別々なので、functions 側でも一度ログインが必要です。
 
 staging / prod はプロジェクトを作成するまで `.firebaserc` にエイリアスが無いため、
 指定してもエラーになります。作成手順は下記「デプロイ先を追加する」を参照してください。

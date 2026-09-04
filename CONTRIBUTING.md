@@ -225,6 +225,31 @@ npx commitlint --from origin/main --to HEAD   # CI の commitlint ジョブと�
 
 lint-staged / husky はコミット時のフックで実行されるため、実際にコミットして動作を確認します。
 
+## Docker の volume
+
+各パッケージの compose は以下の named volume を使います。いずれもリポジトリの外（Docker が管理する領域）に
+あるため、`git status` には現れません。
+
+| volume              | マウント先                         | 用途                                     |
+| ------------------- | ---------------------------------- | ---------------------------------------- |
+| `root_node_modules` | `/app/node_modules`                | ホストの `node_modules` を隠す空のマスク |
+| `node_modules`      | `/app/packages/<pkg>/node_modules` | コンテナ内の依存の実体                   |
+| `firebase_config`   | `/home/node/.config`               | **`firebase login` の認証情報**          |
+
+`firebase_config` には Firebase の refresh token が平文で入ります（`configstore/firebase-tools.json`）。
+コンテナを終了しても残るので、共有マシンで作業した場合は `firebase logout` でログインを解除してください。
+volume は functions / web で別々のため、ログインもデプロイもパッケージごとに行います。
+
+volume を削除するには `down -v` を使います。compose ファイルはパッケージ配下にあるため `-f` の指定が必要で、
+volume も compose 単位で消えます。
+
+```bash
+docker-compose -f packages/functions/docker/docker-compose.yml down -v
+docker-compose -f packages/web/docker/docker-compose.yml down -v
+```
+
+実行すると `npm run docker:setup` からのやり直しと、Firebase への再ログインが必要になります。
+
 ## ADR（Architecture Decision Records）
 
 アーキテクチャに関する重要な決定は `docs/adr/` に記録します。

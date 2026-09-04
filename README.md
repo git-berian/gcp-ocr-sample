@@ -16,7 +16,9 @@ Google Cloud Document AI・Vertex AI Gemini・Claude（Anthropic）を抽出エ�
 
 - Docker / Docker Compose
 - GCP プロジェクトとサービスアカウントキー（JSON）— GCP 認証（ADC）に使用
-- Firebase CLI（`npm install -g firebase-tools`）— Functions のデプロイ時に必要
+
+Firebase CLI は各パッケージの Docker イメージに同梱されているため、ホストへの導入は不要です。
+デプロイはコンテナ内で実行します（[デプロイ先](#デプロイ先)）。
 
 抽出エンジンは Web の UI から選択でき（既定は Document AI）、Functions は各エンジンに対応する関数を提供します。前提（設定変数は `packages/functions/.env.example` 参照）:
 
@@ -174,7 +176,9 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 | `packages/web/docker/Dockerfile.playwright`    | テスト | Playwright ブラウザ同梱イメージ（VRT 用）               |
 
 `node_modules` は named volume に載せ、ホスト側（macOS ビルドのバイナリを含む）を
-コンテナから隠しています。依存の更新手順は [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
+コンテナから隠しています。`firebase login` の認証情報も named volume に保持するため、
+コンテナを終了しても再ログインは不要です。volume の一覧と依存の更新手順は
+[CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
 
 ## ディレクトリ構成
 

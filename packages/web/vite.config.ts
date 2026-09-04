@@ -36,6 +36,30 @@ function resolveProjectId(override: string): string {
   return projectId;
 }
 
+/**
+ * 転送先がローカルのエミュレータか判定する。
+ *
+ * Web はローカル実行専用（ADR-0015）で、転送先は常にローカルのエミュレータになる。
+ * これを不変条件としてコードに書き、`API_PROXY_TARGET` に別の値が入ったときは
+ * `FUNCTIONS_API_KEY` を送らずに警告する。誤設定は 401 としてしか現れないため、
+ * 起動時に気づけるようにするのが狙い。
+ */
+function isLocalProxyTarget(target: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(target);
+  } catch {
+    return false;
+  }
+  // `URL.hostname` は IPv6 をブラケット付き（`[::1]`）で返し、`LOCALHOST` や
+  // 10 進表記（`2130706433`）は正規化済みのため、この一覧でよい。
+  // 0.0.0.0 はエミュレータの待ち受けアドレス（firebase.json）で、Docker を使わない場合に指定されうる。
+  // host.docker.internal はコンテナからホストへの折り返しで、外部には出ない。
+  return ["localhost", "127.0.0.1", "[::1]", "0.0.0.0", "host.docker.internal"].includes(
+    url.hostname,
+  );
+}
+
 /** 設定漏れは全リクエストの 401 として現れるため、起動時に気づけるようにする。 */
 function warnIfApiKeyUnusable(apiKey: string): void {
   if (!apiKey) {
@@ -60,6 +84,15 @@ export default defineConfig(({ mode }) => {
   const projectId = resolveProjectId(env.FUNCTIONS_EMULATOR_PROJECT ?? "");
   warnIfApiKeyUnusable(apiKey);
 
+  // 転送先がローカルのエミュレータでなければ認証ヘッダーを付けない。
+  const attachAuth = Boolean(apiKey) && isLocalProxyTarget(target);
+  if (apiKey && !attachAuth) {
+    console.warn(
+      `[vite] API_PROXY_TARGET (${target}) がローカルのエミュレータではないため、` +
+        "FUNCTIONS_API_KEY を送信しません。Functions は 401「認証が必要です。」を返します。",
+    );
+  }
+
   return {
     plugins: [react()],
     server: {
@@ -73,7 +106,7 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on("proxyReq", (proxyReq) => {
               // onRequest は Bearer 認証必須。キーをブラウザに渡さないため、ここで付与する。
-              if (apiKey) {
+              if (attachAuth) {
                 proxyReq.setHeader("Authorization", `Bearer ${apiKey}`);
               }
             });

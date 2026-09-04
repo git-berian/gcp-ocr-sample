@@ -208,8 +208,8 @@ firebase functions:secrets:get FUNCTIONS_API_KEY --project dev
 ```bash
 npm run docker:functions:sh
 
-# コンテナ内で
-firebase login --no-localhost  # 初回のみ
+# コンテナ内で（認証情報は volume に残るため、初回とログアウト後のみ）
+firebase login --no-localhost
 
 # 開発環境
 firebase deploy --only functions --project dev
@@ -226,6 +226,10 @@ firebase deploy --only functions --project prod
 | 開発         | `dev` / `default`           | `documentaisample-488504` | `.env.documentaisample-488504` | 稼働中 |
 | ステージング | `staging`                   | 未作成                    | `.env.<project-id>`            | 未作成 |
 | 本番         | `prod`                      | 未作成                    | `.env.<project-id>`            | 未作成 |
+
+`firebase login` の認証情報は named volume `firebase_config`（コンテナ内の `/home/node/.config`）に保存されます。
+コンテナを終了しても残るため、ログインは一度で済みます。ログインを解除するには `firebase logout` を実行してください。
+volume は functions / web で別々なので、web 側でも一度ログインが必要です。
 
 staging / prod はプロジェクトを作成するまで `.firebaserc` にエイリアスが無いため、指定してもエラーになります。
 env はエイリアス指定でも解決後のプロジェクト ID に対応する `.env.<project-id>` が自動で選ばれるため、

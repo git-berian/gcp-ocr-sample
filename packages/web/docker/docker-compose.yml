@@ -15,6 +15,7 @@ services:
       - ../../..:/app
       - root_node_modules:/app/node_modules
       - node_modules:/app/packages/web/node_modules
+      - firebase_config:/home/node/.config
 
   playwright:
     build:
@@ -30,3 +31,5 @@ services:
 volumes:
   root_node_modules:
   node_modules:
+  # firebase login の認証情報（/home/node/.config/configstore）を保持する
+  firebase_config:

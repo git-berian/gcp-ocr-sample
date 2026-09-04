@@ -77,16 +77,25 @@ ESLint・Prettier は上記に加えて `eslint.config.js` も対象にしてい
 Web は Functions の onRequest エンドポイントを叩き、これは `FUNCTIONS_API_KEY` による Bearer 認証を要求します。
 dev サーバーの proxy が送るキーを `packages/web/.env.local` に置いてください（`VITE_` 接頭辞は付けない）。
 
-**入れる値は「エミュレータが検証に使う値」と一致させる必要があります。** どちらになるかはログイン状態で変わります。
+**入れる値は「エミュレータが検証に使う値」と一致させる必要があります。** これは Functions のコンテナが
+`firebase login` 済みかどうかで変わります（ADC = `secrets/sa.json` ではなく、`firebase login` の認証情報が条件）。
 
-| 状態                  | エミュレータが使う値                                     |
+| コンテナの状態        | `FUNCTIONS_API_KEY` に使われる値                         |
 | --------------------- | -------------------------------------------------------- |
 | `firebase login` 済み | **Secret Manager の値**（`defineSecret` が取得しに行く） |
 | 未ログイン            | `packages/functions/.env.local` の値                     |
 
-ログイン済みの場合、エミュレータの起動ログに `Trying to access secret FUNCTIONS_API_KEY@latest` が出ます。
-このとき `packages/functions/.env.local` に別の値が入っていても**無視される**ため、
-Secret Manager の値を取得して web 側に入れてください。
+`FUNCTIONS_API_KEY` と `ANTHROPIC_API_KEY` は `defineSecret` で宣言されているため（`src/index.ts`）、
+ログイン済みだと Secret Manager の値が `.env.local` の同名変数を**上書きします**。
+`.env.local` 自体は読み込まれており、`defineSecret` していない変数（`GCP_PROJECT_ID` / `DOCAI_*` /
+`GEMINI_*` / `CLAUDE_*` 等）はそのまま使われます。
+
+見分け方は起動ログです。
+
+```text
+i  functions: Loaded environment variables from .env, .env.documentaisample-488504, .env.local.
+i  functions: Trying to access secret FUNCTIONS_API_KEY@latest   ← この行が出たら Secret Manager が優先
+```
 
 ```bash
 # functions のコンテナ内で値を取得する

@@ -21,7 +21,6 @@ npm run docker:web:typecheck           # 型検査（テスト・e2e・Storybook
 npm run docker:web:build               # Vite プロダクションビルド
 npm run docker:web:test                # テスト実行（全テスト）
 npm run docker:web:test:integration    # 結合テストのみ実行
-npm run docker:web:test:scripts        # ビルドスクリプトのテストのみ実行
 npm run docker:web:test:coverage       # テスト + カバレッジ計測
 npm run docker:web:dev                 # 開発サーバー起動
 npm run docker:web:sh                  # コンテナに入って操作
@@ -46,7 +45,6 @@ npm run format           # Prettier フォーマット
 npm run test             # テスト実行（全テスト）
 npm run test:unit        # ユニットテストのみ
 npm run test:integration # 結合テストのみ
-npm run test:scripts     # ビルドスクリプトのテストのみ
 npm run storybook -- --host 0.0.0.0  # Storybook 開発サーバー起動（--host 必須）
 npm run build:storybook  # Storybook 静的ビルド
 npm run test:coverage    # テスト + カバレッジ計測
@@ -55,26 +53,69 @@ npm run test:watch       # テスト実行（ウォッチモード）
 
 ## テスト構成
 
-テストは Vitest のプロジェクト機能で **unit**（単体テスト）、**integration**（結合テスト）、**scripts**（ビルドスクリプト）に分離しています。
+テストは Vitest のプロジェクト機能で **unit**（単体テスト）と **integration**（結合テスト）に分離しています。
 
-| 種別        | 配置場所                          | 説明                                                          |
-| ----------- | --------------------------------- | ------------------------------------------------------------- |
-| unit        | `src/**/*.test.{ts,tsx}`          | ソースコードと同じディレクトリに配置。依存は個別にモック      |
-| integration | `tests/integration/**/*.test.tsx` | App を実際の依存グラフで結合して検証。Firebase SDK のみモック |
-| scripts     | `tests/scripts/**/*.test.ts`      | デプロイガード（`scripts/deploy-guard.mjs`）の判定ロジック    |
+| 種別        | 配置場所                          | 説明                                                     |
+| ----------- | --------------------------------- | -------------------------------------------------------- |
+| unit        | `src/**/*.test.{ts,tsx}`          | ソースコードと同じディレクトリに配置。依存は個別にモック |
+| integration | `tests/integration/**/*.test.tsx` | App を実際の依存グラフで結合して検証。`fetch` のみモック |
 
 結合テストのヘルパー（フィクスチャ・モック）は `tests/integration/helpers/` にまとめています。
 Visual Regression テストは Vitest ではなく Playwright で実行し、`e2e/` に置いています。
 
 型検査は `src/` `tests/` `e2e/` `.storybook/` `*.config.ts` が対象です。
-`scripts/*.mjs` は `allowJs` で読み込むだけで（`checkJs` は付けていない）型検査の対象外です。
-ESLint・Prettier は上記に加えて `scripts/` と `eslint.config.js` も対象にしています
+ESLint・Prettier は上記に加えて `eslint.config.js` も対象にしています
 （`npm run typecheck` は `tsconfig.test.json` を使用）。Vitest は型を検査しないため、
 テストコードの型崩れは `typecheck` で検出します。
 
 ## ローカル実行
 
-Functions を起動した状態で、別ターミナルから Web 開発サーバーを起動します。
+**この Web はローカル実行専用です（ADR-0015）。** Hosting にはデプロイしません。
+
+### 初回のみ: API キーを置く
+
+Web は Functions の onRequest エンドポイントを叩き、これは `FUNCTIONS_API_KEY` による Bearer 認証を要求します。
+dev サーバーの proxy が送るキーを `packages/web/.env.local` に置いてください（`VITE_` 接頭辞は付けない）。
+
+**入れる値は「エミュレータが検証に使う値」と一致させる必要があります。** これは Functions のコンテナが
+`firebase login` 済みかどうかで変わります（ADC = `secrets/sa.json` ではなく、`firebase login` の認証情報が条件）。
+
+| コンテナの状態        | `FUNCTIONS_API_KEY` に使われる値                         |
+| --------------------- | -------------------------------------------------------- |
+| `firebase login` 済み | **Secret Manager の値**（`defineSecret` が取得しに行く） |
+| 未ログイン            | `packages/functions/.env.local` の値                     |
+
+`FUNCTIONS_API_KEY` と `ANTHROPIC_API_KEY` は `defineSecret` で宣言されているため（`src/index.ts`）、
+ログイン済みだと Secret Manager の値が `.env.local` の同名変数を**上書きします**。
+`.env.local` 自体は読み込まれており、`defineSecret` していない変数（`GCP_PROJECT_ID` / `DOCAI_*` /
+`GEMINI_*` / `CLAUDE_*` 等）はそのまま使われます。
+
+見分け方は起動ログです。
+
+```text
+i  functions: Loaded environment variables from .env, .env.documentaisample-488504, .env.local.
+i  functions: Trying to access secret FUNCTIONS_API_KEY@latest   ← この行が出たら Secret Manager が優先
+```
+
+```bash
+# functions のコンテナ内で値を取得する
+npm run docker:functions:sh
+firebase functions:secrets:access FUNCTIONS_API_KEY --project dev
+
+# 取得した値を web に置く（VITE_ 接頭辞は付けないこと）
+echo 'FUNCTIONS_API_KEY=<値>' >> packages/web/.env.local
+```
+
+`.env.local` は `.gitignore` 済みでリポジトリには入りません。雛形は各パッケージの `.env.example` を参照してください。
+
+401 が返るときの切り分けです。
+
+| レスポンス                          | 原因                                                                                                                                                                                     |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `{"error":"無効な API キーです。"}` | キーの値が食い違っている（上表を参照）                                                                                                                                                   |
+| `{"error":"認証が必要です。"}`      | ヘッダー自体が付いていない。次のどちらか<br>・変数名に `VITE_` を付けてしまっている（`FUNCTIONS_API_KEY` が正）<br>・`API_PROXY_TARGET` がローカルのエミュレータ以外を指している（後述） |
+
+### 起動
 
 ```bash
 # ターミナル1: Functions 起動
@@ -85,6 +126,10 @@ npm run docker:web:dev
 ```
 
 ブラウザで http://localhost:5173 にアクセスし、ファイルをアップロードすると OCR 結果が表示されます。
+
+> dev サーバーは `--host` で起動し、compose がホストの全インターフェースに公開するため、
+> **同一 LAN の別端末（スマートフォン等）からも開けます**。動作確認のために意図してこの設定にしています。
+> proxy が認証ヘッダーを自動で付けるため、LAN から到達できる相手は認証なしで課金 API を呼べます（ADR-0015 の受容リスク）。
 
 ## Storybook
 
@@ -121,136 +166,47 @@ git add packages/web/e2e/components.visual.ts-snapshots/
 
 CI では Storybook ビルド → Playwright テストが自動実行され、ベースラインとの差分があれば失敗します。
 
-## デプロイ
-
-`firebase deploy` の `predeploy` フックで自動ビルドされます。ビルドに使う mode（= 読み込む `.env.<mode>`）は
-**デプロイ先の Firebase プロジェクトから自動で決まる**ため、環境変数を手で指定する必要はありません。
-
-```bash
-npm run docker:web:sh
-
-# コンテナ内で（認証情報は volume に残るため、初回とログアウト後のみ）
-firebase login --no-localhost
-
-# 開発環境
-firebase deploy --only hosting --project dev
-
-# ステージング環境（プロジェクト作成後に有効）
-firebase deploy --only hosting --project staging
-
-# 本番環境（プロジェクト作成後に有効）
-firebase deploy --only hosting --project prod
-```
-
-| 環境         | エイリアス（`.firebaserc`） | プロジェクト              | 使われる env       | 状態   |
-| ------------ | --------------------------- | ------------------------- | ------------------ | ------ |
-| 開発         | `dev` / `default`           | `documentaisample-488504` | `.env.development` | 稼働中 |
-| ステージング | `staging`                   | 未作成                    | `.env.staging`     | 未作成 |
-| 本番         | `prod`                      | 未作成                    | `.env.production`  | 未作成 |
-
-`firebase login` の認証情報は named volume `firebase_config`（コンテナ内の `/home/node/.config`）に保存されます。
-コンテナを終了しても残るため、ログインは一度で済みます。ログインを解除するには `firebase logout` を実行してください。
-volume は web / functions で別々なので、functions 側でも一度ログインが必要です。
-
-staging / prod はプロジェクトを作成するまで `.firebaserc` にエイリアスが無いため、
-指定してもエラーになります。作成手順は下記「デプロイ先を追加する」を参照してください。
-
-対応の定義は `scripts/deploy-guard.mjs` の `DEPLOY_MODES` が唯一の正です。
-Firebase CLI が predeploy フックに渡す `GCLOUD_PROJECT`（エイリアス解決後のプロジェクト ID）から mode を引きます。
-
-次の場合はビルドが失敗し、デプロイは中止されます。
-
-- `DEPLOY_MODES` に無いプロジェクトへデプロイしようとした
-- 必須の `VITE_FIREBASE_*` / `VITE_APP_PASSWORD` が未設定、または `.env.example` の雛形値（`your-...`）のまま
-- `VITE_FIREBASE_PROJECT_ID` がデプロイ先プロジェクトと一致しない
-
-> 誤った Firebase 設定が焼き込まれると、Functions の呼び出し先が存在しないホストになり、
-> ブラウザ上は CORS エラーとして現れます。上記のチェックはこれを防ぐためのものです。
-
-> `VITE_APP_PASSWORD` は UI の目隠しです。値はバンドルに含まれるため、
-> Functions 側の保護ではありません。
-
-### デプロイ先を追加する
-
-staging / 本番のプロジェクトを作成したときの手順です（web / functions 両方を含みます）。
-以下は本番（mode=production・エイリアス `prod`）の例です。
-
-1. Firebase プロジェクトを作成する
-2. `.firebaserc` にエイリアスを追加する
-
-   ```json
-   {
-     "projects": {
-       "default": "documentaisample-488504",
-       "dev": "documentaisample-488504",
-       "prod": "<project-id>"
-     }
-   }
-   ```
-
-   `default` は消さないこと。`packages/functions` の `firebase emulators:start` /
-   `functions:shell` は `--project` を付けていないため、アクティブプロジェクトが無くなると
-   `npm run docker:functions:start` が失敗します。
-
-3. `packages/web/.env.production` を作成し、実際の値を設定する（`.env.example` 参照）
-4. `scripts/deploy-guard.mjs` の `DEPLOY_MODES` のコメントを外して ID を入れる
-
-   ```js
-   "<project-id>": "production",
-   ```
-
-5. `packages/functions/.env.<project-id>` を作成する（`packages/functions/.env.example` 参照）
-6. Secret Manager に `FUNCTIONS_API_KEY` / `ANTHROPIC_API_KEY` を登録する
-   （`packages/functions/README.md` の「シークレットの設定」）
-7. Document AI プロセッサを作成し、Vertex AI を有効化する
-
-3・4 のどちらかを忘れると web のビルドが失敗して止まります。
-一方 5・6・7（functions 側）の漏れはガードの対象外で、web は正常に公開され、
-UI からのリクエストが実行時にエラーになる形で現れます。
-
-ガードは `.env` / `.env.local`（端末ローカル・git 管理外）も読むため、
-端末側にだけ値がある状態でも通ります。`.env.<mode>` に入っていることを確認してください。
-
-複数のデプロイ先ができたら、`.firebaserc` の `default` を外して `--project` を必須にすると、
-指定漏れによる誤デプロイを防げます。
-
-> `firebase deploy` の predeploy フックはビルドと上記の設定チェックのみで、lint・型検査・テスト・VRT は行いません。
-> デプロイ前に `npm run docker:verify`（ホスト側）を通してください。
-
-デプロイ後、`https://<project-id>.web.app` で Web フロントエンドにアクセスできます。
-Functions の呼び出しは Firebase SDK の `httpsCallable` で直接行うため、Hosting 側の API プロキシ設定は不要です。
-
 ## 環境変数
 
 Vite の [env ファイル読み込み規約](https://vite.dev/guide/env-and-mode) に従い、モードに応じたファイルが自動ロードされます。
 
-| ファイル           | 用途                                            | 読み込みタイミング                             |
-| ------------------ | ----------------------------------------------- | ---------------------------------------------- |
-| `.env`             | 全モード共通の設定                              | 常時                                           |
-| `.env.development` | 開発環境（Firebase 設定・パスワード等）         | `npm run dev` / `dev` プロジェクトへのデプロイ |
-| `.env.staging`     | ステージング環境（Firebase 設定・パスワード等） | staging のデプロイ先を追加した場合             |
-| `.env.production`  | 本番環境（Firebase 設定・パスワード等）         | 本番のデプロイ先を追加した場合                 |
-| `.env.example`     | 設定項目のリファレンス（git 管理）              | —                                              |
+| ファイル       | 用途                               | 読み込みタイミング |
+| -------------- | ---------------------------------- | ------------------ |
+| `.env`         | 全モード共通の設定                 | 常時               |
+| `.env.local`   | 端末ローカルの設定（git 管理外）   | 常時               |
+| `.env.example` | 設定項目のリファレンス（git 管理） | —                  |
 
 ### 必要な環境変数
 
-環境固有のファイル（`.env.development` 等）に設定します。
+| 変数名                       | 必須 | 置き場所           | 説明                                                                                                                                                                   |
+| ---------------------------- | ---- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FUNCTIONS_API_KEY`          | Yes  | `.env.local`       | onRequest の呼び出し側 API キー。dev サーバーの proxy が Authorization ヘッダーに載せる                                                                                |
+| `API_PROXY_TARGET`           | No   | compose が設定済み | proxy の転送先。未設定なら `http://localhost:8080`。**ローカルのエミュレータ以外を指すと Authorization を付けず警告する**（下記）                                      |
+| `FUNCTIONS_EMULATOR_PROJECT` | No   | `.env.local`       | proxy の rewrite に使うプロジェクト ID。既定は `.firebaserc` の `projects.default`。`firebase use <alias>` で切り替えて食い違う場合に指定する（合わないと 404 になる） |
 
-| 変数名                              | 必須           | 説明                                                                                        |
-| ----------------------------------- | -------------- | ------------------------------------------------------------------------------------------- |
-| `VITE_FIREBASE_API_KEY`             | Yes            | Firebase API キー                                                                           |
-| `VITE_FIREBASE_AUTH_DOMAIN`         | Yes            | Firebase Auth ドメイン                                                                      |
-| `VITE_FIREBASE_PROJECT_ID`          | Yes            | Firebase プロジェクト ID                                                                    |
-| `VITE_FIREBASE_STORAGE_BUCKET`      | Yes            | Firebase Storage バケット                                                                   |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Yes            | Firebase Messaging Sender ID                                                                |
-| `VITE_FIREBASE_APP_ID`              | Yes            | Firebase App ID                                                                             |
-| `VITE_APP_PASSWORD`                 | デプロイ時のみ | UI アクセス制限用パスワード。値はバンドルに含まれるため UI の目隠し。`npm run dev` では不要 |
+`API_PROXY_TARGET` に指定できるのは **ローカルのエミュレータ**（`localhost` / `127.0.0.1` / `[::1]` /
+`0.0.0.0` / `host.docker.internal`）だけです。Web はローカル実行専用（ADR-0015）で転送先が
+リモートになる用途が無いため、それ以外を指定すると `vite.config.ts` は `Authorization` を付けずに
+起動時に警告します（誤設定が 401 としてしか現れないのを防ぐため）。
 
-### Functions エミュレータ接続
+**`VITE_` 接頭辞を付けないこと。** 付けるとバンドルに焼き込まれ、ブラウザから読めてしまいます。
+接頭辞なしの変数は `vite.config.ts` が `loadEnv(mode, webRoot, "")` で明示的に読み込み、
+dev サーバー（Node 側）だけが参照します。
 
-エミュレータ接続は Vite の `command` パラメータで自動判定されます（`vite.config.ts` の `define` で `__USE_EMULATOR__` を設定）。開発サーバー（`vite`）実行時のみエミュレータに接続し、ビルド（`vite build`）では mode に関係なく接続しません。
+### Functions への接続
 
-| シナリオ                         | Vite command | エミュレータ |
-| -------------------------------- | ------------ | ------------ |
-| ローカル開発（`docker:web:dev`） | serve        | 接続する     |
-| ビルド（全 mode 共通）           | build        | 接続しない   |
+ブラウザは同一オリジンの `/api/<エンドポイント名>` を叩き、dev サーバーの proxy（`vite.config.ts` の
+`server.proxy`）が Functions エミュレータへ転送します。同一オリジンのため、Functions 側に CORS 設定は要りません。
+
+| 項目             | 内容                                                                       |
+| ---------------- | -------------------------------------------------------------------------- |
+| ブラウザ         | `POST /api/parseDocumentGeminiHttp`                                        |
+| proxy の書き換え | `/<project>/<region>/parseDocumentGeminiHttp`（エミュレータの URL 形）     |
+| 転送先           | `API_PROXY_TARGET`（compose が `http://host.docker.internal:8080` を設定） |
+| 付与ヘッダー     | `Authorization: Bearer <FUNCTIONS_API_KEY>`                                |
+
+プロジェクト ID は `.firebaserc` の `projects.default` から読みます。エミュレータは `--project` を
+付けずに起動するため、同じ値を参照することで URL のずれを防いでいます。リージョンは
+`packages/functions/src/index.ts` の onRequest の指定と揃えてください。
+
+**API キーはバンドルに含まれません。** proxy（Node 側）でヘッダーを付けるため、ブラウザはキーを持ちません。

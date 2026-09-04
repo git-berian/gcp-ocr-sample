@@ -17,8 +17,9 @@ Google Cloud Document AI・Vertex AI Gemini・Claude（Anthropic）を抽出エ�
 - Docker / Docker Compose
 - GCP プロジェクトとサービスアカウントキー（JSON）— GCP 認証（ADC）に使用
 
-Firebase CLI は各パッケージの Docker イメージに同梱されているため、ホストへの導入は不要です。
-デプロイはコンテナ内で実行します（[デプロイ先](#デプロイ先)）。
+Firebase CLI は functions の Docker イメージに同梱されているため、ホストへの導入は不要です。
+デプロイはコンテナ内で実行します（[デプロイ先](#デプロイ先)）。デプロイ対象は Functions のみで、
+Web はローカル実行専用です（ADR-0015）。
 
 抽出エンジンは Web の UI から選択でき（既定は Document AI）、Functions は各エンジンに対応する関数を提供します。前提（設定変数は `packages/functions/.env.example` 参照）:
 
@@ -42,8 +43,12 @@ secrets/sa.json
 
 ```bash
 cp packages/functions/.env.example packages/functions/.env
-cp packages/web/.env.example packages/web/.env
+cp packages/web/.env.example packages/web/.env.local
 ```
+
+`FUNCTIONS_API_KEY` は Functions（エミュレータが検証する側）と Web（dev サーバーの proxy が送る側）の
+**両方**に同じ値が必要です（ADR-0015）。詳細は [packages/web/README.md](packages/web/README.md) の
+「ローカル実行」を参照してください。
 
 各パッケージで必要な環境変数の詳細は、それぞれの `.env.example` を参照してください。
 
@@ -109,7 +114,7 @@ npm run docker:web:verify          # web のみ（VRT なし）
 パッケージ個別の `docker:<pkg>:verify` には含まれません。カバレッジ閾値（80%）と VRT を含むため、
 **CI が見ているものと同等**です。
 
-`firebase deploy` の predeploy フックはビルドと web の Firebase 設定チェックしかしません。
+`firebase deploy` の predeploy フックは functions のビルドしかしません（`firebase.json`）。
 つまり CI を経由せずに本番へ出せてしまうため、デプロイ前にはこのコマンドで塞いでください。
 
 読み取り専用なので、`check` と違ってファイルを書き換えません。
@@ -129,6 +134,8 @@ npm run docker:web:verify          # web のみ（VRT なし）
 
 ## デプロイ先
 
+**デプロイ対象は Functions のみです。** Web はローカル実行専用で、Hosting にはデプロイしません（ADR-0015）。
+
 | 環境         | エイリアス（`.firebaserc`） | プロジェクト              | 状態   |
 | ------------ | --------------------------- | ------------------------- | ------ |
 | 開発         | `dev` / `default`           | `documentaisample-488504` | 稼働中 |
@@ -136,17 +143,14 @@ npm run docker:web:verify          # web のみ（VRT なし）
 | 本番         | `prod`                      | 未作成                    | 未作成 |
 
 ```bash
-# 各パッケージのコンテナ内で実行する（docker:web:sh / docker:functions:sh）
-firebase deploy --only hosting   --project dev   # web
-firebase deploy --only functions --project dev   # functions
+# functions のコンテナ内で実行する（docker:functions:sh）
+firebase deploy --only functions --project dev
 ```
 
-web はデプロイ先プロジェクトから使う env（`.env.<mode>`）が自動で決まり、
-設定が未設定・雛形値のまま・別プロジェクトのものであればビルドが失敗します。
 functions は `.env.<project-id>` がプロジェクト ID で自動選択されます。
 
 staging / 本番のプロジェクトを作成したときの手順は
-[packages/web/README.md](packages/web/README.md) の「デプロイ先を追加する」に集約しています。
+[packages/functions/README.md](packages/functions/README.md) を参照してください。
 
 ## アーキテクチャ
 
@@ -165,15 +169,15 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 
 パッケージごとに独立した Docker 環境を持ちます。
 
-| ファイル                                       | 用途   | 説明                                                    |
-| ---------------------------------------------- | ------ | ------------------------------------------------------- |
-| `packages/functions/docker/Dockerfile`         | 開発   | Node.js 22 + Firebase CLI                               |
-| `packages/functions/docker/entrypoint.sh`      | 開発   | named volume の所有者を node ユーザーに変更してから実行 |
-| `packages/functions/docker/docker-compose.yml` | 開発   | functions サービス定義                                  |
-| `packages/web/docker/Dockerfile`               | 開発   | Node.js 22 + Firebase CLI                               |
-| `packages/web/docker/entrypoint.sh`            | 開発   | named volume の所有者を node ユーザーに変更してから実行 |
-| `packages/web/docker/docker-compose.yml`       | 開発   | web / playwright サービス定義                           |
-| `packages/web/docker/Dockerfile.playwright`    | テスト | Playwright ブラウザ同梱イメージ（VRT 用）               |
+| ファイル                                       | 用途   | 説明                                                     |
+| ---------------------------------------------- | ------ | -------------------------------------------------------- |
+| `packages/functions/docker/Dockerfile`         | 開発   | Node.js 22 + Firebase CLI                                |
+| `packages/functions/docker/entrypoint.sh`      | 開発   | named volume の所有者を node ユーザーに変更してから実行  |
+| `packages/functions/docker/docker-compose.yml` | 開発   | functions サービス定義                                   |
+| `packages/web/docker/Dockerfile`               | 開発   | Node.js 22（web はデプロイしないため Firebase CLI なし） |
+| `packages/web/docker/entrypoint.sh`            | 開発   | named volume の所有者を node ユーザーに変更してから実行  |
+| `packages/web/docker/docker-compose.yml`       | 開発   | web / playwright サービス定義                            |
+| `packages/web/docker/Dockerfile.playwright`    | テスト | Playwright ブラウザ同梱イメージ（VRT 用）                |
 
 `node_modules` は named volume に載せ、ホスト側（macOS ビルドのバイナリを含む）を
 コンテナから隠しています。`firebase login` の認証情報も named volume に保持するため、
@@ -245,7 +249,7 @@ DDD（ドメイン駆動設計）に基づく 3 層構成を採用していま�
 │   └── ai-development-guidelines.md   # AI駆動開発ガイドライン
 ├── .dockerignore                        # Docker ビルド除外設定
 ├── .firebaserc                          # Firebase プロジェクト設定
-├── firebase.json                        # Firebase 設定（Functions + Hosting デプロイ）
+├── firebase.json                        # Firebase 設定（Functions のデプロイとエミュレータ）
 ├── package.json                        # ルート設定（Git フック・lint-staged）
 ├── tsconfig.json                       # 共通 TypeScript ベース設定
 ├── CONTRIBUTING.md                     # 開発ガイド

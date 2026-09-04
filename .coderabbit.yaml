@@ -1,6 +1,9 @@
 language: ja
 
 reviews:
+  # NOTE: star 10 未満の public リポジトリは CodeRabbit 側のポリシーで自動レビューの対象外になる。
+  # この設定は star 数の条件を満たした場合に効く。現状はコード PR で `@coderabbitai review` を
+  # コメントして手動起動する運用（.claude/skills/create-pr.md）。
   auto_review:
     enabled: true
     drafts: false

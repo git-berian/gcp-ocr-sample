@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { mockCallable } from "./helpers/mock-firebase";
+import { mockFetch, okResponse, errorResponse } from "./helpers/mock-fetch";
 import { MOCK_RECEIPT, MOCK_API_RESPONSE, createTestFile } from "./helpers/fixtures";
 import { App } from "../../src/App";
 
 describe("App（結合テスト）", () => {
   beforeEach(() => {
-    mockCallable.mockReset();
+    mockFetch.mockReset();
   });
 
   it("正常系: ファイル選択 → 解析 → タブ内の ResultTable に結果が表示される", async () => {
-    mockCallable.mockResolvedValue(MOCK_API_RESPONSE);
+    mockFetch.mockResolvedValue(okResponse(MOCK_API_RESPONSE));
     const user = userEvent.setup();
 
     render(<App />);
@@ -33,16 +33,21 @@ describe("App（結合テスト）", () => {
     expect(screen.getByText("2026-05-16")).toBeInTheDocument();
     expect(screen.getByText("T1234567890123")).toBeInTheDocument();
 
-    expect(mockCallable).toHaveBeenCalledWith({
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/parseDocumentHttp",
+      expect.objectContaining({ method: "POST" }),
+    );
+    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(init.body as string)).toEqual({
       content: expect.any(String),
       mimeType: "application/pdf",
     });
   });
 
   it("複数ファイル: 各ファイルの結果がタブで切り替えられる", async () => {
-    mockCallable
-      .mockResolvedValueOnce({ data: { receipt: { ...MOCK_RECEIPT, supplierName: "店A" } } })
-      .mockResolvedValueOnce({ data: { receipt: { ...MOCK_RECEIPT, supplierName: "店B" } } });
+    mockFetch
+      .mockResolvedValueOnce(okResponse({ receipt: { ...MOCK_RECEIPT, supplierName: "店A" } }))
+      .mockResolvedValueOnce(okResponse({ receipt: { ...MOCK_RECEIPT, supplierName: "店B" } }));
     const user = userEvent.setup();
 
     render(<App />);
@@ -71,7 +76,7 @@ describe("App（結合テスト）", () => {
       expect(screen.getByText("店B")).toBeInTheDocument();
     });
 
-    expect(mockCallable).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
   it("バリデーションエラー: サポート外ファイルは FileUploader が拒否し、解析ボタンが無効のまま", async () => {
@@ -86,11 +91,11 @@ describe("App（結合テスト）", () => {
     const submitButton = screen.getByRole("button", { name: "解析" });
     expect(submitButton).toBeDisabled();
     expect(screen.queryByText(/選択済み:/)).not.toBeInTheDocument();
-    expect(mockCallable).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it("API エラー: Firebase Functions 失敗でタブ内に ErrorMessage とリトライボタンを表示する", async () => {
-    mockCallable.mockRejectedValue(new Error("Functions エラー"));
+  it("API エラー: Functions が 500 を返すとタブ内に ErrorMessage とリトライボタンを表示する", async () => {
+    mockFetch.mockResolvedValue(errorResponse(500, "内部サーバーエラー"));
     const user = userEvent.setup();
 
     render(<App />);
@@ -106,15 +111,32 @@ describe("App（結合テスト）", () => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Functions エラー");
+    expect(screen.getByRole("alert")).toHaveTextContent("内部サーバーエラー");
     expect(screen.getByRole("button", { name: "リトライ" })).toBeInTheDocument();
-    expect(mockCallable).toHaveBeenCalled();
+    expect(mockFetch).toHaveBeenCalled();
+  });
+
+  it("通信エラー: fetch 自体が失敗してもタブ内に ErrorMessage を表示する", async () => {
+    mockFetch.mockRejectedValue(new TypeError("Failed to fetch"));
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    await user.upload(screen.getByLabelText("ファイル"), createTestFile());
+    await user.click(screen.getByRole("button", { name: "解析" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Failed to fetch");
+    expect(screen.getByRole("button", { name: "リトライ" })).toBeInTheDocument();
   });
 
   it("リトライ: エラー後にリトライボタンで再実行できる", async () => {
-    mockCallable
-      .mockRejectedValueOnce(new Error("一時的なエラー"))
-      .mockResolvedValueOnce(MOCK_API_RESPONSE);
+    mockFetch
+      .mockResolvedValueOnce(errorResponse(500, "一時的なエラー"))
+      .mockResolvedValueOnce(okResponse(MOCK_API_RESPONSE));
     const user = userEvent.setup();
 
     render(<App />);
@@ -136,15 +158,15 @@ describe("App（結合テスト）", () => {
     });
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    expect(mockCallable).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
   it("ローディング状態: 解析中にタブ内に表示され、完了後に消える", async () => {
-    let resolveCallable!: (value: typeof MOCK_API_RESPONSE) => void;
-    mockCallable.mockImplementation(
+    let resolveFetch!: (value: Response) => void;
+    mockFetch.mockImplementation(
       () =>
-        new Promise((resolve) => {
-          resolveCallable = resolve;
+        new Promise<Response>((resolve) => {
+          resolveFetch = resolve;
         }),
     );
     const user = userEvent.setup();
@@ -162,7 +184,7 @@ describe("App（結合テスト）", () => {
       expect(screen.getByText("解析中...")).toBeInTheDocument();
     });
 
-    resolveCallable(MOCK_API_RESPONSE);
+    resolveFetch(okResponse(MOCK_API_RESPONSE));
 
     await waitFor(() => {
       expect(screen.queryByText("解析中...")).not.toBeInTheDocument();

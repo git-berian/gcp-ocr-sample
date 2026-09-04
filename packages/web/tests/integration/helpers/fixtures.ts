@@ -10,7 +10,7 @@ export const MOCK_RECEIPT: ReceiptExtraction = {
   meta: { source: "gemini" },
 };
 
-export const MOCK_API_RESPONSE = { data: { receipt: MOCK_RECEIPT } };
+export const MOCK_API_RESPONSE = { receipt: MOCK_RECEIPT };
 
 export function createTestFile(
   name: string = "receipt.pdf",

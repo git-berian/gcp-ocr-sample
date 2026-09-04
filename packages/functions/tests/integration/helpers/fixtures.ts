@@ -1,6 +1,5 @@
 import { vi } from "vitest";
 import type { handleParseDocument } from "../../../src/handlers/parse-document.js";
-import type { handleParseDocumentCall } from "../../../src/handlers/parse-document-call.js";
 
 export const TEST_ENV = {
   GCP_PROJECT_ID: "test-project",
@@ -123,13 +122,4 @@ export function createMockReqRes(
   } as unknown as HandlerParams[1];
 
   return { req, res };
-}
-
-export function createMockCallableRequest(
-  overrides: Partial<{ data: unknown; auth: unknown }> = {},
-) {
-  return {
-    data: { ...VALID_REQUEST_BODY },
-    ...overrides,
-  } as Parameters<typeof handleParseDocumentCall>[0];
 }

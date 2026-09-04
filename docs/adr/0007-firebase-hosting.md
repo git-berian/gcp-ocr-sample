@@ -2,7 +2,7 @@
 
 ## ステータス
 
-承認（ADR-0015 が supersede 提案中）
+廃止（ADR-0015 により supersede。Web は Hosting にデプロイしない）
 
 ## コンテキスト
 

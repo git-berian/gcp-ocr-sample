@@ -208,7 +208,8 @@ npm run docker:web:test:visual        # 比較
 npm run docker:web:test:visual:update # 差分が正当だと確認できた場合のみ
 ```
 
-`storybook-static` は named volume 内にあり、ソースを変更しただけでは再ビルドされません。
+`storybook-static` はビルド成果物で、ホスト側の `packages/web/storybook-static/` に残ります
+（`/app` は bind mount のため、named volume ではありません）。ソースを変更しても自動では再ビルドされません。
 ビルドを飛ばして `test:visual:update` を単独実行すると、古い成果物に対してスナップショットが
 記録され、退行を取り込んだまま緑になります。差分が出たら、まず画像を目視して原因を確認してください。
 

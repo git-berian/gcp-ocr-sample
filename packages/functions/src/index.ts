@@ -1,44 +1,29 @@
-import { onCall, onRequest } from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
-import { handleParseDocumentCall } from "./handlers/parse-document-call.js";
 import { handleParseDocument } from "./handlers/parse-document.js";
-import { handleParseDocumentGeminiCall } from "./handlers/parse-document-gemini-call.js";
 import { handleParseDocumentGemini } from "./handlers/parse-document-gemini.js";
-import { handleParseDocumentClaudeCall } from "./handlers/parse-document-claude-call.js";
 import { handleParseDocumentClaude } from "./handlers/parse-document-claude.js";
 
 const functionsApiKey = defineSecret("FUNCTIONS_API_KEY");
 // Claude 直接 API 経路（CLAUDE_TRANSPORT=api）用。vertex 経路では未使用（ADR-0013）。
 const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
 
-/** 未使用 — onCall。呼び出し元がおらず削除予定（ADR-0015 / #267） */
-export const parseDocumentCall = onCall({ region: "asia-northeast1" }, handleParseDocumentCall);
+// 入口は onRequest に一本化している（ADR-0015）。Web / 外部サービスのいずれからも
+// FUNCTIONS_API_KEY による Bearer 認証で呼び出す。
 
-/** Web / 外部サービス用 — onRequest + API キー認証 */
+/** Document AI — onRequest + API キー認証 */
 export const parseDocumentHttp = onRequest(
   { region: "asia-northeast1", secrets: [functionsApiKey] },
   handleParseDocument,
 );
 
-/** 未使用 — Gemini onCall。呼び出し元がおらず削除予定（ADR-0015 / #267） */
-export const parseDocumentGeminiCall = onCall(
-  { region: "asia-northeast1" },
-  handleParseDocumentGeminiCall,
-);
-
-/** Web / 外部サービス用 — Gemini onRequest + API キー認証 */
+/** Gemini — onRequest + API キー認証 */
 export const parseDocumentGeminiHttp = onRequest(
   { region: "asia-northeast1", secrets: [functionsApiKey] },
   handleParseDocumentGemini,
 );
 
-/** 未使用 — Claude onCall。呼び出し元がおらず削除予定（ADR-0015 / #267） */
-export const parseDocumentClaudeCall = onCall(
-  { region: "asia-northeast1", secrets: [anthropicApiKey] },
-  handleParseDocumentClaudeCall,
-);
-
-/** Web / 外部サービス用 — Claude onRequest + 呼び出し側 API キー認証（+ api 経路は ANTHROPIC_API_KEY） */
+/** Claude — onRequest + 呼び出し側 API キー認証（+ api 経路は ANTHROPIC_API_KEY） */
 export const parseDocumentClaudeHttp = onRequest(
   { region: "asia-northeast1", secrets: [functionsApiKey, anthropicApiKey] },
   handleParseDocumentClaude,

@@ -66,7 +66,7 @@ Web からの呼び出しは次の形にする。
 - **動作確認の対象が本番経路と一致する。** これが最大の理由。入口が 1 つになれば、Web で確認したものがそのまま本番で動くものになる。onCall を残す限り、確認していない経路を本番で動かす状態は解消しない。
 - **露出そのものが無くなる。** 呼び出し元を認証で絞るのではなく、ブラウザから叩ける入口を消す。認証機構を新たに実装せずに、コンテキストで述べた課金の露出が解消する。
 - **変更が transport 層に閉じる。** onCall / onRequest はリクエスト（`{ content, mimeType }`）もレスポンス（`{ receipt }`）も同形であることを実測で確認済み。差分は認証ヘッダー・エラー表現（`HttpsError` か HTTP status + `{ error }`）・ログのみで、application 層以下には影響しない。
-- **コードが減る。** onCall ハンドラー 3 本とテストで 379 行・6 ファイル、加えて `PasswordGate` 一式・デプロイガード・`firebase` 依存が消える。同じ 3 エンジンに対してハンドラーを 2 系統持つ重複も解消する。
+- **コードが減る。** onCall ハンドラー 3 本と単体・結合テストで 9 ファイル・約 650 行、加えて `PasswordGate` 一式・デプロイガード・`firebase` 依存が消える。同じ 3 エンジンに対してハンドラーを 2 系統持つ重複も解消する。
 - **#148 が目指した非対称の解消を、認証を足すのではなく入口を 1 つにすることで達成する。** 認証方式が 1 つになるため、以後「どちらの入口にどの認証が要るか」を考える必要がなくなる。
 - **秘密がバンドルに出ない。** dev サーバーの proxy で認証ヘッダーを付けるため、`FUNCTIONS_API_KEY` はブラウザに渡らない。`VITE_APP_PASSWORD` がバンドルに焼かれていた状態（#140 の既知の限界）は解消する。ただしこれは**秘密の露出についての主張のみ**であり、dev サーバー自体の到達範囲は別の論点として「受容リスク」に記録する。
 
@@ -87,7 +87,7 @@ Web からの呼び出しは次の形にする。
 - **デメリット**: Web を URL で共有できなくなる。動作確認には各自のローカル環境（Docker + エミュレータ + ADC 用のサービスアカウントキー）が必要になり、非エンジニアに見せる用途には使えなくなる。これは #140 が Hosting にデプロイした動機そのものを手放すことを意味する。
 - **今後の制約**: Web の呼び出しが dev サーバーの proxy を前提とするため、**将来 Web を再びデプロイする場合は呼び出し元認証を含めて作り直しになる**（本 ADR の代替案に挙げた Firebase Authentication が第一候補になる）。
 - デプロイ済みの onCall 3 関数は `firebase functions:delete` で削除する必要がある。
-- **onCall の削除（379 行・6 ファイル）とは別に、Web 側に連動変更がある。** `tests/scripts/deploy-guard.test.ts`、`packages/web/vitest.config.ts` の `scripts` プロジェクト定義、root の `docker:web:test:scripts` スクリプトが同時に不要になる。`tests/integration/helpers/mock-firebase.ts` と `src/api/parse-document.test.ts` の `vi.mock("firebase/functions")` は `fetch` のモックへ作り直しになる。
+- **onCall の削除（9 ファイル・約 650 行）とは別に、Web 側に連動変更がある。** `tests/scripts/deploy-guard.test.ts`、`packages/web/vitest.config.ts` の `scripts` プロジェクト定義、root の `docker:web:test:scripts` スクリプトが同時に不要になる。`tests/integration/helpers/mock-firebase.ts` と `src/api/parse-document.test.ts` の `vi.mock("firebase/functions")` は `fetch` のモックへ作り直しになる。
 - ルート `README.md` の `firebase.json # Firebase 設定（Functions + Hosting デプロイ）`、`packages/functions/README.md` のエンドポイント表、`packages/web/README.md` の環境変数表とデプロイ手順が変わる（#270）。
 
 ### 必須チェック観点

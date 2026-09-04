@@ -65,18 +65,19 @@ unit・integration の双方から使う共通のテスト補助は `tests/suppo
 
 ## エンドポイント
 
-3 つの抽出エンジン × onCall / onRequest の 6 関数を提供します（`src/index.ts`）。
+3 つの抽出エンジンに対して onRequest の 3 関数を提供します（`src/index.ts`）。
 
-**onRequest（`*Http`）が唯一の入口です。** Web / 外部サービスのいずれからも `FUNCTIONS_API_KEY` による
-Bearer 認証で呼び出します。**onCall（`*Call`）は呼び出し元がいない未使用の関数で、削除予定です**（ADR-0015 / #267）。
+**入口は onRequest（`*Http`）に一本化しています**（ADR-0015）。Web / 外部サービスのいずれからも
+`FUNCTIONS_API_KEY` による Bearer 認証で呼び出します。未認証で外部 API に到達できる経路はありません。
 
-| エンジン                  | onCall（未使用・削除予定） | onRequest（Web / 外部・API キー） |
-| ------------------------- | -------------------------- | --------------------------------- |
-| Document AI（ADR-0002）   | `parseDocumentCall`        | `parseDocumentHttp`               |
-| Gemini（ADR-0010）        | `parseDocumentGeminiCall`  | `parseDocumentGeminiHttp`         |
-| Claude（ADR-0012 / 0013） | `parseDocumentClaudeCall`  | `parseDocumentClaudeHttp`         |
+| エンジン                  | エンドポイント（onRequest / API キー認証） |
+| ------------------------- | ------------------------------------------ |
+| Document AI（ADR-0002）   | `parseDocumentHttp`                        |
+| Gemini（ADR-0010）        | `parseDocumentGeminiHttp`                  |
+| Claude（ADR-0012 / 0013） | `parseDocumentClaudeHttp`                  |
 
-レスポンスは Gemini / Claude が正準モデル `{ receipt: ReceiptExtraction }`（ADR-0011）、Document AI が `{ entities: ... }`。Claude の呼び出し経路は `CLAUDE_TRANSPORT`（api/vertex）で切り替えます（ADR-0013）。
+レスポンスは 3 エンジンとも正準モデル `{ receipt: ReceiptExtraction }` です（ADR-0011）。
+Claude の呼び出し経路は `CLAUDE_TRANSPORT`（api/vertex）で切り替えます（ADR-0013）。
 
 ## ローカル実行
 

@@ -114,7 +114,7 @@ npm run docker:web:verify          # web のみ（VRT なし）
 パッケージ個別の `docker:<pkg>:verify` には含まれません。カバレッジ閾値（80%）と VRT を含むため、
 **CI が見ているものと同等**です。
 
-`firebase deploy` の predeploy フックはビルドと web の Firebase 設定チェックしかしません。
+`firebase deploy` の predeploy フックは functions のビルドしかしません（`firebase.json`）。
 つまり CI を経由せずに本番へ出せてしまうため、デプロイ前にはこのコマンドで塞いでください。
 
 読み取り専用なので、`check` と違ってファイルを書き換えません。
